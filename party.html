@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - 파티 찾기</title>
+    <title>Overwatch Hub - 파티 매칭</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; }
         body { background: #111; color: white; font-family: 'Pretendard', sans-serif; margin: 0; }
@@ -19,7 +19,7 @@
         .post-form { background: #222; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
         input, select, textarea { background: #333; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
-        .btn-submit { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-submit { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
         .btn-submit:disabled { background: #444; color: #777; cursor: not-allowed; }
 
         .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
@@ -31,13 +31,13 @@
         .party-card.tank { border-left-color: var(--tank); }
         .party-card.dps { border-left-color: var(--dps); }
         .party-card.sup { border-left-color: var(--sup); }
+        
         .delete-btn { position: absolute; top: 15px; right: 15px; color: #666; cursor: pointer; font-size: 18px; display: none; }
-        /* 내 글이거나 관리자일 때만 삭제 버튼 노출 */
         .party-card.mine .delete-btn, .party-card.admin .delete-btn { display: block; }
         
         .tag { font-size: 12px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin-right: 5px; }
         .btag { font-weight: bold; color: var(--accent); display: block; margin: 10px 0; font-size: 18px; cursor: pointer; }
-        .desc { font-size: 14px; color: #ccc; margin: 10px 0; min-height: 40px; }
+        .desc { font-size: 14px; color: #ccc; margin: 10px 0; min-height: 40px; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -49,12 +49,13 @@
     </div>
     <div class="auth-section">
         <span id="user-display" class="user-name"></span>
-        <button id="btn-login" class="btn-auth">로그인 체크중...</button>
+        <button id="btn-login" class="btn-auth">확인 중...</button>
     </div>
 </nav>
 
 <div class="container">
     <h1>⚔️ 실시간 파티 찾기</h1>
+    
     <div class="post-form">
         <div class="form-grid">
             <input type="text" id="input-btag" placeholder="배틀태그 (예: 닉네임#1234)">
@@ -74,8 +75,8 @@
             </select>
             <input type="text" id="input-most" placeholder="모스트 캐릭터">
         </div>
-        <textarea id="input-desc" rows="2" placeholder="로그인 후 글을 등록할 수 있습니다."></textarea>
-        <button class="btn-submit" id="btn-add-party" disabled>로그인 대기중...</button>
+        <textarea id="input-desc" rows="2" placeholder="로그인 후 이용 가능합니다." disabled></textarea>
+        <button class="btn-submit" id="btn-add-party" disabled>로그인이 필요합니다</button>
     </div>
 
     <div class="filter-bar">
@@ -84,6 +85,7 @@
         <button class="filter-btn" data-filter="dps">⚔️ 공격</button>
         <button class="filter-btn" data-filter="sup">💉 지원</button>
     </div>
+
     <div class="party-list" id="party-list"></div>
 </div>
 
@@ -111,56 +113,60 @@
     let currentUser = null;
     let allParties = [];
     let currentFilter = 'all';
-    
-    // ⭐ 여기에 확인하신 본인의 UID를 넣으세요!
+
+    // ⭐ 자신의 UID를 확인하여 여기에 넣으세요!
     const ADMIN_UID = "YOUR_UID_HERE"; 
 
-    // [1] 리다이렉트 로그인 결과 처리
-    getRedirectResult(auth)
-        .then((result) => { if(result?.user) console.log("로그인 완료:", result.user.displayName); })
-        .catch((e) => { console.error("인증 에러:", e); });
+    // 1. 리다이렉트 로그인 결과 자동 확인
+    getRedirectResult(auth).catch((e) => {
+        if(e.code !== 'auth/invalid-pending-token') console.error("인증 오류:", e.message);
+    });
 
-    // [2] 인증 상태 감시 및 UI 업데이트
+    // 2. 인증 상태 실시간 감시 (UI 업데이트 핵심 로직)
     onAuthStateChanged(auth, (user) => {
-        currentUser = user;
         const loginBtn = document.getElementById('btn-login');
         const userDisplay = document.getElementById('user-display');
         const submitBtn = document.getElementById('btn-add-party');
         const inputDesc = document.getElementById('input-desc');
 
+        currentUser = user;
+
         if (user) {
+            // 로그인 된 경우
             userDisplay.innerText = `${user.displayName}님`;
             loginBtn.innerText = "로그아웃";
             submitBtn.disabled = false;
             submitBtn.innerText = "모집 등록하기";
-            inputDesc.placeholder = "파티원을 모집하는 글을 작성해보세요!";
-            console.log("인증 상태 확인: 로그인됨 (UID:", user.uid, ")");
+            inputDesc.disabled = false;
+            inputDesc.placeholder = "내용을 입력해주세요.";
+            console.log("로그인 감지:", user.uid);
         } else {
+            // 로그아웃 된 경우
             userDisplay.innerText = "";
             loginBtn.innerText = "구글 로그인";
             submitBtn.disabled = true;
             submitBtn.innerText = "로그인이 필요합니다";
-            inputDesc.placeholder = "로그인 후 글을 등록할 수 있습니다.";
-            console.log("인증 상태 확인: 로그아웃됨");
+            inputDesc.disabled = true;
+            inputDesc.placeholder = "로그인 후 이용 가능합니다.";
         }
-        renderList(); // 인증 상태에 따라 삭제버튼 가시성 갱신
+        renderList(); // 인증 상태에 따라 삭제 버튼 업데이트
     });
 
-    // [3] 로그인/로그아웃 버튼 동작
+    // 3. 로그인 버튼 클릭 핸들러
     document.getElementById('btn-login').onclick = () => {
         if (currentUser) {
-            if(confirm("로그아웃 하시겠습니까?")) signOut(auth).then(() => window.location.reload());
+            if(confirm("로그아웃 하시겠습니까?")) signOut(auth).then(() => location.reload());
         } else {
             signInWithRedirect(auth, provider);
         }
     };
 
-    // [4] 글 등록
+    // 4. 파티 모집 등록
     document.getElementById('btn-add-party').onclick = async () => {
-        if(!currentUser) return alert("로그인이 필요합니다.");
         const btag = document.getElementById('input-btag').value;
         const desc = document.getElementById('input-desc').value;
-        if(!btag.includes('#') || !desc) return alert("배틀태그와 내용을 입력해주세요.");
+        
+        if (!btag.includes('#') || !desc) return alert("배틀태그(#포함)와 내용을 입력해주세요.");
 
         try {
             await addDoc(colRef, {
@@ -168,22 +174,24 @@
                 tier: document.getElementById('input-tier').value,
                 pos: document.getElementById('input-position').value,
                 most: document.getElementById('input-most').value,
-                uid: currentUser.uid, // 작성자 식별자 저장
+                uid: currentUser.uid,
                 createdAt: Date.now()
             });
             document.getElementById('input-btag').value = '';
             document.getElementById('input-desc').value = '';
+            alert("등록되었습니다!");
         } catch (e) {
-            alert("글 등록에 실패했습니다. (보안 규칙 확인 필요)");
+            alert("등록 실패: " + e.message);
         }
     };
 
-    // [5] 실시간 목록 감시
+    // 5. 실시간 데이터 스트리밍
     onSnapshot(query(colRef, orderBy("createdAt", "desc")), (snapshot) => {
         allParties = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderList();
     });
 
+    // 6. 목록 렌더링 함수
     function renderList() {
         const listEl = document.getElementById('party-list');
         listEl.innerHTML = '';
@@ -194,7 +202,6 @@
             const isAdmin = currentUser && currentUser.uid === ADMIN_UID;
             
             const card = document.createElement('div');
-            // 클래스에 mine 또는 admin을 추가하여 CSS로 삭제 버튼 노출 제어
             card.className = `party-card ${p.pos} ${isMine ? 'mine' : ''} ${isAdmin ? 'admin' : ''}`;
             card.innerHTML = `
                 <div class="delete-btn">✕</div>
@@ -203,25 +210,21 @@
                 <div class="desc">${p.desc}</div>
                 <div class="most"><b>모스트:</b> ${p.most || '-'}</div>
             `;
-
-            // 삭제 기능
+            
             card.querySelector('.delete-btn').onclick = async () => {
-                if(confirm("이 모집 글을 삭제하시겠습니까?")) {
-                    await deleteDoc(doc(db, "parties", p.id));
-                }
+                if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "parties", p.id));
             };
-
-            // 복사 기능
+            
             card.querySelector('.btag').onclick = () => {
                 navigator.clipboard.writeText(p.btag);
-                alert("복사됨: " + p.btag);
+                alert("복사되었습니다.");
             };
 
             listEl.appendChild(card);
         });
     }
 
-    // 필터 버튼 이벤트
+    // 7. 필터 버튼 설정
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
