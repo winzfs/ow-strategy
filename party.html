@@ -13,13 +13,13 @@
         nav a.active { opacity: 1; color: var(--accent); }
         .auth-section { display: flex; align-items: center; gap: 10px; }
         .user-name { font-size: 13px; color: #ccc; }
-        .btn-auth { background: #333; color: white; border: 1px solid #444; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-auth { background: #333; color: white; border: 1px solid #444; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 
         .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
         .post-form { background: #222; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
         input, select, textarea { background: #333; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
-        .btn-submit { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-submit { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
         .btn-submit:disabled { background: #444; color: #777; cursor: not-allowed; }
 
         .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
@@ -35,7 +35,7 @@
         .party-card.mine .delete-btn, .party-card.admin .delete-btn { display: block; }
         .tag { font-size: 12px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin-right: 5px; }
         .btag { font-weight: bold; color: var(--accent); display: block; margin: 10px 0; font-size: 18px; cursor: pointer; }
-        .desc { font-size: 14px; color: #ccc; margin: 10px 0; min-height: 40px; }
+        .desc { font-size: 14px; color: #ccc; margin: 10px 0; min-height: 40px; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -47,12 +47,13 @@
     </div>
     <div class="auth-section">
         <span id="user-display" class="user-name"></span>
-        <button id="btn-login" class="btn-auth">연결 중...</button>
+        <button id="btn-login" class="btn-auth">불러오는 중...</button>
     </div>
 </nav>
 
 <div class="container">
     <h1>⚔️ 실시간 파티 찾기</h1>
+    
     <div class="post-form">
         <div class="form-grid">
             <input type="text" id="input-btag" placeholder="배틀태그 (예: 닉네임#1234)">
@@ -82,6 +83,7 @@
         <button class="filter-btn" data-filter="dps">⚔️ 공격</button>
         <button class="filter-btn" data-filter="sup">💉 지원</button>
     </div>
+
     <div class="party-list" id="party-list"></div>
 </div>
 
@@ -106,13 +108,23 @@
     const provider = new GoogleAuthProvider();
     const colRef = collection(db, "parties");
 
+    let currentUser = null;
     let allParties = [];
     let currentFilter = 'all';
-    let currentUser = null;
-    const ADMIN_UID = "YOUR_UID_HERE"; // 실제 확인한 UID로 교체하세요.
 
-    // 로그인 결과 처리 (모바일 리다이렉트 후 복귀 시 작동)
-    getRedirectResult(auth).catch((e) => alert("로그인 오류: " + e.message));
+    // 🛡️ 관리자 UID (자신의 UID를 확인 후 입력하세요)
+    const ADMIN_UID = "YOUR_CONFIRMED_UID_HERE";
+
+    // [중요] 페이지 로드 시 리다이렉트 결과 처리
+    getRedirectResult(auth).then((result) => {
+        if (result?.user) console.log("리다이렉트 로그인 성공:", result.user.displayName);
+    }).catch((e) => {
+        if (e.code === 'auth/unauthorized-domain') {
+            alert("Firebase 설정에 도메인이 등록되지 않았습니다.");
+        } else if (e.code === 'auth/operation-not-supported-in-this-environment') {
+            alert("이 브라우저는 구글 로그인을 지원하지 않습니다. (카톡 인앱 브라우저 등)");
+        }
+    });
 
     // 인증 상태 감시
     onAuthStateChanged(auth, (user) => {
@@ -126,7 +138,7 @@
             loginBtn.innerText = "로그아웃";
             submitBtn.disabled = false;
             submitBtn.innerText = "모집 등록하기";
-            console.log("나의 UID:", user.uid);
+            console.log("현재 로그인 UID:", user.uid);
         } else {
             userDisplay.innerText = "";
             loginBtn.innerText = "구글 로그인";
@@ -136,34 +148,40 @@
         renderList();
     });
 
-    // 로그인 버튼 클릭
-    document.getElementById('btn-login').onclick = () => {
+    // 로그인 버튼 클릭 (이벤트 직접 연결)
+    document.getElementById('btn-login').addEventListener('click', () => {
         if (currentUser) {
             if(confirm("로그아웃 하시겠습니까?")) signOut(auth);
         } else {
-            signInWithRedirect(auth, provider); // 모바일에서 가장 확실한 방식
+            // 모바일 무반응 방지를 위해 Redirect 방식 사용
+            signInWithRedirect(auth, provider);
         }
-    };
+    });
 
     // 글 등록
-    document.getElementById('btn-add-party').onclick = async () => {
+    document.getElementById('btn-add-party').addEventListener('click', async () => {
         const btag = document.getElementById('input-btag').value;
         const desc = document.getElementById('input-desc').value;
-        if(!btag.includes('#') || !desc) return alert("배틀태그(#포함)와 내용을 입력해주세요.");
+        if(!btag.includes('#')) return alert("배틀태그 형식을 확인해주세요 (#1234)");
+        if(!desc) return alert("내용을 입력해주세요.");
 
-        await addDoc(colRef, {
-            btag, desc,
-            tier: document.getElementById('input-tier').value,
-            pos: document.getElementById('input-position').value,
-            most: document.getElementById('input-most').value,
-            uid: currentUser.uid,
-            createdAt: Date.now()
-        });
-        document.getElementById('input-btag').value = '';
-        document.getElementById('input-desc').value = '';
-    };
+        try {
+            await addDoc(colRef, {
+                btag, desc,
+                tier: document.getElementById('input-tier').value,
+                pos: document.getElementById('input-position').value,
+                most: document.getElementById('input-most').value,
+                uid: currentUser.uid,
+                createdAt: Date.now()
+            });
+            document.getElementById('input-btag').value = '';
+            document.getElementById('input-desc').value = '';
+        } catch (e) {
+            alert("등록 실패: " + e.message);
+        }
+    });
 
-    // 실시간 목록
+    // 목록 로드
     onSnapshot(query(colRef, orderBy("createdAt", "desc")), (snapshot) => {
         allParties = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderList();
@@ -177,22 +195,26 @@
         filtered.forEach(p => {
             const isMine = currentUser && p.uid === currentUser.uid;
             const isAdmin = currentUser && currentUser.uid === ADMIN_UID;
+            
             const card = document.createElement('div');
             card.className = `party-card ${p.pos} ${isMine ? 'mine' : ''} ${isAdmin ? 'admin' : ''}`;
             card.innerHTML = `
-                <div class="delete-btn">✕</div>
+                <div class="delete-btn" title="삭제">✕</div>
                 <div><span class="tag">${p.tier}</span><span class="tag">${p.pos.toUpperCase()}</span></div>
                 <div class="btag">${p.btag}</div>
                 <div class="desc">${p.desc}</div>
-                <div class="most"><b>모스트:</b> ${p.most || '-'}</div>
+                <div class="most"><b>모스트:</b> ${p.most || '정보없음'}</div>
             `;
-            card.querySelector('.delete-btn').onclick = () => {
-                if(confirm("삭제하시겠습니까?")) deleteDoc(doc(db, "parties", p.id));
+            
+            card.querySelector('.delete-btn').onclick = async () => {
+                if(confirm("정말 삭제하시겠습니까?")) await deleteDoc(doc(db, "parties", p.id));
             };
+            
             card.querySelector('.btag').onclick = () => {
                 navigator.clipboard.writeText(p.btag);
-                alert("복사되었습니다.");
+                alert("복사되었습니다: " + p.btag);
             };
+
             listEl.appendChild(card);
         });
     }
