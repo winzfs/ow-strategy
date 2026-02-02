@@ -6,66 +6,65 @@
     <title>Overwatch Hub - 파티 매칭</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; }
-        body { background: #111; color: white; font-family: 'Pretendard', sans-serif; margin: 0; }
+        body { background: #111; color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
         nav { background: #000; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--accent); }
-        nav a { color: white; text-decoration: none; font-weight: bold; opacity: 0.7; margin-right: 15px; }
-        nav a.active { opacity: 1; color: var(--accent); }
+        nav a { color: white; text-decoration: none; font-weight: bold; margin-right: 15px; }
         .auth-section { display: flex; align-items: center; gap: 10px; }
         .btn-auth { background: #333; color: white; border: 1px solid #444; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 
-        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
-        .post-form { background: #222; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px; }
-        input, select, textarea { background: #333; border: 1px solid #444; color: white; padding: 12px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
-        .btn-submit { background: var(--accent); color: black; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+        .post-form { background: #222; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        input, select, textarea { background: #333; border: 1px solid #444; color: white; padding: 12px; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 14px; }
+        textarea { grid-column: span 2; }
+        .btn-submit { background: var(--accent); color: black; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; }
         .btn-submit:disabled { background: #444; color: #777; cursor: not-allowed; }
 
-        .party-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .party-card { background: #222; border-radius: 12px; padding: 20px; border-left: 6px solid #555; position: relative; }
+        .party-list { display: flex; flex-direction: column; gap: 15px; }
+        .party-card { background: #222; border-radius: 12px; padding: 15px; border-left: 6px solid #555; position: relative; }
         .party-card.tank { border-left-color: var(--tank); }
         .party-card.dps { border-left-color: var(--dps); }
         .party-card.sup { border-left-color: var(--sup); }
         
-        .delete-btn { position: absolute; top: 15px; right: 15px; color: #ff3c3c; cursor: pointer; font-size: 20px; display: none; }
-        /* 내 글이거나 관리자일 때만 삭제 버튼 노출 */
+        .delete-btn { position: absolute; top: 10px; right: 10px; color: #ff3c3c; cursor: pointer; font-size: 20px; display: none; padding: 5px; }
         .party-card.mine .delete-btn, .party-card.admin .delete-btn { display: block; }
         
-        .btag { font-weight: bold; color: var(--accent); font-size: 18px; margin: 10px 0; cursor: pointer; }
-        .tag { font-size: 12px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin-right: 5px; }
-        .desc { font-size: 14px; color: #ccc; margin: 10px 0; line-height: 1.5; }
+        .btag { font-weight: bold; color: var(--accent); font-size: 18px; margin: 5px 0; }
+        .tags { margin-bottom: 8px; }
+        .tag { font-size: 11px; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; margin-right: 5px; }
+        .desc { font-size: 14px; color: #ddd; line-height: 1.4; }
     </style>
 </head>
 <body>
 
 <nav>
-    <div class="nav-links">
-        <a href="index.html">🛡️ 전술 보드</a>
-        <a href="party.html" class="active">⚔️ 파티 매칭</a>
+    <div>
+        <a href="index.html">🛡️ 보드</a>
+        <a href="party.html" style="color:var(--accent)">⚔️ 파티</a>
     </div>
     <div class="auth-section">
-        <span id="user-display" style="font-size:12px;"></span>
-        <button id="btn-login" class="btn-auth">연결 중...</button>
+        <span id="user-display" style="font-size:12px; color:#ccc;"></span>
+        <button id="btn-login" class="btn-auth">불러오는 중...</button>
     </div>
 </nav>
 
 <div class="container">
-    <h1>⚔️ 실시간 파티 찾기</h1>
     <div class="post-form">
         <div class="form-grid">
             <input type="text" id="input-btag" placeholder="배틀태그#1234">
+            <input type="text" id="input-most" placeholder="모스트 캐릭터">
             <select id="input-tier">
                 <option value="Bronze">브론즈</option><option value="Silver">실버</option>
                 <option value="Gold">골드</option><option value="Platinum">플래티넘</option>
                 <option value="Diamond">다이아몬드</option><option value="Master">마스터</option>
-                <option value="Grandmaster">그마</option>
+                <option value="Grandmaster">그랜드마스터</option>
             </select>
             <select id="input-position">
                 <option value="tank">🛡️ 돌격</option><option value="dps">⚔️ 공격</option><option value="sup">💉 지원</option>
             </select>
-            <input type="text" id="input-most" placeholder="모스트 캐릭터">
+            <textarea id="input-desc" rows="2" placeholder="간단한 자기소개 및 찾는 파티 조건"></textarea>
         </div>
-        <textarea id="input-desc" rows="2" placeholder="로그인 후 등록 가능합니다."></textarea>
-        <button class="btn-submit" id="btn-add-party" disabled>로그인 대기 중</button>
+        <button class="btn-submit" id="btn-add-party" disabled>로그인 후 이용 가능</button>
     </div>
 
     <div class="party-list" id="party-list"></div>
@@ -78,7 +77,7 @@
 
     const firebaseConfig = {
         apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw",
-        authDomain: "ow-party-97936.firebaseapp.com", // 원래대로 복구 (404 해결)
+        authDomain: "ow-party-97936.firebaseapp.com",
         projectId: "ow-party-97936",
         storageBucket: "ow-party-97936.firebasestorage.app",
         messagingSenderId: "15782204013",
@@ -91,28 +90,30 @@
     const provider = new GoogleAuthProvider();
     const colRef = collection(db, "parties");
 
-    const ADMIN_UID = "YOUR_UID_HERE"; // 여기에 UID 넣기
+    const ADMIN_UID = "YOUR_UID_HERE"; // 나중에 로그인 후 F12 눌러서 UID 확인 후 교체
 
-    // 로그인 상태 감시 및 UI 업데이트
+    // [1] 인증 상태 감시 (UI 즉각 반영)
     onAuthStateChanged(auth, (user) => {
         const loginBtn = document.getElementById('btn-login');
         const display = document.getElementById('user-display');
         const submitBtn = document.getElementById('btn-add-party');
 
         if (user) {
-            display.innerText = user.displayName + "님 ";
+            console.log("로그인 성공 UID:", user.uid);
+            display.innerText = user.displayName + "님";
             loginBtn.innerText = "로그아웃";
             submitBtn.disabled = false;
-            submitBtn.innerText = "모집 등록하기";
+            submitBtn.innerText = "모집 글 등록하기";
         } else {
+            console.log("현재 로그아웃 상태");
             display.innerText = "";
             loginBtn.innerText = "구글 로그인";
             submitBtn.disabled = true;
             submitBtn.innerText = "로그인이 필요합니다";
         }
-        renderList(user);
     });
 
+    // [2] 로그인 버튼
     document.getElementById('btn-login').onclick = () => {
         if (auth.currentUser) {
             if(confirm("로그아웃 하시겠습니까?")) signOut(auth).then(() => location.reload());
@@ -121,29 +122,42 @@
         }
     };
 
-    getRedirectResult(auth).catch(e => console.error("인증 에러:", e));
+    // 리다이렉트 결과 처리 (오류 출력용)
+    getRedirectResult(auth).catch(e => console.error("인증 처리 중 오류:", e));
 
+    // [3] 글 등록
     document.getElementById('btn-add-party').onclick = async () => {
-        if(!auth.currentUser) return;
+        const user = auth.currentUser;
+        if (!user) return alert("로그인이 필요합니다.");
+
         const btag = document.getElementById('input-btag').value;
         const desc = document.getElementById('input-desc').value;
-        if(!btag.includes('#') || !desc) return alert("내용을 입력해주세요.");
 
-        await addDoc(colRef, {
-            btag, desc,
-            tier: document.getElementById('input-tier').value,
-            pos: document.getElementById('input-position').value,
-            most: document.getElementById('input-most').value,
-            uid: auth.currentUser.uid,
-            createdAt: Date.now()
-        });
-        document.getElementById('input-btag').value = '';
-        document.getElementById('input-desc').value = '';
+        if (!btag.includes('#') || btag.length < 3) return alert("올바른 배틀태그를 입력해주세요.");
+        if (!desc) return alert("내용을 입력해주세요.");
+
+        try {
+            await addDoc(colRef, {
+                btag, desc,
+                tier: document.getElementById('input-tier').value,
+                pos: document.getElementById('input-position').value,
+                most: document.getElementById('input-most').value,
+                uid: user.uid,
+                createdAt: Date.now()
+            });
+            document.getElementById('input-btag').value = '';
+            document.getElementById('input-desc').value = '';
+            alert("등록되었습니다!");
+        } catch (e) {
+            alert("등록 오류: " + e.message);
+        }
     };
 
+    // [4] 목록 불러오기 (실시간)
     onSnapshot(query(colRef, orderBy("createdAt", "desc")), (snap) => {
         const list = document.getElementById('party-list');
         list.innerHTML = '';
+        
         snap.docs.forEach(d => {
             const p = d.data();
             const user = auth.currentUser;
@@ -153,20 +167,28 @@
             const card = document.createElement('div');
             card.className = `party-card ${p.pos} ${isMine ? 'mine' : ''} ${isAdmin ? 'admin' : ''}`;
             card.innerHTML = `
-                <div class="delete-btn">✕</div>
-                <div><span class="tag">${p.tier}</span><span class="tag">${p.pos}</span></div>
+                <div class="delete-btn" title="삭제">✕</div>
+                <div class="tags">
+                    <span class="tag">${p.tier}</span>
+                    <span class="tag">${p.pos.toUpperCase()}</span>
+                    <span class="tag">Most: ${p.most || '-'}</span>
+                </div>
                 <div class="btag">${p.btag}</div>
                 <div class="desc">${p.desc}</div>
-                <div style="font-size:12px; color:#888;">Most: ${p.most || '-'}</div>
             `;
+            
             card.querySelector('.delete-btn').onclick = () => {
-                if(confirm("삭제할까요?")) deleteDoc(doc(db, "parties", d.id));
+                if(confirm("정말 삭제하시겠습니까?")) deleteDoc(doc(db, "parties", d.id));
             };
+            
+            card.querySelector('.btag').onclick = () => {
+                navigator.clipboard.writeText(p.btag);
+                alert("배틀태그가 복사되었습니다.");
+            };
+
             list.appendChild(card);
         });
     });
-
-    function renderList(user) {}
 </script>
 </body>
 </html>
