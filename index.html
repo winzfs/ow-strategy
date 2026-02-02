@@ -34,7 +34,8 @@
         .btn-rec-active { background: #ff3c3c !important; animation: pulse 1.5s infinite; border-color: white; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
-        #viewport { flex-grow: 1; position: relative; overflow: hidden; background: #000; }
+        #viewport { flex-grow: 1; position: relative; overflow: hidden; background: #000; cursor: grab; }
+        #viewport:active { cursor: grabbing; }
         #map-container { position: absolute; transform-origin: 0 0; will-change: transform; }
         #map-image { display: block; user-select: none; -webkit-user-drag: none; }
         
@@ -57,12 +58,6 @@
         #drawing-canvas { z-index: 20; }
         #temp-canvas { z-index: 21; }
 
-        #laser-dot { 
-            position: absolute; width: 20px; height: 20px; background: red; 
-            border-radius: 50%; box-shadow: 0 0 20px 8px red; pointer-events: none; 
-            display: none; z-index: 1000; transform: translate(-50%, -50%);
-        }
-
         #toggle-btn { position: absolute; left: 10px; top: 10px; z-index: 101; padding: 12px; background: var(--accent-color); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: black; }
         
         .map-select { width: 100%; padding: 10px; background: #333; color: white; border: 1px solid var(--accent-color); border-radius: 4px; font-weight: bold; margin-bottom: 10px; }
@@ -77,10 +72,9 @@
 
 <div class="controls">
     <div class="tool-group">
-        <button class="tool-btn active" id="btn-move">✋ 이동</button>
+        <button class="tool-btn active" id="btn-move">✋ 이동/줌</button>
         <button class="tool-btn" id="tool-pen">✏️ 펜</button>
         <button class="tool-btn" id="tool-arrow">🏹 화살표</button>
-        <button class="tool-btn" id="tool-laser">🔦 레이저</button>
     </div>
     <div class="tool-group">
         <button class="tool-btn" id="btn-rec-start">🔴 녹화 시작</button>
@@ -114,7 +108,6 @@
 </div>
 
 <div id="viewport">
-    <div id="laser-dot"></div>
     <div id="map-container">
         <img id="map-image" src="Lijiang_Tower_Top_Down_View.jpg" onerror="this.src='https://via.placeholder.com/1200x800?text=Lijiang+Tower+Map+Needed'">
         <div id="hero-layer"></div>
@@ -131,11 +124,10 @@
     const tempCanvas = document.getElementById('temp-canvas');
     const ctx = canvas.getContext('2d');
     const tctx = tempCanvas.getContext('2d');
-    const laserDot = document.getElementById('laser-dot');
     const mapImg = document.getElementById('map-image');
 
     let scale = 0.5, tx = 0, ty = 0;
-    let state = { isDown: false, mode: null, isRecording: false };
+    let state = { isDown: false, mode: null, isRecording: false, initialDist: 0, initialScale: 1 };
     let activeHero = null, history = [], currentTool = 'move', currentTeamColor = '#00a2ff';
     let startPoint = { x: 0, y: 0 }, mapStart = { x: 0, y: 0 };
     let heroPaths = new Map();
@@ -148,19 +140,37 @@
         updateTransform(); saveState();
     };
 
-    function updateTransform() { mapContainer.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`; }
+    function updateTransform() { 
+        mapContainer.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`; 
+    }
+    
     function saveState() { history.push(canvas.toDataURL()); if (history.length > 20) history.shift(); }
+    
     function getLocalPos(clientX, clientY) {
         const rect = mapContainer.getBoundingClientRect();
         return { x: (clientX - rect.left) / scale, y: (clientY - rect.top) / scale };
     }
 
+    // --- 줌 & 이동 기능 (PC 휠) ---
+    viewport.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        const pointer = { x: e.clientX, y: e.clientY };
+        const coords = getLocalPos(pointer.x, pointer.y);
+        
+        const newScale = Math.min(Math.max(0.1, scale * delta), 5);
+        tx = pointer.x - coords.x * newScale;
+        ty = pointer.y - coords.y * newScale;
+        scale = newScale;
+        updateTransform();
+    }, { passive: false });
+
+    // --- 애니메이션 로직 ---
     const btnRecStart = document.getElementById('btn-rec-start');
     const btnRecStop = document.getElementById('btn-rec-stop');
 
     btnRecStart.onclick = () => {
-        state.isRecording = true;
-        heroPaths.clear();
+        state.isRecording = true; heroPaths.clear();
         btnRecStart.classList.add('btn-rec-active');
         btnRecStart.innerText = "● 녹화 중...";
         btnRecStop.disabled = false;
@@ -186,25 +196,32 @@
         });
     };
 
+    // --- 상호작용 핸들러 ---
     function onStart(e) {
         if (e.target.closest('#sidebar') || e.target.closest('.controls')) return;
         const isTouch = e.type.includes('touch');
+        
+        // 핀치 줌 시작 (모바일)
+        if (isTouch && e.touches.length === 2) {
+            state.mode = 'zoom';
+            state.initialDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            state.initialScale = scale;
+            return;
+        }
+
         const point = isTouch ? e.touches[0] : e;
         const heroEl = e.target.closest('.placed-hero');
         const coords = getLocalPos(point.clientX, point.clientY);
 
         state.isDown = true;
         
-        // 맵 터치 시 영웅 선택 해제 로직 (X 표시 사라짐)
+        // 영웅 선택 해제
         if (!heroEl) {
             document.querySelectorAll('.placed-hero').forEach(h => h.classList.remove('selected'));
             activeHero = null;
         }
 
-        if (currentTool === 'laser') {
-            laserDot.style.display = 'block';
-            updateLaser(point.clientX, point.clientY);
-        } else if (heroEl) {
+        if (heroEl) {
             state.mode = 'hero'; activeHero = heroEl;
             document.querySelectorAll('.placed-hero').forEach(h => h.classList.remove('selected'));
             activeHero.classList.add('selected');
@@ -222,14 +239,29 @@
 
     function onMove(e) {
         const isTouch = e.type.includes('touch');
+        
+        // 핀치 줌 진행 (모바일)
+        if (state.mode === 'zoom' && isTouch && e.touches.length === 2) {
+            const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            const newScale = Math.min(Math.max(0.1, state.initialScale * (dist / state.initialDist)), 5);
+            
+            // 중앙 기준 확대
+            const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            const coords = getLocalPos(midX, midY);
+            
+            tx = midX - coords.x * newScale;
+            ty = midY - coords.y * newScale;
+            scale = newScale;
+            updateTransform();
+            return;
+        }
+
+        if (!state.isDown) return;
         const point = isTouch ? e.touches[0] : e;
         const coords = getLocalPos(point.clientX, point.clientY);
 
-        if (!state.isDown) return;
-        
-        if (currentTool === 'laser') {
-            updateLaser(point.clientX, point.clientY);
-        } else if (state.mode === 'hero' && activeHero) {
+        if (state.mode === 'hero' && activeHero) {
             activeHero.style.left = coords.x + 'px';
             activeHero.style.top = coords.y + 'px';
             if (state.isRecording) heroPaths.get(activeHero).push({x: coords.x, y: coords.y});
@@ -246,12 +278,6 @@
         }
     }
 
-    // 레이저 포인터 위치 업데이트 함수 (모바일 대응)
-    function updateLaser(x, y) {
-        laserDot.style.left = x + 'px';
-        laserDot.style.top = y + 'px';
-    }
-
     function onEnd(e) {
         if (state.mode === 'draw' && currentTool === 'arrow') {
             const point = (e.changedTouches ? e.changedTouches[0] : e);
@@ -260,22 +286,17 @@
             tctx.clearRect(0, 0, canvas.width, canvas.height);
         }
         if (state.mode === 'draw') saveState();
-        laserDot.style.display = 'none';
         state.isDown = false; state.mode = null;
     }
 
     viewport.addEventListener('mousedown', onStart);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onEnd);
-    viewport.addEventListener('touchstart', (e) => { 
-        if(e.touches.length === 1) onStart(e); 
-    }, {passive: false});
-    window.addEventListener('touchmove', (e) => { 
-        if(state.isDown) { e.preventDefault(); onMove(e); } 
-    }, {passive: false});
+    viewport.addEventListener('touchstart', (e) => { onStart(e); }, {passive: false});
+    window.addEventListener('touchmove', (e) => { if(state.isDown || state.mode==='zoom') { e.preventDefault(); onMove(e); } }, {passive: false});
     window.addEventListener('touchend', onEnd);
 
-    const toolIds = ['btn-move', 'tool-pen', 'tool-arrow', 'tool-laser'];
+    const toolIds = ['btn-move', 'tool-pen', 'tool-arrow'];
     toolIds.forEach(id => {
         document.getElementById(id).onclick = () => {
             currentTool = id.replace('tool-', '').replace('btn-', '');
