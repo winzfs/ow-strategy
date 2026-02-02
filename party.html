@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - Final Notification Fixed</title>
+    <title>Overwatch Hub - Final Stable</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
@@ -12,7 +12,6 @@
         .nav-tabs div { cursor: pointer; font-weight: 600; font-size: 14px; color: #888; transition: 0.2s; position: relative; }
         .nav-tabs div.active { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
         
-        /* 알림 뱃지 스타일 */
         .menu-new { display: none; background: #ff3c3c; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 5px; font-weight: 900; animation: blink 1.2s infinite; vertical-align: middle; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
@@ -22,7 +21,8 @@
         .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
         
         .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
-        .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+        .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .btn-danger { background: #ff3c3c; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
         
         input, select, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
@@ -54,7 +54,7 @@
 <div class="container">
     <div id="page-list" class="page active">
         <div class="box">
-            <h4 style="margin:0; color:var(--accent);">🚀 파티 모집</h4>
+            <h4 style="margin:0; color:var(--accent);">🚀 파티 모집 시작</h4>
             <div style="display:flex; gap:5px; margin-top:10px;">
                 <select id="post-main-pos"><option value="tank">🛡️ 돌격</option><option value="dps">⚔️ 공격</option><option value="sup">💉 지원</option></select>
                 <select id="post-tier">
@@ -74,27 +74,9 @@
         <div class="box">
             <h3>내 프로필</h3>
             <input type="text" id="profile-btag" placeholder="배틀태그#1234">
-            <div class="pos-group">
-                <label style="color:var(--tank); font-size:12px;">🛡️ 돌격 티어</label>
-                <div style="display:flex; gap:5px; margin-top:5px;">
-                    <select id="tier-tank"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select>
-                    <select id="num-tank"><option value="1">1</option><option value="5" selected>5</option></select>
-                </div>
-            </div>
-            <div class="pos-group">
-                <label style="color:var(--dps); font-size:12px;">⚔️ 공격 티어</label>
-                <div style="display:flex; gap:5px; margin-top:5px;">
-                    <select id="tier-dps"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select>
-                    <select id="num-dps"><option value="1">1</option><option value="5" selected>5</option></select>
-                </div>
-            </div>
-            <div class="pos-group">
-                <label style="color:var(--sup); font-size:12px;">💉 지원 티어</label>
-                <div style="display:flex; gap:5px; margin-top:5px;">
-                    <select id="tier-sup"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select>
-                    <select id="num-sup"><option value="1">1</option><option value="5" selected>5</option></select>
-                </div>
-            </div>
+            <div class="pos-group"><label style="color:var(--tank); font-size:12px;">🛡️ 돌격</label><div style="display:flex; gap:5px; margin-top:5px;"><select id="tier-tank"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select><select id="num-tank"><option value="1">1</option><option value="5">5</option></select></div></div>
+            <div class="pos-group"><label style="color:var(--dps); font-size:12px;">⚔️ 공격</label><div style="display:flex; gap:5px; margin-top:5px;"><select id="tier-dps"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select><select id="num-dps"><option value="1">1</option><option value="5">5</option></select></div></div>
+            <div class="pos-group"><label style="color:var(--sup); font-size:12px;">💉 지원</label><div style="display:flex; gap:5px; margin-top:5px;"><select id="tier-sup"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select><select id="num-sup"><option value="1">1</option><option value="5">5</option></select></div></div>
             <button class="btn-main" id="btn-save-profile">정보 저장</button>
         </div>
     </div>
@@ -102,7 +84,7 @@
     <div id="page-noti" class="page"><h3>📫 알림 센터</h3><div id="noti-list"></div></div>
 </div>
 
-<div class="modal-overlay" id="request-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;"><h3>파티 신청</h3><textarea id="request-msg" placeholder="메시지" rows="4"></textarea><button class="btn-main" id="btn-confirm-send">신청하기</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
+<div class="modal-overlay" id="request-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;"><h3>파티 신청</h3><textarea id="request-msg" placeholder="상대에게 보낼 메시지" rows="4"></textarea><button class="btn-main" id="btn-confirm-send">신청하기</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
 <div class="modal-overlay" id="rate-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px; text-align:center;"><h3>팀원 평가</h3><div class="stars" id="rate-stars"><span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span></div><button class="btn-main" id="btn-confirm-rate">평가 완료</button></div></div>
 
 <script type="module">
@@ -121,8 +103,6 @@
         document.querySelectorAll('.nav-tabs div').forEach(t => t.classList.remove('active')); 
         document.getElementById('page-'+id).classList.add('active'); 
         document.getElementById('tab-'+id).classList.add('active');
-        
-        // 알림창 클릭 시 뱃지 숨김 (클라이언트 사이드 즉시 반응)
         if(id === 'noti') document.getElementById('menu-new-tag').style.display = 'none';
         
         if(id === 'profile' && auth.currentUser) {
@@ -151,8 +131,8 @@
             const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
             const isSent = mySentRequests.has(p.id);
             const div = document.createElement('div'); div.className = 'box';
-            let buttons = isMine ? `<button class="btn-sub" style="background:#ff3c3c;" onclick="delPost('${p.id}')">삭제</button>` : 
-                        (isSent ? `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : `<button class="btn-sub" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`);
+            let buttons = isMine ? `<button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>` : 
+                        (isSent ? `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`);
             if (isAdmin && !isMine) buttons += `<button class="btn-sub" style="background:#666; margin-left:5px;" onclick="delPost('${p.id}')">관리삭제</button>`;
             div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><div><b>${p.btag.split('#')[0]}#****</b> <span style="font-size:12px; color:var(--accent);">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span></div><div>${buttons}</div></div><p style="margin-top:10px; font-size:14px; color:#bbb;">${p.desc}</p>`;
             listDiv.appendChild(div);
@@ -166,34 +146,27 @@
         document.getElementById('user-info').style.display = user ? 'block' : 'none';
         if(user) {
             const isAdmin = user.email === ADMIN_EMAIL;
-
-            // [NEW 뱃지 전용 감시자] 나에게 온 혹은 관리자용 새 신청 감지
-            const badgeQuery = isAdmin ? 
-                query(collection(db, "matches"), where("status", "==", "pending")) :
-                query(collection(db, "matches"), where("toUid", "==", user.uid), where("status", "==", "pending"));
-
+            const badgeQuery = isAdmin ? query(collection(db, "matches"), where("status", "==", "pending")) : query(collection(db, "matches"), where("toUid", "==", user.uid), where("status", "==", "pending"));
             onSnapshot(badgeQuery, (snap) => {
                 const isNotiPage = document.getElementById('page-noti').classList.contains('active');
-                if(!snap.empty && !isNotiPage) {
-                    document.getElementById('menu-new-tag').style.display = 'inline-block';
-                } else {
-                    document.getElementById('menu-new-tag').style.display = 'none';
-                }
+                document.getElementById('menu-new-tag').style.display = (!snap.empty && !isNotiPage) ? 'inline-block' : 'none';
             });
 
-            // 알림 리스트 렌더링 감시
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
                 const list = document.getElementById('noti-list'); list.innerHTML = '';
                 snap.docs.forEach(ds => {
                     const m = ds.data();
                     if(!isAdmin && user.uid !== m.toUid && user.uid !== m.fromUid) return;
-                    
                     const box = document.createElement('div'); box.className = 'box';
                     const senderInfo = `<span class="info-label">${m.fromPos}</span><span class="info-label">${m.fromTier} ${m.fromTierNum}</span>`;
                     
                     if(m.status === 'pending') {
                         if(user.uid === m.toUid || isAdmin) {
-                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div><div style="margin:8px 0; font-size:13px;">신청자: ${senderInfo}<br>메시지: ${m.message}</div><button class="btn-main" onclick="acceptMatch('${ds.id}')">수락하기</button>`;
+                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div><div style="margin:10px 0; font-size:13px;">신청자: ${senderInfo}<br>메시지: ${m.message}</div>
+                                <div style="display:flex; gap:5px;">
+                                    <button class="btn-main" style="margin-top:0; flex:2;" onclick="acceptMatch('${ds.id}')">수락하기</button>
+                                    <button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절하기</button>
+                                </div>`;
                         } else {
                             box.innerHTML = `<div style="color:#666; font-size:13px;">⌛ 대기 중... (${m.toBtag.split('#')[0]})</div>`;
                         }
@@ -203,14 +176,12 @@
                     list.appendChild(box);
                 });
             });
-            
-            // 내가 보낸 신청 목록 동기화
             onSnapshot(query(collection(db, "matches"), where("fromUid", "==", user.uid)), (snap) => { mySentRequests = new Set(snap.docs.map(d => d.data().postId)); renderList(); });
         }
     });
 
-    // 동작 함수들
     window.acceptMatch = async (id) => await updateDoc(doc(db, "matches", id), { status: 'accepted' });
+    window.delMatch = async (id) => { if(confirm("내역을 삭제(거절)하시겠습니까?")) await deleteDoc(doc(db, "matches", id)); };
     window.openRateModal = (id) => { rateTargetId = id; document.getElementById('rate-modal').style.display = 'flex'; };
     document.getElementById('btn-confirm-rate').onclick = async () => {
         const s = document.querySelectorAll('#rate-stars span.active').length;
@@ -218,7 +189,7 @@
     };
     document.getElementById('btn-login').onclick = async () => {
         const e = document.getElementById('login-email').value, p = document.getElementById('login-password').value;
-        try { await signInWithEmailAndPassword(auth, e, p); } catch { try { await createUserWithEmailAndPassword(auth, e, p); } catch { alert("정보 확인 필요"); } }
+        try { await signInWithEmailAndPassword(auth, e, p); } catch { try { await createUserWithEmailAndPassword(auth, e, p); } catch { alert("계정 확인 필요"); } }
     };
     document.getElementById('btn-post').onclick = async () => {
         const u = await getDoc(doc(db, "users", auth.currentUser.uid));
@@ -242,7 +213,6 @@
         }); closeModal();
     };
     window.delPost = async (id) => { if(confirm("삭제?")) await deleteDoc(doc(db, "parties", id)); };
-    window.delMatch = async (id) => await deleteDoc(doc(db, "matches", id));
     document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
     document.querySelectorAll('#rate-stars span').forEach(s => {
         s.onclick = () => {
