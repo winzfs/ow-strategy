@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오버워치 전략 보드</title>
+    <style>
+        body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: sans-serif; background: #1a1a1a; color: white; }
+        
+        /* 사이드바 설정 */
+        #sidebar { width: 250px; background: #2d2d2d; overflow-y: auto; padding: 10px; border-right: 2px solid #444; }
+        .category { margin-bottom: 20px; }
+        .category h3 { border-bottom: 1px solid #666; padding-bottom: 5px; color: #ff9c00; }
+        .hero-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .hero-item { width: 60px; height: 60px; cursor: grab; background: #444; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; text-align: center; border: 1px solid transparent; }
+        .hero-item:hover { border-color: #ff9c00; }
+        .hero-item img { width: 100%; height: 100%; border-radius: 5px; pointer-events: none; }
+
+        /* 맵 영역 설정 */
+        #viewport { flex-grow: 1; position: relative; overflow: hidden; cursor: grab; background: #000; }
+        #map-container { position: absolute; transform-origin: 0 0; cursor: default; }
+        #map-image { display: block; user-select: none; -webkit-user-drag: none; }
+
+        /* 드래그되는 아이콘 */
+        .placed-hero { position: absolute; width: 50px; height: 50px; cursor: move; z-index: 10; transform: translate(-50%, -50%); border: 2px solid #ff9c00; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <div class="category">
+        <h3>돌격 (TANK)</h3>
+        <div class="hero-list" id="tank-list"></div>
+    </div>
+    <div class="category">
+        <h3>공격 (DPS)</h3>
+        <div class="hero-list" id="dps-list"></div>
+    </div>
+    <div class="category">
+        <h3>지원 (SUP)</h3>
+        <div class="hero-list" id="sup-list"></div>
+    </div>
+</div>
+
+<div id="viewport">
+    <div id="map-container">
+        <img id="map-image" src="https://liquipedia.net/commons/images/5/50/Lijiang_Tower_Top_Down_View.jpg" alt="Map">
+    </div>
+</div>
+
+<script>
+    // 1. 영웅 데이터 (이미지 경로를 실제 아이콘 링크로 바꾸면 됩니다)
+    const heroes = {
+        tank: ["디바", "둠피스트", "라마트라", "라인하르트", "레킹볼", "로드호그", "마우가", "시그마", "윈스턴", "자리야", "정커퀸"],
+        dps: ["겐지", "리퍼", "메이", "바스티온", "소전", "솔저", "솜브라", "시메트라", "애쉬", "에코", "위도우", "정크랫", "캐시디", "토르비욘", "트레이서", "파라", "벤처"],
+        sup: ["라이프위버", "루시우", "바티스트", "브리기테", "아나", "일리리", "젠야타", "키리코", "바티스트", "모이라"]
+    };
+
+    // 2. 사이드바에 영웅 추가
+    Object.keys(heroes).forEach(role => {
+        const list = document.getElementById(`${role}-list`);
+        heroes[role].forEach(name => {
+            const item = document.createElement('div');
+            item.className = 'hero-item';
+            item.draggable = true;
+            item.innerHTML = `<span>${name}</span>`; // 이미지가 없으므로 텍스트 표시
+            item.dataset.name = name;
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('heroName', name);
+            });
+            list.appendChild(item);
+        });
+    });
+
+    const viewport = document.getElementById('viewport');
+    const mapContainer = document.getElementById('map-container');
+    let scale = 1;
+    let isDraggingMap = false;
+    let startX, startY, translateX = 0, translateY = 0;
+
+    // 3. 줌(확대/축소) 기능
+    viewport.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        scale *= delta;
+        scale = Math.min(Math.max(0.2, scale), 5); // 최소 0.2배, 최대 5배
+        updateTransform();
+    }, { passive: false });
+
+    function updateTransform() {
+        mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    }
+
+    // 4. 드래그 앤 드롭으로 배치
+    viewport.addEventListener('dragover', (e) => e.preventDefault());
+    viewport.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const name = e.dataTransfer.getData('heroName');
+        if (!name) return;
+
+        const rect = mapContainer.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / scale;
+        const y = (e.clientY - rect.top) / scale;
+
+        createHeroOnMap(name, x, y);
+    });
+
+    function createHeroOnMap(name, x, y) {
+        const img = document.createElement('div');
+        img.className = 'placed-hero';
+        img.style.left = `${x}px`;
+        img.style.top = `${y}px`;
+        img.style.background = '#555'; // 실제 영웅 이미지로 대체 가능
+        img.innerHTML = `<span style="font-size:8px;">${name}</span>`;
+        
+        // 맵 위에서 다시 움직이기
+        let isMoving = false;
+        img.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            isMoving = true;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isMoving) return;
+            const rect = mapContainer.getBoundingClientRect();
+            img.style.left = `${(e.clientX - rect.left) / scale}px`;
+            img.style.top = `${(e.clientY - rect.top) / scale}px`;
+        });
+
+        window.addEventListener('mouseup', () => isMoving = false);
+        
+        // 우클릭 시 삭제
+        img.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            img.remove();
+        });
+
+        mapContainer.appendChild(img);
+    }
+
+    // 5. 맵 이동 (우클릭 드래그 또는 마우스 휠 클릭)
+    viewport.addEventListener('mousedown', (e) => {
+        if (e.button === 0 && e.target === viewport) { // 배경 클릭 시만
+            isDraggingMap = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (isDraggingMap) {
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            updateTransform();
+        }
+    });
+
+    window.addEventListener('mouseup', () => isDraggingMap = false);
+</script>
+
+</body>
+</html>
