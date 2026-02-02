@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - 최종 보정본</title>
+    <title>Overwatch Hub - 통합 시스템</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
@@ -75,7 +75,7 @@
 
     <div id="page-noti" class="page">
         <h3 style="margin-top:0;">📫 매칭 현황</h3>
-        <div id="noti-list">로그인 후 확인 가능합니다.</div>
+        <div id="noti-list" style="padding:20px 0;">로그인 후 확인 가능합니다.</div>
     </div>
 </div>
 
@@ -162,32 +162,30 @@
 
     window.acceptMatch = async (id) => await updateDoc(doc(db, "matches", id), {status: "accepted"});
 
-    // [중요] 로그인 및 알림 감시 통합
+    // 상태 감시
     onAuthStateChanged(auth, (user) => {
         const notiList = document.getElementById('noti-list');
         if(user) {
             document.getElementById('auth-ui').innerHTML = `<button onclick="handleLogout()" class="btn-sub">로그아웃</button>`;
-            notiList.innerHTML = '<div style="text-align:center; padding:20px;">불러오는 중...</div>';
+            notiList.innerHTML = '<div style="text-align:center;">알림 내역 로딩 중...</div>';
 
-            // matches 컬렉션을 전체 감시 (쿼리 복잡도 최소화)
+            // matches 실시간 감시 (Index 에러 방지를 위해 orderBy 제거 후 수동 정렬)
             onSnapshot(collection(db, "matches"), (snap) => {
-                notiList.innerHTML = ''; // 화면 비우기
+                notiList.innerHTML = '';
                 let newCount = 0;
                 let hasData = false;
 
-                // 가져온 데이터를 생성 시간순으로 수동 정렬 (Index 에러 방지)
                 const sortedDocs = snap.docs.sort((a, b) => b.data().createdAt - a.data().createdAt);
 
                 sortedDocs.forEach(ds => {
                     const m = ds.data();
-                    // 나랑 관련 없는 데이터는 패스
                     if(m.fromUid !== user.uid && m.toUid !== user.uid) return;
                     
                     hasData = true;
                     const item = document.createElement('div');
                     item.className = 'box';
 
-                    if(m.toUid === user.uid) { // 내가 받은 신청
+                    if(m.toUid === user.uid) {
                         if(m.status === 'pending') {
                             newCount++;
                             item.innerHTML = `<span class="status-tag" style="background:var(--accent); color:black;">받은 신청</span>
@@ -197,41 +195,33 @@
                             item.innerHTML = `<span class="status-tag" style="background:var(--sup); color:black;">매칭 완료</span>
                                               <div><b>${m.fromBtag}</b>님과 매칭되었습니다!</div>`;
                         }
-                    } else { // 내가 보낸 신청
+                    } else {
                         const isAcc = m.status === 'accepted';
                         item.innerHTML = `<span class="status-tag" style="background:${isAcc?'var(--sup)':'#555'}; color:black;">${isAcc?'수락됨':'대기중'}</span>
-                                          <div><b>${m.toBtag}</b>님에게 신청함</div>
-                                          <div style="font-size:12px; color:#888;">${isAcc?'상대방이 수락했습니다.':'상대방의 수락을 기다리는 중...'}</div>`;
+                                          <div><b>${m.toBtag}</b>님에게 보낸 신청</div>`;
                     }
                     notiList.appendChild(item);
                 });
 
-                if(!hasData) notiList.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">알림 내역이 없습니다.</div>';
-                
+                if(!hasData) notiList.innerHTML = '<div style="text-align:center; color:#666;">내역이 없습니다.</div>';
                 document.getElementById('noti-badge').innerText = newCount;
                 document.getElementById('noti-badge').style.display = newCount > 0 ? 'inline' : 'none';
+            }, (error) => {
+                notiList.innerHTML = `<div style="color:red; text-align:center;">오류 발생: ${error.message}</div>`;
             });
-        } else {
-            notiList.innerHTML = '<div style="text-align:center; padding:40px 0; color:#666;">로그인 후 확인 가능합니다.</div>';
         }
     });
 
-    // 파티 리스트 렌더링
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
         const container = document.getElementById('party-list');
         container.innerHTML = '';
         const myUid = auth.currentUser ? auth.currentUser.uid : null;
-
         snap.forEach(d => {
             const p = d.data();
             const card = document.createElement('div');
             card.className = 'party-card';
             card.style.borderLeftColor = `var(--${p.pos})`;
-            
-            const btnHtml = (myUid === p.uid) 
-                ? `<span style="color:#666; font-size:12px;">내가 쓴 글</span>` 
-                : `<button class="btn-sub" onclick="openRequestModal('${p.uid}', '${p.btag}')">신청</button>`;
-
+            const btnHtml = (myUid === p.uid) ? `<span style="color:#666; font-size:12px;">내가 쓴 글</span>` : `<button class="btn-sub" onclick="openRequestModal('${p.uid}', '${p.btag}')">신청</button>`;
             card.innerHTML = `<div style="display:flex; justify-content:space-between;"><b>${p.btag}</b>${btnHtml}</div>
                               <div style="font-size:12px; color:#888;">${p.tier} ${p.subtier || ''} · ${p.most}</div>
                               <p style="margin-top:10px; font-size:14px; color:#ccc;">${p.desc}</p>`;
@@ -239,16 +229,13 @@
         });
     });
 
-    // 로그인/회원가입
     document.getElementById('btn-login').onclick = () => {
         const e = document.getElementById('login-email').value;
         const p = document.getElementById('login-password').value;
         signInWithEmailAndPassword(auth, e, p).catch(() => createUserWithEmailAndPassword(auth, e, p));
     };
 
-    // 프로필 저장
     document.getElementById('btn-save-game-info').onclick = async () => {
-        if(!auth.currentUser) return alert("로그인하세요.");
         await setDoc(doc(db, "users", auth.currentUser.uid), {
             btag: document.getElementById('my-btag').value,
             most: document.getElementById('my-most').value,
