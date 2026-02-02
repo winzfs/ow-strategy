@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>오버워치 전략 보드 Pro - 최종 수정</title>
+    <title>오버워치 전략 보드 - 최종 수정 (버그 픽스)</title>
     <style>
         :root { --sidebar-width: 260px; --accent-color: #ff9c00; }
         body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: sans-serif; background: #1a1a1a; color: white; touch-action: none; }
@@ -28,17 +28,15 @@
         #map-container { position: absolute; transform-origin: 0 0; }
         #map-image { display: block; user-select: none; -webkit-user-drag: none; max-width: none; }
         
-        /* 캔버스가 겹치지 않도록 설정 */
-        canvas { position: absolute; top: 0; left: 0; }
-        #drawing-canvas { z-index: 5; pointer-events: none; }
-        #temp-canvas { z-index: 6; pointer-events: none; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+        #drawing-canvas { z-index: 5; }
+        #temp-canvas { z-index: 6; }
         
-        /* 그리기 모드일 때만 캔버스가 이벤트를 받음 */
-        #viewport.drawing-mode #temp-canvas { pointer-events: auto; cursor: crosshair; }
+        /* 그리기 모드일 때만 뷰포트가 이벤트를 직접 받음 */
+        #viewport.drawing-mode { cursor: crosshair; }
 
         .placed-hero { position: absolute; width: 50px; height: 50px; cursor: move; z-index: 10; transform: translate(-50%, -50%); border: 3px solid var(--accent-color); border-radius: 50%; background: #333; overflow: hidden; touch-action: none; }
         .placed-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-        #viewport.drawing-mode .placed-hero { pointer-events: none; }
     </style>
 </head>
 <body>
@@ -93,7 +91,7 @@
 
     function saveState() {
         history.push(canvas.toDataURL());
-        if (history.length > 30) history.shift();
+        if (history.length > 40) history.shift();
         redoStack = []; 
     }
 
@@ -124,7 +122,7 @@
             document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentTool = btn.id.replace('btn-', '');
-            viewport.className = currentTool === 'move' ? '' : 'drawing-mode';
+            viewport.className = (currentTool === 'move') ? '' : 'drawing-mode';
         };
     });
 
@@ -135,22 +133,39 @@
         return { x: (cx - rect.left - translateX) / scale, y: (cy - rect.top - translateY) / scale };
     };
 
-    // 실시간 그리기 핵심 로직
+    // 통합 이벤트 핸들러
     const handleStart = (e) => {
-        if(currentTool === 'move') return;
+        if (currentTool === 'move') {
+            if (!e.touches || e.touches.length === 1) {
+                isDragging = true;
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                startX = cx - translateX;
+                startY = cy - translateY;
+            }
+            return;
+        }
+        // 그리기 모드
         isDrawing = true;
         drawStartPos = getPos(e);
-        if(currentTool === 'pen') {
+        if (currentTool === 'pen') {
             ctx.beginPath();
             ctx.moveTo(drawStartPos.x, drawStartPos.y);
             ctx.strokeStyle = '#ff9c00';
             ctx.lineWidth = 6 / scale;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            ctx.lineCap = ctx.lineJoin = 'round';
         }
     };
 
     const handleMove = (e) => {
+        if (isDragging && currentTool === 'move') {
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            translateX = cx - startX;
+            translateY = cy - startY;
+            update();
+            return;
+        }
         if (!isDrawing) return;
         const p = getPos(e);
         if (currentTool === 'pen') {
@@ -162,25 +177,28 @@
         }
     };
 
-    const handleEnd = (e) => {
-        if (!isDrawing) return;
-        const p = getPos(e);
-        if (currentTool === 'arrow') {
+    const handleEnd = () => {
+        if (isDrawing) {
+            if (currentTool === 'arrow' && drawStartPos) {
+                // 마지막 위치를 알아내기 위해 별도 저장하지 않고 tctx 내용을 그리거나 재계산
+                // 여기서는 마지막 마우스 위치 기반으로 drawArrow를 ctx에 한 번 더 수행
+            }
             tctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-            drawArrow(ctx, drawStartPos.x, drawStartPos.y, p.x, p.y);
+            isDrawing = false;
+            saveState();
         }
-        isDrawing = false;
-        saveState();
+        isDragging = false;
+        lastDist = 0;
     };
 
+    // 화살표 그리기 함수 (ctx 지정 가능)
     function drawArrow(targetCtx, fx, fy, tx, ty) {
         const headlen = 25 / scale;
         const angle = Math.atan2(ty - fy, tx - fx);
         targetCtx.beginPath();
         targetCtx.strokeStyle = '#ff9c00';
         targetCtx.lineWidth = 6 / scale;
-        targetCtx.lineCap = 'round';
-        targetCtx.lineJoin = 'round';
+        targetCtx.lineCap = targetCtx.lineJoin = 'round';
         targetCtx.moveTo(fx, fy);
         targetCtx.lineTo(tx, ty);
         targetCtx.lineTo(tx - headlen * Math.cos(angle - Math.PI / 6), ty - headlen * Math.sin(angle - Math.PI / 6));
@@ -189,21 +207,53 @@
         targetCtx.stroke();
     }
 
-    // 터치 및 마우스 이벤트 바인딩 (tempCanvas가 최상단 레이어이므로 여기서 수신)
-    tempCanvas.onmousedown = handleStart;
+    // 마우스 및 터치 리스너
+    viewport.addEventListener('mousedown', handleStart);
     window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('mouseup', (e) => {
+        if (isDrawing && currentTool === 'arrow') {
+            const p = getPos(e);
+            drawArrow(ctx, drawStartPos.x, drawStartPos.y, p.x, p.y);
+        }
+        handleEnd();
+    });
 
-    tempCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, {passive: false});
-    window.addEventListener('touchmove', (e) => { if(isDrawing) { e.preventDefault(); handleMove(e); } }, {passive: false});
-    window.addEventListener('touchend', handleEnd);
+    viewport.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            lastDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+            return;
+        }
+        handleStart(e);
+    }, {passive: false});
 
-    // 맵 이동 및 확대 (✋ 모드 전용)
-    viewport.onmousedown = (e) => { if(currentTool === 'move') { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; } };
-    window.addEventListener('mousemove', (e) => { if(isDragging && currentTool === 'move') { translateX = e.clientX - startX; translateY = e.clientY - startY; update(); } });
-    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2) {
+            const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+            if (lastDist > 0) {
+                const rect = viewport.getBoundingClientRect();
+                const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+                const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+                const gx = (midX - translateX) / scale, gy = (midY - translateY) / scale;
+                scale = Math.min(Math.max(0.1, scale * (dist / lastDist)), 4);
+                translateX = midX - gx * scale; translateY = midY - gy * scale;
+                update();
+            }
+            lastDist = dist;
+            return;
+        }
+        if (isDrawing || isDragging) { e.preventDefault(); handleMove(e); }
+    }, {passive: false});
 
-    viewport.onwheel = (e) => {
+    window.addEventListener('touchend', (e) => {
+        if (isDrawing && currentTool === 'arrow') {
+            const p = getPos(e.changedTouches[0]);
+            drawArrow(ctx, drawStartPos.x, drawStartPos.y, p.x, p.y);
+        }
+        handleEnd();
+    });
+
+    // 휠 확대 축소
+    viewport.addEventListener('wheel', (e) => {
         e.preventDefault();
         const delta = e.deltaY < 0 ? 1.1 : 0.9;
         const rect = viewport.getBoundingClientRect();
@@ -212,13 +262,13 @@
         scale = Math.min(Math.max(0.1, scale * delta), 4);
         translateX = mx - gx * scale; translateY = my - gy * scale;
         update();
-    };
+    }, {passive: false});
 
     function update() { 
         mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`; 
     }
 
-    // 영웅 데이터 및 사이드바 로직 (동일하게 유지)
+    // 영웅 데이터 로직 (생략 없이 포함)
     const heroes = {
         "돌격 (TANK)": [{id: "dva", name: "디바"}, {id: "doomfist", name: "둠피"}, {id: "ramattra", name: "라맛"}, {id: "reinhardt", name: "라인"}, {id: "wrecking-ball", name: "레킹"}, {id: "roadhog", name: "호그"}, {id: "mauga", name: "마우가"}, {id: "sigma", name: "시그마"}, {id: "winston", name: "윈스턴"}, {id: "zarya", name: "자리야"}, {id: "junker-queen", name: "정커퀸"}],
         "공격 (DPS)": [{id: "genji", name: "겐지"}, {id: "reaper", name: "리퍼"}, {id: "mei", name: "메이"}, {id: "bastion", name: "바스"}, {id: "sojourn", name: "소전"}, {id: "soldier-76", name: "솔저"}, {id: "sombra", name: "솜브라"}, {id: "symmetra", name: "시메"}, {id: "ashe", name: "애쉬"}, {id: "echo", name: "에코"}, {id: "widowmaker", name: "위도우"}, {id: "junkrat", name: "정랫"}, {id: "cassidy", name: "캐시디"}, {id: "torbjorn", name: "토브"}, {id: "tracer", name: "트레"}, {id: "pharah", name: "파라"}, {id: "venture", name: "벤처"}],
@@ -251,19 +301,28 @@
         div.className = 'placed-hero';
         div.style.left = `${x}px`; div.style.top = `${y}px`;
         div.innerHTML = `<img src="https://d1u1mce87gyfbn.cloudfront.net/hero/${hero.id}/icon-portrait.png">`;
-        let moveStart = false;
-        const start = (e) => { e.stopPropagation(); moveStart = true; };
-        div.onmousedown = start; div.ontouchstart = start;
-        const move = (ex, ey) => {
-            if (!moveStart) return;
-            const rect = viewport.getBoundingClientRect();
-            div.style.left = `${(ex - rect.left - translateX) / scale}px`;
-            div.style.top = `${(ey - rect.top - translateY) / scale}px`;
+        let heroDrag = false;
+        let hStartX, hStartY;
+        const hStart = (e) => {
+            e.stopPropagation();
+            heroDrag = true;
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            hStartX = (cx - translateX) / scale - parseFloat(div.style.left);
+            hStartY = (cy - translateY) / scale - parseFloat(div.style.top);
         };
-        window.addEventListener('mousemove', (e) => move(e.clientX, e.clientY));
-        window.addEventListener('touchmove', (e) => move(e.touches[0].clientX, e.touches[0].clientY));
-        window.addEventListener('mouseup', () => moveStart = false);
-        window.addEventListener('touchend', () => moveStart = false);
+        div.onmousedown = hStart; div.ontouchstart = hStart;
+        const hMove = (e) => {
+            if (!heroDrag) return;
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            div.style.left = `${(cx - translateX) / scale - hStartX}px`;
+            div.style.top = `${(cy - translateY) / scale - hStartY}px`;
+        };
+        window.addEventListener('mousemove', hMove);
+        window.addEventListener('touchmove', hMove);
+        window.addEventListener('mouseup', () => heroDrag = false);
+        window.addEventListener('touchend', () => heroDrag = false);
         div.oncontextmenu = (e) => { e.preventDefault(); div.remove(); };
         mapContainer.appendChild(div);
     }
