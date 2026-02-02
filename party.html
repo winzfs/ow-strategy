@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - 실시간 매칭 시스템</title>
+    <title>Overwatch Hub - 매칭 시스템</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
         
-        /* 상단 네비게이션 */
         nav { background: #000; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
         .nav-tabs { display: flex; gap: 20px; }
         .nav-tabs div { cursor: pointer; font-weight: 600; font-size: 14px; color: #888; transition: 0.2s; }
@@ -18,7 +17,6 @@
         .page { display: none; }
         .page.active { display: block; }
 
-        /* 공통 박스 디자인 */
         .box { background: #1a1a1a; padding: 24px; border-radius: 16px; border: 1px solid #333; margin-bottom: 20px; }
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; }
         
@@ -31,7 +29,6 @@
         .party-card { background: #1a1a1a; border-radius: 16px; padding: 20px; border: 1px solid #333; margin-bottom: 15px; border-left: 6px solid #444; }
         #noti-badge { background: var(--dps); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; display: none; margin-left: 5px; }
         
-        /* 모달 및 태그 */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: #222; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid #444; }
         .status-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; display: inline-block; }
@@ -95,7 +92,7 @@
 
     <div id="page-noti" class="page">
         <h3 style="margin-top:0;">📫 매칭 현황</h3>
-        <div id="noti-list">로그인 후 확인 가능합니다.</div>
+        <div id="noti-list" style="color:#666; text-align:center; padding:40px 0;">로그인 후 확인 가능합니다.</div>
     </div>
 </div>
 
@@ -130,7 +127,7 @@
 
     let tUser = { uid: null, btag: null };
 
-    // --- 전역 함수 등록 (HTML onclick 호환) ---
+    // --- 전역 함수 등록 ---
     window.showPage = (id) => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-tabs div').forEach(t => t.classList.remove('active'));
@@ -146,22 +143,15 @@
     window.closeModal = () => document.getElementById('request-modal').style.display = 'none';
 
     window.handleLogout = () => {
-        signOut(auth).then(() => {
-            alert("로그아웃 되었습니다.");
-            location.reload();
-        }).catch(err => alert("오류: " + err.message));
+        signOut(auth).then(() => { alert("로그아웃 되었습니다."); location.reload(); });
     };
 
-    // --- 계정 및 프로필 ---
+    // --- 버튼 클릭 이벤트들 ---
     document.getElementById('btn-upd-nick').onclick = async () => {
         const n = document.getElementById('upd-nickname').value;
-        if(n) { await updateProfile(auth.currentUser, {displayName: n}); alert("닉네임 변경됨"); }
+        if(n) { await updateProfile(auth.currentUser, {displayName: n}); alert("변경됨"); }
     };
-    document.getElementById('btn-upd-pw').onclick = async () => {
-        const p = document.getElementById('upd-pw').value;
-        if(p) { await updatePassword(auth.currentUser, p); alert("비번 변경됨"); }
-    };
-
+    
     document.getElementById('btn-save-game-info').onclick = async () => {
         const d = {
             btag: document.getElementById('my-btag').value,
@@ -175,7 +165,6 @@
         alert("저장되었습니다.");
     };
 
-    // --- 구인 및 매칭 ---
     document.getElementById('btn-post-party').onclick = async () => {
         const d = {
             btag: document.getElementById('post-btag').value,
@@ -188,7 +177,7 @@
             createdAt: Date.now()
         };
         await addDoc(collection(db, "parties"), d);
-        alert("게시되었습니다.");
+        alert("구인글이 게시되었습니다.");
     };
 
     document.getElementById('btn-confirm-send').onclick = async () => {
@@ -205,7 +194,7 @@
             status: "pending",
             createdAt: Date.now()
         });
-        alert("신청 완료!");
+        alert("신청이 완료되었습니다!");
         closeModal();
     };
 
@@ -225,7 +214,7 @@
         if(user) {
             document.getElementById('auth-ui').innerHTML = `<button onclick="handleLogout()" class="btn-sub">로그아웃</button>`;
             
-            // 내 정보 불러오기
+            // 프로필 정보 로드
             onSnapshot(doc(db, "users", user.uid), (ds) => {
                 if(ds.exists()){
                     const p = ds.data();
@@ -236,27 +225,33 @@
                 }
             });
 
-            // 알림창 실시간 업데이트 (보낸 신청 + 받은 신청 통합)
+            // [수정된 알림창 로직] 나랑 연관된 매칭 정보를 클라이언트에서 필터링
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-                const list = document.getElementById('noti-list'); list.innerHTML = '';
+                const list = document.getElementById('noti-list');
+                list.innerHTML = '';
                 let newCount = 0;
+
+                if (snap.empty) {
+                    list.innerHTML = '<div style="color:#666;">내역이 없습니다.</div>';
+                }
+
                 snap.forEach(ds => {
                     const m = ds.data();
                     if(m.fromUid !== user.uid && m.toUid !== user.uid) return;
-                    
+
                     const item = document.createElement('div');
                     item.className = 'box';
                     
                     if(m.toUid === user.uid) { // [받은 신청]
                         if(m.status === 'pending') { 
                             newCount++; 
-                            item.innerHTML = `<span class="status-tag" style="background:var(--accent); color:black;">받은 신청</span><div><b>${m.fromBtag}</b>: "${m.message}"</div><button class="btn-main" style="margin-top:10px;" onclick="acceptMatch('${ds.id}')">수락하기</button>`; 
+                            item.innerHTML = `<span class="status-tag" style="background:var(--accent); color:black;">받은 신청</span><div><b>${m.fromBtag}</b>님의 신청: "${m.message}"</div><button class="btn-main" style="margin-top:10px;" onclick="acceptMatch('${ds.id}')">수락하기</button>`; 
                         } else if(m.status === 'accepted') { 
-                            item.innerHTML = `<span class="status-tag" style="background:var(--sup); color:black;">매칭 완료</span><div><b>${m.fromBtag}</b>님과 연결됨</div><button class="btn-main" style="background:var(--sup); color:black; margin-top:10px;" onclick="givePraise('${ds.id}','${m.fromUid}')">칭찬하기</button>`; 
+                            item.innerHTML = `<span class="status-tag" style="background:var(--sup); color:black;">매칭 완료</span><div><b>${m.fromBtag}</b>님과 매칭됨</div><button class="btn-main" style="background:var(--sup); color:black; margin-top:10px;" onclick="givePraise('${ds.id}','${m.fromUid}')">칭찬하기</button>`; 
                         }
                     } else { // [보낸 신청]
                         const isAcc = m.status === 'accepted';
-                        item.innerHTML = `<span class="status-tag" style="background:${isAcc ? 'var(--sup)' : '#555'}; color:black;">${isAcc ? '수락됨!' : '대기중'}</span><div><b>${m.toBtag}</b>님에게 보낸 신청</div><div style="font-size:12px; color:#888;">${isAcc ? '상대방이 수락했습니다!' : '상대방의 수락을 기다리고 있습니다.'}</div>`;
+                        item.innerHTML = `<span class="status-tag" style="background:${isAcc ? 'var(--sup)' : '#555'}; color:black;">${isAcc ? '수락됨!' : '대기중'}</span><div><b>${m.toBtag}</b>님에게 보낸 신청</div><div style="font-size:12px; color:#888;">${isAcc ? '상대방이 수락했습니다!' : '확인 대기 중...'}</div>`;
                     }
                     list.appendChild(item);
                 });
@@ -266,7 +261,6 @@
         }
     });
 
-    // 파티 찾기 리스트 렌더링
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
         const container = document.getElementById('party-list'); container.innerHTML = '';
         const myUid = auth.currentUser ? auth.currentUser.uid : null;
