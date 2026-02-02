@@ -125,6 +125,7 @@
 
         if (user) {
             authUI.innerHTML = `
+            <div style="font-size:10px; color:yellow; margin-bottom:5px;">UID: ${user.uid}</div>
                 <span style="font-size:12px; color:#ccc;">${user.email.split('@')[0]}님</span>
                 <button id="btn-logout" class="btn-auth" style="background:#555; color:white;">로그아웃</button>
             `;
