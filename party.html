@@ -15,205 +15,26 @@
         .auth-section { display: flex; align-items: center; gap: 10px; }
         .user-name { font-size: 13px; color: #ccc; }
         .btn-auth { background: #333; color: white; border: 1px solid #444; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .btn-auth:hover { background: #444; }
 
         .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
         .post-form { background: #222; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
         input, select, textarea { background: #333; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
         .btn-submit { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
-        .btn-submit:disabled { background: #555; cursor: not-allowed; }
 
         .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .filter-btn { background: #333; border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
         .filter-btn.active { background: white; color: black; font-weight: bold; }
 
         .party-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .party-card { background: #222; border-radius: 12px; padding: 20px; border-left: 6px solid #555; position: relative; transition: 0.3s; animation: fadeIn 0.4s ease; }
+        .party-card { background: #222; border-radius: 12px; padding: 20px; border-left: 6px solid #555; position: relative; transition: 0.3s; }
         .party-card.tank { border-left-color: var(--tank); }
         .party-card.dps { border-left-color: var(--dps); }
         .party-card.sup { border-left-color: var(--sup); }
+        
+        /* 삭제 버튼은 기본적으로 숨김 */
         .delete-btn { position: absolute; top: 15px; right: 15px; color: #666; cursor: pointer; font-size: 18px; display: none; }
+        /* 내 글이거나 관리자 카드인 경우에만 보이게 함 */
         .party-card.mine .delete-btn, .party-card.admin .delete-btn { display: block; }
-        .delete-btn:hover { color: #ff4444; }
-        .tag { font-size: 12px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin-right: 5px; }
-        .btag { font-weight: bold; color: var(--accent); display: block; margin: 10px 0; font-size: 18px; cursor: pointer; }
-        .desc { font-size: 14px; color: #ccc; margin: 10px 0; min-height: 40px; line-height: 1.5; }
-        .most { font-size: 13px; color: #999; border-top: 1px solid #333; padding-top: 10px; }
-    </style>
-</head>
-<body>
-
-<nav>
-    <div class="nav-links">
-        <a href="index.html">🛡️ 전술 보드</a>
-        <a href="party.html" class="active">⚔️ 파티 매칭</a>
-    </div>
-    <div class="auth-section">
-        <span id="user-display" class="user-name"></span>
-        <button id="btn-login" class="btn-auth">구글 로그인</button>
-    </div>
-</nav>
-
-<div class="container">
-    <h1>⚔️ 실시간 파티 찾기</h1>
-
-    <div class="post-form">
-        <div class="form-grid">
-            <input type="text" id="input-btag" placeholder="배틀태그 (예: 닉네임#1234)">
-            <select id="input-tier">
-                <option value="Bronze">브론즈</option>
-                <option value="Silver">실버</option>
-                <option value="Gold">골드</option>
-                <option value="Platinum">플래티넘</option>
-                <option value="Diamond">다이아몬드</option>
-                <option value="Master">마스터</option>
-                <option value="Grandmaster">그랜드마스터</option>
-            </select>
-            <select id="input-position">
-                <option value="tank">🛡️ 돌격 (Tank)</option>
-                <option value="dps">⚔️ 공격 (DPS)</option>
-                <option value="sup">💉 지원 (Support)</option>
-            </select>
-            <input type="text" id="input-most" placeholder="모스트 캐릭터">
-        </div>
-        <textarea id="input-desc" rows="2" placeholder="간단한 자기소개나 마이크 여부 등을 적어주세요."></textarea>
-        <button class="btn-submit" id="btn-add-party">모집 등록하기</button>
-    </div>
-
-    <div class="filter-bar">
-        <button class="filter-btn active" data-filter="all">전체</button>
-        <button class="filter-btn" data-filter="tank">🛡️ 돌격</button>
-        <button class="filter-btn" data-filter="dps">⚔️ 공격</button>
-        <button class="filter-btn" data-filter="sup">💉 지원</button>
-    </div>
-
-    <div class="party-list" id="party-list"></div>
-</div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw",
-    authDomain: "ow-party-97936.firebaseapp.com",
-    projectId: "ow-party-97936",
-    storageBucket: "ow-party-97936.firebasestorage.app",
-    messagingSenderId: "15782204013",
-    appId: "1:15782204013:web:5c74ef2e603c311fc82564",
-    measurementId: "G-0M4Z5BETW6"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-  const colRef = collection(db, "parties");
-
-  let allParties = [];
-  let currentFilter = 'all';
-  let currentUser = null;
-
-  // ⭐ 관리자 UID (본인 UID를 확인 후 여기에 넣으세요)
-  const ADMIN_UID = "YOUR_CONFIRMED_UID_HERE"; 
-
-  // --- [인증 로직] ---
-  onAuthStateChanged(auth, (user) => {
-    currentUser = user;
-    const loginBtn = document.getElementById('btn-login');
-    const userDisplay = document.getElementById('user-display');
-    
-    if (user) {
-      userDisplay.innerText = `${user.displayName}님`;
-      loginBtn.innerText = "로그아웃";
-      loginBtn.onclick = () => signOut(auth);
-    } else {
-      userDisplay.innerText = "";
-      loginBtn.innerText = "구글 로그인";
-      loginBtn.onclick = () => signInWithPopup(auth, provider);
-    }
-    renderList(); // 로그인 상태에 따라 삭제버튼 가시성 업데이트
-  });
-
-  // --- [글 등록] ---
-  document.getElementById('btn-add-party').onclick = async () => {
-    if (!currentUser) return alert("로그인 후 이용 가능합니다!");
-
-    const btag = document.getElementById('input-btag').value;
-    const desc = document.getElementById('input-desc').value;
-
-    if(!btag.includes('#')) return alert("배틀태그 형식을 확인해주세요!");
-    if(!desc) return alert("내용을 입력해주세요!");
-
-    try {
-      await addDoc(colRef, {
-        btag, 
-        tier: document.getElementById('input-tier').value,
-        pos: document.getElementById('input-position').value,
-        most: document.getElementById('input-most').value,
-        desc,
-        uid: currentUser.uid, // 작성자 ID 저장
-        createdAt: Date.now()
-      });
-      document.getElementById('input-btag').value = '';
-      document.getElementById('input-most').value = '';
-      document.getElementById('input-desc').value = '';
-    } catch (e) {
-      alert("등록 실패! Firestore 규칙을 확인하세요.");
-    }
-  };
-
-  // --- [실시간 목록 감시] ---
-  onSnapshot(query(colRef, orderBy("createdAt", "desc")), (snapshot) => {
-    allParties = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    renderList();
-  });
-
-  function renderList() {
-    const listEl = document.getElementById('party-list');
-    listEl.innerHTML = '';
-    
-    const filtered = currentFilter === 'all' ? allParties : allParties.filter(p => p.pos === currentFilter);
-
-    filtered.forEach(p => {
-      const isMine = currentUser && p.uid === currentUser.uid;
-      const isAdmin = currentUser && currentUser.uid === ADMIN_UID;
-      
-      const card = document.createElement('div');
-      card.className = `party-card ${p.pos} ${isMine ? 'mine' : ''} ${isAdmin ? 'admin' : ''}`;
-      card.innerHTML = `
-        <div class="delete-btn" onclick="deletePost('${p.id}')">✕</div>
-        <div><span class="tag">${p.tier}</span><span class="tag">${p.pos.toUpperCase()}</span></div>
-        <div class="btag" onclick="copyText('${p.btag}')">${p.btag}</div>
-        <div class="desc">${p.desc}</div>
-        <div class="most"><b>모스트:</b> ${p.most || '없음'}</div>
-      `;
-      listEl.appendChild(card);
-    });
-  }
-
-  // --- [전역 함수] ---
-  window.deletePost = async (id) => {
-    if(confirm("이 모집 글을 삭제할까요?")) {
-      await deleteDoc(doc(db, "parties", id));
-    }
-  };
-
-  window.copyText = (text) => {
-    navigator.clipboard.writeText(text);
-    alert("복사됨: " + text);
-  };
-
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentFilter = btn.dataset.filter;
-      renderList();
-    };
-  });
-</script>
-</body>
-</html>
+        
+        .tag { font-size:
