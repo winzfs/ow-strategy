@@ -3,24 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>오버워치 전략 보드 Pro - 맵 선택 추가</title>
+    <title>오버워치 전략 보드 Pro - 스크롤 최적화</title>
     <style>
         :root { --sidebar-width: 240px; --accent-color: #ff9c00; --ally-color: #00a2ff; --enemy-color: #ff3c3c; }
         body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: 'Pretendard', sans-serif; background: #111; color: white; touch-action: none; }
         
-        #sidebar { width: var(--sidebar-width); background: #222; overflow-y: auto; padding: 10px; border-right: 1px solid #444; z-index: 100; transition: transform 0.3s ease; }
+        /* 사이드바 스크롤 최적화 */
+        #sidebar { 
+            width: var(--sidebar-width); 
+            background: #222; 
+            overflow-y: auto; /* 세로 스크롤 허용 */
+            -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
+            padding: 10px; 
+            border-right: 1px solid #444; 
+            z-index: 100; 
+            transition: transform 0.3s ease; 
+        }
         #sidebar.hidden { transform: translateX(-100%); position: absolute; height: 100%; }
         
-        /* 맵 선택 드롭다운 스타일 */
-        .map-selector-wrapper { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #444; }
-        .map-select { width: 100%; padding: 10px; background: #333; color: white; border: 1px solid var(--accent-color); border-radius: 4px; font-weight: bold; cursor: pointer; }
+        /* 도구함(컨트롤) 스크롤 최적화 */
+        .controls { 
+            position: absolute; 
+            right: 10px; 
+            top: 10px; 
+            bottom: 10px; /* 하단 여백 설정 */
+            z-index: 101; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+            overflow-y: auto; /* 도구함 내부 스크롤 */
+            padding-right: 5px; /* 스크롤바 겹침 방지 */
+            -webkit-overflow-scrolling: touch;
+            pointer-events: none; /* 컨테이너 자체는 클릭 통과 */
+        }
+        .tool-group { 
+            background: rgba(0,0,0,0.85); 
+            padding: 6px; 
+            border-radius: 8px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px; 
+            border: 1px solid #555; 
+            pointer-events: auto; /* 버튼은 클릭 가능 */
+        }
 
-        .controls { position: absolute; right: 10px; top: 10px; z-index: 101; display: flex; flex-direction: column; gap: 6px; }
-        .tool-group { background: rgba(0,0,0,0.85); padding: 6px; border-radius: 8px; display: flex; flex-direction: column; gap: 5px; border: 1px solid #555; }
-        .tool-btn { background: #333; color: white; border: 1px solid #555; padding: 12px 10px; cursor: pointer; border-radius: 6px; font-weight: bold; font-size: 13px; -webkit-tap-highlight-color: transparent; }
-        .tool-btn.active { border-color: white; background: #555; }
-        .btn-ally.active { background: var(--ally-color) !important; }
-        .btn-enemy.active { background: var(--enemy-color) !important; }
+        .map-selector-wrapper { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #444; }
+        .map-select { width: 100%; padding: 10px; background: #333; color: white; border: 1px solid var(--accent-color); border-radius: 4px; font-weight: bold; }
 
         .hero-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .hero-item { aspect-ratio: 1/1; background: #333; border-radius: 4px; overflow: hidden; border: 1px solid #444; cursor: pointer; }
@@ -43,6 +71,12 @@
         #temp-canvas { z-index: 21; }
 
         #toggle-btn { position: absolute; left: 10px; top: 10px; z-index: 101; padding: 12px 15px; background: var(--accent-color); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: black; }
+        
+        /* 스크롤바 커스텀 (사이드바/도구함) */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
     </style>
 </head>
 <body>
@@ -62,6 +96,9 @@
     <div class="tool-group">
         <button class="tool-btn" id="btn-undo">↩️ 취소</button>
         <button class="tool-btn" id="btn-clear" style="color:#ff8888;">🗑️ 초기화</button>
+    </div>
+    <div class="tool-group" style="border: none; background: transparent; color: #666; font-size: 10px; text-align: center;">
+        스크롤 가능 ↕
     </div>
 </div>
 
@@ -93,6 +130,7 @@
 </div>
 
 <script>
+    // [이전 스크립트 로직 유지 - 이벤트 전파 방지 및 터치 스크롤 허용 설정 포함]
     const viewport = document.getElementById('viewport');
     const mapContainer = document.getElementById('map-container');
     const heroLayer = document.getElementById('hero-layer');
@@ -109,16 +147,12 @@
     let currentTool = 'move', currentTeamColor = '#00a2ff';
     let startPoint = { x: 0, y: 0 }, mapStart = { x: 0, y: 0 }, heroStartOff = { x: 0, y: 0 };
 
-    // --- 맵 선택 기능 ---
     mapSelect.addEventListener('change', (e) => {
-        if(confirm('맵을 변경하면 현재 그려진 내용이 초기화됩니다. 계속하시겠습니까?')) {
+        if(confirm('내용이 초기화됩니다. 변경할까요?')) {
             mapImg.src = e.target.value;
-            // 초기화
             ctx.clearRect(0,0,canvas.width,canvas.height);
             heroLayer.innerHTML = '';
             history = [];
-        } else {
-            // 취소 시 이전 값으로 복구 (생략 가능)
         }
     });
 
@@ -133,14 +167,16 @@
 
     function updateTransform() { mapContainer.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`; }
     function saveState() { history.push(canvas.toDataURL()); if (history.length > 20) history.shift(); }
-
     function getLocalPos(clientX, clientY) {
         const rect = mapContainer.getBoundingClientRect();
         return { x: (clientX - rect.left) / scale, y: (clientY - rect.top) / scale };
     }
 
-    // --- 이벤트 핸들러 (PC/모바일 통합) ---
+    // --- 마우스/터치 통합 이벤트 ---
     function onStart(e) {
+        // 사이드바나 도구함 스크롤 시 맵 조작 방지
+        if (e.target.closest('#sidebar') || e.target.closest('.controls')) return;
+
         const isTouch = e.type.includes('touch');
         if (isTouch && e.touches.length === 2) {
             state.mode = 'zoom';
@@ -148,9 +184,11 @@
             state.initialScale = scale;
             return;
         }
+
         const point = isTouch ? e.touches[0] : e;
         const heroEl = e.target.closest('.placed-hero');
         const coords = getLocalPos(point.clientX, point.clientY);
+
         state.isDown = true;
         if (heroEl) {
             state.mode = 'hero'; activeHero = heroEl;
@@ -215,8 +253,13 @@
     viewport.addEventListener('mousedown', onStart);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onEnd);
-    viewport.addEventListener('touchstart', (e) => { if(e.touches.length < 3) onStart(e); }, {passive: false});
-    window.addEventListener('touchmove', (e) => { e.preventDefault(); onMove(e); }, {passive: false});
+    viewport.addEventListener('touchstart', (e) => { 
+        if(e.target.closest('#sidebar') || e.target.closest('.controls')) return; // UI 영역은 기본 터치 허용
+        if(e.touches.length < 3) { e.preventDefault(); onStart(e); } 
+    }, {passive: false});
+    window.addEventListener('touchmove', (e) => { 
+        if(state.isDown || state.mode === 'zoom') { e.preventDefault(); onMove(e); }
+    }, {passive: false});
     window.addEventListener('touchend', onEnd);
 
     viewport.addEventListener('wheel', (e) => {
@@ -241,7 +284,7 @@
         t.stroke();
     }
 
-    // --- UI 버튼 제어 ---
+    // --- UI 버튼 및 영웅 리스트 (기존과 동일) ---
     const toolBtns = { 'btn-move':'move', 'tool-pen':'pen', 'tool-arrow':'arrow' };
     Object.keys(toolBtns).forEach(id => {
         document.getElementById(id).onclick = () => {
@@ -261,9 +304,8 @@
         const img = new Image(); img.src = history[history.length - 1];
         img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
     };
-    document.getElementById('btn-clear').onclick = () => { if(confirm('모든 내용을 초기화할까요?')) { ctx.clearRect(0,0,canvas.width,canvas.height); heroLayer.innerHTML=''; saveState(); } };
+    document.getElementById('btn-clear').onclick = () => { if(confirm('전체 삭제?')) { ctx.clearRect(0,0,canvas.width,canvas.height); heroLayer.innerHTML=''; saveState(); } };
 
-    // --- 영웅 리스트 생성 ---
     const heroes = { "TANK": ["dva", "doomfist", "ramattra", "reinhardt", "wrecking-ball", "roadhog", "mauga", "sigma", "winston", "zarya", "junker-queen"], "DPS": ["genji", "reaper", "mei", "bastion", "sojourn", "soldier-76", "sombra", "symmetra", "ashe", "echo", "widowmaker", "junkrat", "cassidy", "torbjorn", "tracer", "pharah", "venture"], "SUP": ["lifeweaver", "lucio", "baptiste", "brigitte", "ana", "illari", "zenyatta", "kiriko", "moira"] };
     Object.entries(heroes).forEach(([role, list]) => {
         const cat = document.createElement('div');
@@ -274,7 +316,6 @@
             item.className = 'hero-item';
             item.innerHTML = `<img src="https://d1u1mce87gyfbn.cloudfront.net/hero/${id}/icon-portrait.png">`;
             item.onclick = (e) => {
-                e.stopPropagation();
                 const div = document.createElement('div');
                 div.className = 'placed-hero';
                 div.style.borderColor = currentTeamColor;
