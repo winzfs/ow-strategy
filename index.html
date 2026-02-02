@@ -3,63 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>오버워치 전략 보드 Pro - 최종 수정본</title>
+    <title>오버워치 전략 보드 Pro - 최종 수정</title>
     <style>
         :root { --sidebar-width: 260px; --accent-color: #ff9c00; }
         body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: sans-serif; background: #1a1a1a; color: white; touch-action: none; }
         
-        /* 사이드바 스타일 */
-        #sidebar { 
-            width: var(--sidebar-width); background: #2d2d2d; overflow-y: auto; padding: 10px; 
-            border-right: 2px solid #444; transition: transform 0.3s ease; z-index: 100;
-        }
+        #sidebar { width: var(--sidebar-width); background: #2d2d2d; overflow-y: auto; padding: 10px; border-right: 2px solid #444; transition: transform 0.3s ease; z-index: 100; }
         #sidebar.hidden { transform: translateX(-100%); position: absolute; height: 100%; }
         
-        /* 상단 조작 버튼 */
-        #toggle-btn {
-            position: absolute; left: 10px; top: 10px; z-index: 101;
-            background: var(--accent-color); border: none; color: black; font-weight: bold;
-            padding: 8px 12px; cursor: pointer; border-radius: 4px;
-        }
-        .controls {
-            position: absolute; right: 10px; top: 10px; z-index: 101;
-            display: flex; flex-direction: column; gap: 5px;
-        }
-        .tool-btn {
-            background: #333; color: white; border: 1px solid #666;
-            padding: 10px; cursor: pointer; border-radius: 4px; font-size: 12px;
-        }
+        #toggle-btn { position: absolute; left: 10px; top: 10px; z-index: 101; background: var(--accent-color); border: none; color: black; font-weight: bold; padding: 8px 12px; cursor: pointer; border-radius: 4px; }
+        .controls { position: absolute; right: 10px; top: 10px; z-index: 101; display: flex; flex-direction: column; gap: 5px; }
+        .tool-btn { background: #333; color: white; border: 1px solid #666; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 12px; }
         .tool-btn.active { background: var(--accent-color); color: black; border-color: white; }
         .history-controls { display: flex; gap: 5px; margin-top: 5px; }
         .history-btn { flex: 1; background: #555; border: none; color: white; padding: 5px; cursor: pointer; border-radius: 4px; font-size: 10px; }
 
-        /* 영웅 목록 스타일 */
         .category h3 { border-bottom: 1px solid #666; padding-bottom: 5px; color: var(--accent-color); font-size: 14px; margin-top: 20px; }
         .hero-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-        .hero-item { 
-            aspect-ratio: 1/1; background: #444; border-radius: 4px; overflow: hidden;
-            cursor: pointer; border: 2px solid transparent; position: relative;
-        }
-        .hero-item:hover { border-color: var(--accent-color); }
+        .hero-item { aspect-ratio: 1/1; background: #444; border-radius: 4px; overflow: hidden; cursor: pointer; border: 2px solid transparent; position: relative; }
         .hero-item img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         .hero-item span { position: absolute; bottom: 0; width: 100%; font-size: 8px; background: rgba(0,0,0,0.6); text-align: center; }
 
-        /* 맵 뷰포트 */
         #viewport { flex-grow: 1; position: relative; overflow: hidden; background: #000; }
-        #map-container { position: absolute; transform-origin: 0 0; will-change: transform; }
+        #map-container { position: absolute; transform-origin: 0 0; }
         #map-image { display: block; user-select: none; -webkit-user-drag: none; max-width: none; }
         
-        /* 캔버스 레이어 */
-        #drawing-canvas { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; }
-        #temp-canvas { position: absolute; top: 0; left: 0; z-index: 6; pointer-events: none; }
-        #viewport.drawing-mode #drawing-canvas { pointer-events: auto; cursor: crosshair; }
+        /* 캔버스가 겹치지 않도록 설정 */
+        canvas { position: absolute; top: 0; left: 0; }
+        #drawing-canvas { z-index: 5; pointer-events: none; }
+        #temp-canvas { z-index: 6; pointer-events: none; }
+        
+        /* 그리기 모드일 때만 캔버스가 이벤트를 받음 */
+        #viewport.drawing-mode #temp-canvas { pointer-events: auto; cursor: crosshair; }
 
-        /* 배치된 영웅 아이콘 */
-        .placed-hero { 
-            position: absolute; width: 50px; height: 50px; cursor: move; z-index: 10; 
-            transform: translate(-50%, -50%); border: 3px solid var(--accent-color); 
-            border-radius: 50%; background: #333; overflow: hidden; touch-action: none;
-        }
+        .placed-hero { position: absolute; width: 50px; height: 50px; cursor: move; z-index: 10; transform: translate(-50%, -50%); border: 3px solid var(--accent-color); border-radius: 50%; background: #333; overflow: hidden; touch-action: none; }
         .placed-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         #viewport.drawing-mode .placed-hero { pointer-events: none; }
     </style>
@@ -86,35 +63,13 @@
 
 <div id="viewport">
     <div id="map-container">
+        <img id="map-image" src="Lijiang_Tower_Top_Down_View.jpg">
         <canvas id="drawing-canvas"></canvas>
         <canvas id="temp-canvas"></canvas>
-        <img id="map-image" src="Lijiang_Tower_Top_Down_View.jpg" alt="Lijiang Tower Map">
     </div>
 </div>
 
 <script>
-    const heroes = {
-        "돌격 (TANK)": [
-            {id: "dva", name: "디바"}, {id: "doomfist", name: "둠피"}, {id: "ramattra", name: "라맛"}, 
-            {id: "reinhardt", name: "라인"}, {id: "wrecking-ball", name: "레킹"}, {id: "roadhog", name: "호그"}, 
-            {id: "mauga", name: "마우가"}, {id: "sigma", name: "시그마"}, {id: "winston", name: "윈스턴"}, 
-            {id: "zarya", name: "자리야"}, {id: "junker-queen", name: "정커퀸"}
-        ],
-        "공격 (DPS)": [
-            {id: "genji", name: "겐지"}, {id: "reaper", name: "리퍼"}, {id: "mei", name: "메이"}, 
-            {id: "bastion", name: "바스"}, {id: "sojourn", name: "소전"}, {id: "soldier-76", name: "솔저"}, 
-            {id: "sombra", name: "솜브라"}, {id: "symmetra", name: "시메"}, {id: "ashe", name: "애쉬"}, 
-            {id: "echo", name: "에코"}, {id: "widowmaker", name: "위도우"}, {id: "junkrat", name: "정랫"}, 
-            {id: "cassidy", name: "캐시디"}, {id: "torbjorn", name: "토브"}, {id: "tracer", name: "트레"}, 
-            {id: "pharah", name: "파라"}, {id: "venture", name: "벤처"}
-        ],
-        "지원 (SUP)": [
-            {id: "lifeweaver", name: "라위"}, {id: "lucio", name: "루시우"}, {id: "baptiste", name: "바티"}, 
-            {id: "brigitte", name: "브리기"}, {id: "ana", name: "아나"}, {id: "illari", name: "일리리"}, 
-            {id: "zenyatta", name: "젠야타"}, {id: "kiriko", name: "키리코"}, {id: "moira", name: "모이라"}
-        ]
-    };
-
     const viewport = document.getElementById('viewport');
     const mapContainer = document.getElementById('map-container');
     const canvas = document.getElementById('drawing-canvas');
@@ -127,9 +82,7 @@
     let isDragging = false, startX, startY;
     let currentTool = 'move';
     let isDrawing = false, drawStartPos = null;
-    
-    let history = [];
-    let redoStack = [];
+    let history = [], redoStack = [];
 
     mapImg.onload = () => {
         canvas.width = tempCanvas.width = mapImg.naturalWidth;
@@ -149,10 +102,7 @@
         redoStack.push(history.pop());
         const img = new Image();
         img.src = history[history.length - 1];
-        img.onload = () => { 
-            ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            ctx.drawImage(img, 0, 0); 
-        };
+        img.onload = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0); };
     }
 
     function redo() {
@@ -161,11 +111,119 @@
         history.push(state);
         const img = new Image();
         img.src = state;
-        img.onload = () => { 
-            ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            ctx.drawImage(img, 0, 0); 
-        };
+        img.onload = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0); };
     }
+
+    // 도구 전환
+    document.querySelectorAll('.tool-btn, .history-btn').forEach(btn => {
+        btn.onclick = () => {
+            if (btn.id === 'btn-clear') { if(confirm('모든 그림을 지울까요?')) { ctx.clearRect(0, 0, canvas.width, canvas.height); saveState(); } return; }
+            if (btn.id === 'btn-undo') { undo(); return; }
+            if (btn.id === 'btn-redo') { redo(); return; }
+            
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentTool = btn.id.replace('btn-', '');
+            viewport.className = currentTool === 'move' ? '' : 'drawing-mode';
+        };
+    });
+
+    const getPos = (e) => {
+        const rect = viewport.getBoundingClientRect();
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: (cx - rect.left - translateX) / scale, y: (cy - rect.top - translateY) / scale };
+    };
+
+    // 실시간 그리기 핵심 로직
+    const handleStart = (e) => {
+        if(currentTool === 'move') return;
+        isDrawing = true;
+        drawStartPos = getPos(e);
+        if(currentTool === 'pen') {
+            ctx.beginPath();
+            ctx.moveTo(drawStartPos.x, drawStartPos.y);
+            ctx.strokeStyle = '#ff9c00';
+            ctx.lineWidth = 6 / scale;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+    };
+
+    const handleMove = (e) => {
+        if (!isDrawing) return;
+        const p = getPos(e);
+        if (currentTool === 'pen') {
+            ctx.lineTo(p.x, p.y);
+            ctx.stroke();
+        } else if (currentTool === 'arrow') {
+            tctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+            drawArrow(tctx, drawStartPos.x, drawStartPos.y, p.x, p.y);
+        }
+    };
+
+    const handleEnd = (e) => {
+        if (!isDrawing) return;
+        const p = getPos(e);
+        if (currentTool === 'arrow') {
+            tctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+            drawArrow(ctx, drawStartPos.x, drawStartPos.y, p.x, p.y);
+        }
+        isDrawing = false;
+        saveState();
+    };
+
+    function drawArrow(targetCtx, fx, fy, tx, ty) {
+        const headlen = 25 / scale;
+        const angle = Math.atan2(ty - fy, tx - fx);
+        targetCtx.beginPath();
+        targetCtx.strokeStyle = '#ff9c00';
+        targetCtx.lineWidth = 6 / scale;
+        targetCtx.lineCap = 'round';
+        targetCtx.lineJoin = 'round';
+        targetCtx.moveTo(fx, fy);
+        targetCtx.lineTo(tx, ty);
+        targetCtx.lineTo(tx - headlen * Math.cos(angle - Math.PI / 6), ty - headlen * Math.sin(angle - Math.PI / 6));
+        targetCtx.moveTo(tx, ty);
+        targetCtx.lineTo(tx - headlen * Math.cos(angle + Math.PI / 6), ty - headlen * Math.sin(angle + Math.PI / 6));
+        targetCtx.stroke();
+    }
+
+    // 터치 및 마우스 이벤트 바인딩 (tempCanvas가 최상단 레이어이므로 여기서 수신)
+    tempCanvas.onmousedown = handleStart;
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+
+    tempCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, {passive: false});
+    window.addEventListener('touchmove', (e) => { if(isDrawing) { e.preventDefault(); handleMove(e); } }, {passive: false});
+    window.addEventListener('touchend', handleEnd);
+
+    // 맵 이동 및 확대 (✋ 모드 전용)
+    viewport.onmousedown = (e) => { if(currentTool === 'move') { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; } };
+    window.addEventListener('mousemove', (e) => { if(isDragging && currentTool === 'move') { translateX = e.clientX - startX; translateY = e.clientY - startY; update(); } });
+    window.addEventListener('mouseup', () => isDragging = false);
+
+    viewport.onwheel = (e) => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 1.1 : 0.9;
+        const rect = viewport.getBoundingClientRect();
+        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        const gx = (mx - translateX) / scale, gy = (my - translateY) / scale;
+        scale = Math.min(Math.max(0.1, scale * delta), 4);
+        translateX = mx - gx * scale; translateY = my - gy * scale;
+        update();
+    };
+
+    function update() { 
+        mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`; 
+    }
+
+    // 영웅 데이터 및 사이드바 로직 (동일하게 유지)
+    const heroes = {
+        "돌격 (TANK)": [{id: "dva", name: "디바"}, {id: "doomfist", name: "둠피"}, {id: "ramattra", name: "라맛"}, {id: "reinhardt", name: "라인"}, {id: "wrecking-ball", name: "레킹"}, {id: "roadhog", name: "호그"}, {id: "mauga", name: "마우가"}, {id: "sigma", name: "시그마"}, {id: "winston", name: "윈스턴"}, {id: "zarya", name: "자리야"}, {id: "junker-queen", name: "정커퀸"}],
+        "공격 (DPS)": [{id: "genji", name: "겐지"}, {id: "reaper", name: "리퍼"}, {id: "mei", name: "메이"}, {id: "bastion", name: "바스"}, {id: "sojourn", name: "소전"}, {id: "soldier-76", name: "솔저"}, {id: "sombra", name: "솜브라"}, {id: "symmetra", name: "시메"}, {id: "ashe", name: "애쉬"}, {id: "echo", name: "에코"}, {id: "widowmaker", name: "위도우"}, {id: "junkrat", name: "정랫"}, {id: "cassidy", name: "캐시디"}, {id: "torbjorn", name: "토브"}, {id: "tracer", name: "트레"}, {id: "pharah", name: "파라"}, {id: "venture", name: "벤처"}],
+        "지원 (SUP)": [{id: "lifeweaver", name: "라위"}, {id: "lucio", name: "루시우"}, {id: "baptiste", name: "바티"}, {id: "brigitte", name: "브리기"}, {id: "ana", name: "아나"}, {id: "illari", name: "일리리"}, {id: "zenyatta", name: "젠야타"}, {id: "kiriko", name: "키리코"}, {id: "moira", name: "모이라"}]
+    };
 
     const categoryContainer = document.getElementById('hero-categories');
     Object.entries(heroes).forEach(([role, list]) => {
@@ -193,18 +251,15 @@
         div.className = 'placed-hero';
         div.style.left = `${x}px`; div.style.top = `${y}px`;
         div.innerHTML = `<img src="https://d1u1mce87gyfbn.cloudfront.net/hero/${hero.id}/icon-portrait.png">`;
-        
         let moveStart = false;
         const start = (e) => { e.stopPropagation(); moveStart = true; };
         div.onmousedown = start; div.ontouchstart = start;
-
         const move = (ex, ey) => {
             if (!moveStart) return;
             const rect = viewport.getBoundingClientRect();
             div.style.left = `${(ex - rect.left - translateX) / scale}px`;
             div.style.top = `${(ey - rect.top - translateY) / scale}px`;
         };
-
         window.addEventListener('mousemove', (e) => move(e.clientX, e.clientY));
         window.addEventListener('touchmove', (e) => move(e.touches[0].clientX, e.touches[0].clientY));
         window.addEventListener('mouseup', () => moveStart = false);
@@ -212,137 +267,8 @@
         div.oncontextmenu = (e) => { e.preventDefault(); div.remove(); };
         mapContainer.appendChild(div);
     }
-
-    document.querySelectorAll('.tool-btn, .history-btn').forEach(btn => {
-        btn.onclick = () => {
-            if (btn.id === 'btn-clear') { 
-                if(confirm('모든 그림을 지울까요?')) { 
-                    ctx.clearRect(0, 0, canvas.width, canvas.height); 
-                    saveState(); 
-                } 
-                return; 
-            }
-            if (btn.id === 'btn-undo') { undo(); return; }
-            if (btn.id === 'btn-redo') { redo(); return; }
-            
-            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentTool = btn.id.replace('btn-', '');
-            viewport.className = currentTool === 'move' ? '' : 'drawing-mode';
-        };
-    });
-
-    const getPos = (e) => {
-        const rect = viewport.getBoundingClientRect();
-        const cx = e.touches ? e.touches[0].clientX : e.clientX;
-        const cy = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: (cx - rect.left - translateX) / scale, y: (cy - rect.top - translateY) / scale };
-    };
-
-    const handleStart = (e) => {
-        if(currentTool === 'move') return;
-        isDrawing = true;
-        drawStartPos = getPos(e);
-        if(currentTool === 'pen') {
-            ctx.beginPath();
-            ctx.moveTo(drawStartPos.x, drawStartPos.y);
-            ctx.strokeStyle = '#ff9c00';
-            ctx.lineWidth = 6 / scale;
-            ctx.lineJoin = ctx.lineCap = 'round';
-        }
-    };
-
-    const handleMove = (e) => {
-        if (!isDrawing) return;
-        const p = getPos(e);
-        if (currentTool === 'pen') {
-            ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-        } else if (currentTool === 'arrow') {
-            tctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-            drawArrow(tctx, drawStartPos.x, drawStartPos.y, p.x, p.y);
-        }
-    };
-
-    const handleEnd = (e) => {
-        if (!isDrawing) return;
-        const p = getPos(e);
-        if (currentTool === 'arrow') {
-            tctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-            // 화살표를 실제 캔버스에 고정
-            drawArrow(ctx, drawStartPos.x, drawStartPos.y, p.x, p.y);
-        }
-        isDrawing = false;
-        drawStartPos = null; // 초기화하여 다음 그리기 대기
-        saveState();
-    };
-
-    function drawArrow(targetCtx, fx, fy, tx, ty) {
-        const len = 25 / scale;
-        const ang = Math.atan2(ty - fy, tx - fx);
-        targetCtx.beginPath();
-        targetCtx.strokeStyle = '#ff9c00';
-        targetCtx.lineWidth = 6 / scale;
-        targetCtx.lineJoin = targetCtx.lineCap = 'round';
-        targetCtx.moveTo(fx, fy); 
-        targetCtx.lineTo(tx, ty);
-        targetCtx.lineTo(tx - len * Math.cos(ang - Math.PI / 6), ty - len * Math.sin(ang - Math.PI / 6));
-        targetCtx.moveTo(tx, ty);
-        targetCtx.lineTo(tx - len * Math.cos(ang + Math.PI / 6), ty - len * Math.sin(ang + Math.PI / 6));
-        targetCtx.stroke();
-    }
-
-    canvas.onmousedown = handleStart;
-    window.onmousemove = handleMove;
-    window.onmouseup = handleEnd;
     
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, {passive: false});
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, {passive: false});
-    canvas.addEventListener('touchend', (e) => { e.preventDefault(); handleEnd(e); }, {passive: false});
-
     document.getElementById('toggle-btn').onclick = () => document.getElementById('sidebar').classList.toggle('hidden');
-    
-    viewport.onwheel = (e) => {
-        e.preventDefault();
-        const delta = e.deltaY < 0 ? 1.1 : 0.9;
-        const rect = viewport.getBoundingClientRect();
-        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-        const gx = (mx - translateX) / scale, gy = (my - translateY) / scale;
-        scale = Math.min(Math.max(0.1, scale * delta), 4);
-        translateX = mx - gx * scale; translateY = my - gy * scale;
-        update();
-    };
-
-    viewport.onmousedown = (e) => { 
-        if(currentTool === 'move') { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; } 
-    };
-
-    let lastDist = 0;
-    viewport.ontouchstart = (e) => {
-        if (e.touches.length === 2) {
-            lastDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-        } else if (currentTool === 'move') { 
-            isDragging = true; startX = e.touches[0].clientX - translateX; startY = e.touches[0].clientY - translateY; 
-        }
-    };
-
-    viewport.ontouchmove = (e) => {
-        if (e.touches.length === 2) {
-            const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-            scale = Math.min(Math.max(0.1, scale * (dist / lastDist)), 4);
-            lastDist = dist; update();
-        } else if (isDragging) {
-            translateX = e.touches[0].clientX - startX; translateY = e.touches[0].clientY - startY; update();
-        }
-    };
-
-    window.addEventListener('mousemove', (e) => { if(isDragging) { translateX = e.clientX - startX; translateY = e.clientY - startY; update(); } });
-    window.addEventListener('mouseup', () => isDragging = false);
-    window.addEventListener('touchend', () => { isDragging = false; lastDist = 0; });
-
-    function update() { 
-        mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`; 
-    }
 </script>
 </body>
 </html>
