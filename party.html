@@ -7,37 +7,32 @@
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; }
         body { background: #111; color: white; font-family: 'Pretendard', sans-serif; margin: 0; }
-        
         nav { background: #000; padding: 15px 20px; display: flex; gap: 20px; border-bottom: 2px solid var(--accent); }
         nav a { color: white; text-decoration: none; font-weight: bold; opacity: 0.7; }
         nav a.active { opacity: 1; color: var(--accent); }
-
         .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
-        
-        /* 입력 폼 */
         .post-form { background: #222; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        input, select, textarea { background: #333; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; }
-        .btn-submit { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
-
-        /* 필터 바 */
+        input, select, textarea { background: #333; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--accent); }
+        .btn-submit { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-submit:hover { background: #e68a00; }
         .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .filter-btn { background: #333; border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
         .filter-btn.active { background: white; color: black; font-weight: bold; }
-
-        /* 파티 카드 목록 */
         .party-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .party-card { background: #222; border-radius: 12px; padding: 20px; border-left: 6px solid #555; position: relative; transition: 0.3s; }
+        .party-card { background: #222; border-radius: 12px; padding: 20px; border-left: 6px solid #555; position: relative; transition: 0.3s; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .party-card:hover { transform: translateY(-3px); background: #282828; }
         .party-card.tank { border-left-color: var(--tank); }
         .party-card.dps { border-left-color: var(--dps); }
         .party-card.sup { border-left-color: var(--sup); }
-
+        .delete-btn { position: absolute; top: 15px; right: 15px; color: #666; cursor: pointer; font-size: 18px; }
+        .delete-btn:hover { color: #ff4444; }
         .tag { font-size: 12px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin-right: 5px; }
         .btag { font-weight: bold; color: var(--accent); display: block; margin: 10px 0; font-size: 18px; cursor: pointer; }
-        .btag:hover::after { content: ' (클릭 시 복사)'; font-size: 12px; color: #aaa; }
-        .desc { font-size: 14px; color: #ccc; margin: 10px 0; min-height: 40px; }
-        .most { font-size: 13px; color: #999; }
+        .desc { font-size: 14px; color: #ccc; margin: 10px 0; min-height: 40px; line-height: 1.5; }
+        .most { font-size: 13px; color: #999; border-top: 1px solid #333; padding-top: 10px; }
     </style>
 </head>
 <body>
@@ -48,11 +43,11 @@
 </nav>
 
 <div class="container">
-    <h1>⚔️ 파티 찾기</h1>
+    <h1>⚔️ 실시간 파티 찾기</h1>
 
     <div class="post-form">
         <div class="form-grid">
-            <input type="text" id="input-btag" placeholder="배틀태그 (예: 겐지#1234)">
+            <input type="text" id="input-btag" placeholder="배틀태그 (예: 닉네임#1234)">
             <select id="input-tier">
                 <option value="Bronze">브론즈</option>
                 <option value="Silver">실버</option>
@@ -63,34 +58,31 @@
                 <option value="Grandmaster">그랜드마스터</option>
             </select>
             <select id="input-position">
-                <option value="tank">돌격 (Tank)</option>
-                <option value="dps">공격 (DPS)</option>
-                <option value="sup">지원 (Support)</option>
+                <option value="tank">🛡️ 돌격 (Tank)</option>
+                <option value="dps">⚔️ 공격 (DPS)</option>
+                <option value="sup">💉 지원 (Support)</option>
             </select>
-            <input type="text" id="input-most" placeholder="모스트 캐릭터 (예: 트레이서, 겐지)">
+            <input type="text" id="input-most" placeholder="모스트 캐릭터">
         </div>
-        <textarea id="input-desc" rows="2" placeholder="간단한 자기소개나 찾는 파티 정보를 입력하세요."></textarea>
-        <button class="btn-submit" onclick="addParty()">모집 등록하기</button>
+        <textarea id="input-desc" rows="2" placeholder="간단한 자기소개나 마이크 여부 등을 적어주세요."></textarea>
+        <button class="btn-submit" id="btn-add-party">모집 등록하기</button>
     </div>
 
     <div class="filter-bar">
-        <button class="filter-btn active" onclick="filterList('all')">전체</button>
-        <button class="filter-btn" onclick="filterList('tank')">🛡️ 돌격</button>
-        <button class="filter-btn" onclick="filterList('dps')">⚔️ 공격</button>
-        <button class="filter-btn" onclick="filterList('sup')">💉 지원</button>
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="tank">🛡️ 돌격</button>
+        <button class="filter-btn" data-filter="dps">⚔️ 공격</button>
+        <button class="filter-btn" data-filter="sup">💉 지원</button>
     </div>
 
-    <div class="party-list" id="party-list">
-        </div>
+    <div class="party-list" id="party-list"></div>
 </div>
 
 <script type="module">
-  // 1. 필요한 기능들(App, Firestore)을 구글 서버에서 가져옵니다.
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // 2. 사용자님의 고유 설정값 (방금 보여주신 그 코드입니다!)
   const firebaseConfig = {
     apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw",
     authDomain: "ow-party-97936.firebaseapp.com",
@@ -101,76 +93,99 @@
     measurementId: "G-0M4Z5BETW6"
   };
 
-  // 3. Firebase 및 데이터베이스(Firestore) 초기화
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const colRef = collection(db, "parties"); // 'parties'라는 이름의 폴더에 글을 저장하겠다는 뜻
+  const colRef = collection(db, "parties");
 
-  // --- [기능 1] 글 등록하기 ---
-  document.getElementById('submit-btn').onclick = async () => {
-    const btag = document.getElementById('btag').value;
-    const desc = document.getElementById('desc').value;
+  let allParties = [];
+  let currentFilter = 'all';
+
+  // --- [기능 1] 글 등록 (ID 일치 확인됨) ---
+  document.getElementById('btn-add-party').onclick = async () => {
+    const btag = document.getElementById('input-btag').value;
+    const tier = document.getElementById('input-tier').value;
+    const pos = document.getElementById('input-position').value;
+    const most = document.getElementById('input-most').value;
+    const desc = document.getElementById('input-desc').value;
 
     if(!btag.includes('#')) return alert("배틀태그 형식을 확인해주세요! (예: 닉네임#1234)");
     if(!desc) return alert("내용을 입력해주세요!");
 
     try {
       await addDoc(colRef, {
-        btag: btag,
-        tier: document.getElementById('tier').value,
-        pos: document.getElementById('pos').value,
-        desc: desc,
-        createdAt: Date.now() // 최신순 정렬을 위한 시간 기록
+        btag, tier, pos, most, desc,
+        createdAt: Date.now()
       });
       
       // 입력창 비우기
-      document.getElementById('btag').value = '';
-      document.getElementById('desc').value = '';
+      document.getElementById('input-btag').value = '';
+      document.getElementById('input-most').value = '';
+      document.getElementById('input-desc').value = '';
     } catch (e) {
-      alert("데이터 전송 실패! Firestore가 '테스트 모드'인지 확인하세요.");
+      alert("전송 실패! Firestore '테스트 모드' 설정 혹은 인터넷 연결을 확인하세요.");
       console.error(e);
     }
   };
 
-  // --- [기능 2] 실시간으로 글 목록 가져와서 그리기 ---
+  // --- [기능 2] 실시간 목록 업데이트 및 필터링 ---
   const q = query(colRef, orderBy("createdAt", "desc"));
   
   onSnapshot(q, (snapshot) => {
+    allParties = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderList();
+  });
+
+  function renderList() {
     const listEl = document.getElementById('party-list');
-    listEl.innerHTML = ''; // 기존 목록 지우고 새로 그림
+    listEl.innerHTML = '';
     
-    snapshot.docs.forEach(docSnap => {
-      const p = docSnap.data();
-      const id = docSnap.id; // 문서의 고유 ID (삭제할 때 필요)
-      
+    const filtered = currentFilter === 'all' 
+      ? allParties 
+      : allParties.filter(p => p.pos === currentFilter);
+
+    if(filtered.length === 0) {
+      listEl.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#666; padding:50px;">등록된 파티가 없습니다.</p>';
+      return;
+    }
+
+    filtered.forEach(p => {
       const card = document.createElement('div');
       card.className = `party-card ${p.pos}`;
       card.innerHTML = `
-        <div class="delete-btn" onclick="deletePost('${id}')">✕</div>
-        <span class="tag">${p.tier}</span>
+        <div class="delete-btn" onclick="deletePost('${p.id}')">✕</div>
+        <div>
+            <span class="tag">${p.tier}</span>
+            <span class="tag">${p.pos.toUpperCase()}</span>
+        </div>
         <div class="btag" onclick="copyText('${p.btag}')">${p.btag}</div>
-        <div style="font-size:14px; color:#ccc;">${p.desc}</div>
+        <div class="desc">${p.desc}</div>
+        <div class="most"><b>모스트:</b> ${p.most || '없음'}</div>
       `;
       listEl.appendChild(card);
     });
-  });
+  }
 
-  // --- [기능 3] 글 삭제 및 텍스트 복사 (HTML 버튼 클릭용) ---
+  // --- [기능 3] 전역 함수 등록 (삭제, 복사, 필터) ---
   window.deletePost = async (id) => {
     if(confirm("정말 이 모집 글을 삭제할까요?")) {
-      try {
-        await deleteDoc(doc(db, "parties", id));
-      } catch (e) {
-        alert("삭제 권한이 없거나 오류가 발생했습니다.");
-      }
+      await deleteDoc(doc(db, "parties", id));
     }
   };
 
   window.copyText = (text) => {
     navigator.clipboard.writeText(text);
-    alert("배틀태그가 복사되었습니다: " + text);
+    alert("배틀태그 복사됨: " + text);
   };
-</script>
 
+  // 필터 버튼 이벤트 연결
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderList();
+    };
+  });
+</script>
 </body>
 </html>
