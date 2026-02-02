@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - My Page</title>
+    <title>Overwatch Hub - 매칭 테스트</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
@@ -21,8 +21,8 @@
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; }
         
         input, select, textarea { background: #252525; border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; outline: none; margin-bottom: 10px; }
-        .btn-main { background: var(--accent); color: black; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 5px; }
-        .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+        .btn-main { background: var(--accent); color: black; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; }
+        .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
 
         .party-card { background: #1a1a1a; border-radius: 16px; padding: 20px; border: 1px solid #333; margin-bottom: 15px; border-left: 6px solid #444; }
         #noti-badge { background: var(--dps); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; display: none; margin-left: 5px; }
@@ -65,26 +65,21 @@
     <div id="page-profile" class="page">
         <div class="box">
             <div class="section-title">🔑 계정 설정</div>
-            <div style="font-size: 13px; color: #888; margin-bottom: 10px;">닉네임 변경</div>
             <input type="text" id="upd-nickname" placeholder="새 닉네임">
-            <button class="btn-main" id="btn-upd-nick" style="background: #333; color: white;">닉네임 업데이트</button>
-            
-            <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
-            
-            <div style="font-size: 13px; color: #888; margin-bottom: 10px;">비밀번호 변경</div>
+            <button class="btn-main" id="btn-upd-nick" style="background: #333; color: white; margin-bottom:15px;">닉네임 업데이트</button>
             <input type="password" id="upd-pw" placeholder="새 비밀번호">
-            <button class="btn-main" id="btn-upd-pw" style="background: #333; color: white;">비밀번호 변경하기</button>
+            <button class="btn-main" id="btn-upd-pw" style="background: #333; color: white;">비밀번호 변경</button>
         </div>
 
         <div class="box">
             <div class="section-title">🎮 파티매칭 정보</div>
-            <div id="my-praise-info" style="margin-bottom: 15px; font-weight: bold;"></div>
+            <div id="my-praise-info" style="margin-bottom: 10px; font-weight: bold;"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <input type="text" id="my-btag" placeholder="배틀태그#1234">
                 <input type="text" id="my-most" placeholder="주력 영웅">
                 <select id="my-tier"><option value="GOLD">골드</option><option value="PLATINUM">플래티넘</option><option value="DIAMOND">다이아몬드</option></select>
                 <select id="my-pos"><option value="tank">돌격</option><option value="dps">공격</option><option value="sup">지원</option></select>
-                <textarea id="my-desc" placeholder="내 플레이 스타일 소개" style="grid-column: span 2;" rows="3"></textarea>
+                <textarea id="my-desc" placeholder="내 스타일 소개" style="grid-column: span 2;" rows="3"></textarea>
             </div>
             <button class="btn-main" id="btn-save-game-info">게임 프로필 저장</button>
         </div>
@@ -92,7 +87,7 @@
 
     <div id="page-noti" class="page">
         <h3>📫 매칭 알림</h3>
-        <div id="noti-list" style="text-align:center; padding:40px 0; color:#666;">로그인 후 확인하세요.</div>
+        <div id="noti-list">로그인 해주세요.</div>
     </div>
 </div>
 
@@ -125,8 +120,9 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    let targetUser = { uid: null, btag: null };
+    let tUser = { uid: null, btag: null };
 
+    // 전역 함수 정의 (onclick용)
     window.showPage = (id) => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-tabs div').forEach(t => t.classList.remove('active'));
@@ -135,45 +131,40 @@
     };
 
     window.openRequestModal = (uid, btag) => {
-        targetUser = { uid, btag };
+        tUser = { uid, btag };
         document.getElementById('target-name').innerText = btag + "님에게 신청";
         document.getElementById('request-modal').style.display = 'flex';
     };
+
     window.closeModal = () => document.getElementById('request-modal').style.display = 'none';
 
-    // 1. 닉네임 변경
+    // 1. 프로필 업데이트
     document.getElementById('btn-upd-nick').onclick = async () => {
-        const nick = document.getElementById('upd-nickname').value;
-        if(!nick) return alert("닉네임을 입력하세요.");
-        await updateProfile(auth.currentUser, { displayName: nick });
-        alert("닉네임이 변경되었습니다.");
+        const n = document.getElementById('upd-nickname').value;
+        if(n) { await updateProfile(auth.currentUser, {displayName: n}); alert("닉네임 변경됨"); }
     };
 
-    // 2. 비밀번호 변경
     document.getElementById('btn-upd-pw').onclick = async () => {
-        const pw = document.getElementById('upd-pw').value;
-        if(pw.length < 6) return alert("6자리 이상 입력하세요.");
-        await updatePassword(auth.currentUser, pw);
-        alert("비밀번호가 변경되었습니다. 다시 로그인해야 할 수 있습니다.");
+        const p = document.getElementById('upd-pw').value;
+        if(p) { await updatePassword(auth.currentUser, p); alert("비번 변경됨"); }
     };
 
-    // 3. 게임 정보 저장
     document.getElementById('btn-save-game-info').onclick = async () => {
-        const info = {
+        const d = {
             btag: document.getElementById('my-btag').value,
             most: document.getElementById('my-most').value,
             tier: document.getElementById('my-tier').value,
             pos: document.getElementById('my-pos').value,
-            desc: document.getElementById('my-desc').value,
-            updatedAt: Date.now()
+            desc: document.getElementById('my-desc').value
         };
-        await setDoc(doc(db, "users", auth.currentUser.uid), info, { merge: true });
-        alert("게임 프로필이 저장되었습니다.");
+        await setDoc(doc(db, "users", auth.currentUser.uid), d, {merge: true});
+        alert("게임 정보 저장됨");
     };
 
-    // 4. 구인글 게시
+    // 2. 구인글 게시
     document.getElementById('btn-post-party').onclick = async () => {
-        const data = {
+        if(!auth.currentUser) return alert("로그인 필요");
+        const d = {
             btag: document.getElementById('post-btag').value,
             most: document.getElementById('post-most').value,
             tier: document.getElementById('post-tier').value,
@@ -182,50 +173,45 @@
             uid: auth.currentUser.uid,
             createdAt: Date.now()
         };
-        await addDoc(collection(db, "parties"), data);
-        alert("구인글이 게시되었습니다.");
+        await addDoc(collection(db, "parties"), d);
+        alert("글 게시됨");
     };
 
-    // 5. 신청 전송
+    // 3. 신청 전송
     document.getElementById('btn-confirm-send').onclick = async () => {
         const msg = document.getElementById('request-msg').value;
         const mySnap = await getDoc(doc(db, "users", auth.currentUser.uid));
+        const myData = mySnap.exists() ? mySnap.data() : { btag: "알 수 없음" };
+
         await addDoc(collection(db, "matches"), {
             fromUid: auth.currentUser.uid,
-            fromProfile: mySnap.exists() ? mySnap.data() : { btag: "익명" },
-            toUid: targetUser.uid,
-            message: msg || "같이 해요!",
+            fromProfile: myData,
+            toUid: tUser.uid,
+            message: msg || "신청합니다!",
             status: "pending",
             createdAt: Date.now()
         });
-        alert("신청 완료!");
+        alert("신청 완료");
         closeModal();
     };
 
-    window.acceptMatch = async (id) => await updateDoc(doc(db, "matches", id), { status: "accepted" });
+    window.acceptMatch = async (id) => await updateDoc(doc(db, "matches", id), {status: "accepted"});
     window.givePraise = async (mid, uid) => {
         await runTransaction(db, async (t) => {
             const d = await t.get(doc(db, "users", uid));
-            t.set(doc(db, "users", uid), { praiseScore: (d.exists() ? d.data().praiseScore || 0 : 0) + 1 }, { merge: true });
+            const s = (d.exists() ? d.data().praiseScore || 0 : 0) + 1;
+            t.set(doc(db, "users", uid), { praiseScore: s }, { merge: true });
         });
-        await updateDoc(doc(db, "matches", mid), { status: "done" });
-        alert("추천했습니다!");
+        await updateDoc(doc(db, "matches", mid), {status: "done"});
+        alert("추천 완료");
     };
 
+    // 실시간 리스너
     onAuthStateChanged(auth, (user) => {
         if(user) {
-            document.getElementById('auth-ui').innerHTML = `<span style="font-size:12px; color:#aaa;">${user.displayName || user.email}님</span><button onclick="auth.signOut().then(()=>location.reload())" class="btn-sub">로그아웃</button>`;
-            document.getElementById('upd-nickname').value = user.displayName || '';
+            document.getElementById('auth-ui').innerHTML = `<button onclick="auth.signOut().then(()=>location.reload())" class="btn-sub">로그아웃</button>`;
             
-            onSnapshot(doc(db, "users", user.uid), (ds) => {
-                if(ds.exists()){
-                    const p = ds.data();
-                    document.getElementById('my-praise-info').innerHTML = `현재 추천 점수: <span style="color:var(--sup)">${p.praiseScore || 0}점</span>`;
-                    document.getElementById('my-btag').value = p.btag || '';
-                    document.getElementById('my-most').value = p.most || '';
-                }
-            });
-
+            // 알림 감시
             onSnapshot(query(collection(db, "matches"), where("toUid", "==", user.uid)), (snap) => {
                 const list = document.getElementById('noti-list'); list.innerHTML = '';
                 let count = 0;
@@ -234,25 +220,37 @@
                     const item = document.createElement('div'); item.className = 'box';
                     if(m.status === 'pending') {
                         count++;
-                        item.innerHTML = `<b>${p.btag}</b>님의 신청: "${m.message}" <button class="btn-main" onclick="acceptMatch('${ds.id}')">수락</button>`;
+                        item.innerHTML = `<b>${p.btag}</b>: "${m.message}" <button class="btn-main" onclick="acceptMatch('${ds.id}')">수락</button>`;
                     } else if(m.status === 'accepted') {
-                        item.innerHTML = `✅ <b>${p.btag}</b>님과 매칭됨 <button class="btn-main" style="background:var(--sup); color:black;" onclick="givePraise('${ds.id}','${m.fromUid}')">칭찬하기</button>`;
+                        item.innerHTML = `✅ <b>${p.btag}</b> 매칭됨 <button class="btn-main" style="background:var(--sup); color:black;" onclick="givePraise('${ds.id}','${m.fromUid}')">칭찬</button>`;
                     }
                     list.appendChild(item);
                 });
-                const badge = document.getElementById('noti-badge');
-                badge.innerText = count; badge.style.display = count > 0 ? 'inline' : 'none';
+                document.getElementById('noti-badge').innerText = count;
+                document.getElementById('noti-badge').style.display = count > 0 ? 'inline' : 'none';
             });
         }
     });
 
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
         const container = document.getElementById('party-list'); container.innerHTML = '';
+        const myUid = auth.currentUser ? auth.currentUser.uid : null;
+
         snap.forEach(d => {
             const p = d.data();
             const card = document.createElement('div'); card.className = 'party-card';
             card.style.borderLeftColor = `var(--${p.pos})`;
-            card.innerHTML = `<div style="display:flex; justify-content:space-between;"><b>${p.btag}</b><button class="btn-sub" onclick="openRequestModal('${p.uid}', '${p.btag}')">신청</button></div><div style="font-size:12px; color:#888;">${p.tier} · ${p.most}</div><p style="font-size:14px; color:#ccc;">${p.desc}</p>`;
+            
+            // 내 글이면 신청 버튼 대신 배지 표시
+            const actionBtn = (myUid === p.uid) 
+                ? `<span style="color:#888; font-size:12px;">내가 쓴 글</span>`
+                : `<button class="btn-sub" onclick="openRequestModal('${p.uid}', '${p.btag}')">신청</button>`;
+
+            card.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;">
+                                <b>${p.btag}</b> ${actionBtn}
+                             </div>
+                             <div style="font-size:12px; color:#888;">${p.tier} · ${p.most}</div>
+                             <p style="font-size:14px; color:#ccc; margin-top:10px;">${p.desc}</p>`;
             container.appendChild(card);
         });
     });
