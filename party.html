@@ -45,7 +45,7 @@
     </div>
     <div id="auth-ui" class="auth-box">
         <input type="email" id="email" placeholder="이메일">
-        <input type="password" id="password" placeholder="비밀번호">
+        <input type="password" id="password" placeholder="비밀번호(6자이상)">
         <button id="btn-login-action" class="btn-auth">로그인/가입</button>
     </div>
 </nav>
@@ -90,9 +90,10 @@
     const auth = getAuth(app);
     const colRef = collection(db, "parties");
 
-    const ADMIN_UID = "YOUR_UID_HERE"; 
+    // 🔴 [수정] 관리자로 지정할 이메일을 여기에 쓰세요!
+    const ADMIN_EMAIL = "사용자님의_이메일@주소.com"; 
 
-    // [1] 로그인/회원가입 로직
+    // [1] 통합 로그인 로직 (이미 있으면 로그인, 없으면 가입)
     document.getElementById('btn-login-action').onclick = async () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -101,31 +102,33 @@
         if(password.length < 6) return alert("비밀번호는 6자리 이상이어야 합니다.");
 
         try {
-            // 로그인 시도
             await signInWithEmailAndPassword(auth, email, password);
         } catch (error) {
-            // 계정이 없으면 자동 가입
             if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
                 try {
                     await createUserWithEmailAndPassword(auth, email, password);
-                    alert("새 계정으로 가입 및 로그인 되었습니다!");
+                    alert("가입 및 로그인 완료!");
                 } catch (e) {
-                    alert("오류: " + e.message);
+                    if (e.code === 'auth/email-already-in-use') {
+                        // 가입 실패가 '이미 사용중' 때문이면 다시 로그인 시도
+                        await signInWithEmailAndPassword(auth, email, password);
+                    } else {
+                        alert("오류: " + e.message);
+                    }
                 }
             } else {
-                alert("오류: " + error.message);
+                alert("비밀번호 오류 또는 네트워크 확인: " + error.message);
             }
         }
     };
 
-    // [2] 인증 상태 감시 (UI 즉각 반영)
+    // [2] 인증 상태 체크
     onAuthStateChanged(auth, (user) => {
         const authUI = document.getElementById('auth-ui');
         const submitBtn = document.getElementById('btn-add-party');
 
         if (user) {
             authUI.innerHTML = `
-            <div style="font-size:10px; color:yellow; margin-bottom:5px;">UID: ${user.uid}</div>
                 <span style="font-size:12px; color:#ccc;">${user.email.split('@')[0]}님</span>
                 <button id="btn-logout" class="btn-auth" style="background:#555; color:white;">로그아웃</button>
             `;
@@ -151,6 +154,7 @@
                 pos: document.getElementById('input-position').value,
                 most: document.getElementById('input-most').value,
                 uid: auth.currentUser.uid,
+                email: auth.currentUser.email, // 삭제 권한 체크용
                 createdAt: Date.now()
             });
             document.getElementById('input-btag').value = '';
@@ -160,15 +164,17 @@
         }
     };
 
-    // [4] 실시간 목록 로드
+    // [4] 목록 로드 및 삭제 권한 체크
     onSnapshot(query(colRef, orderBy("createdAt", "desc")), (snap) => {
         const list = document.getElementById('party-list');
         list.innerHTML = '';
         snap.docs.forEach(d => {
             const p = d.data();
             const user = auth.currentUser;
+            
+            // 본인 글이거나, 지정한 관리자 이메일일 경우 삭제 가능
             const isMine = user && p.uid === user.uid;
-            const isAdmin = user && user.uid === ADMIN_UID;
+            const isAdmin = user && user.email === ADMIN_EMAIL;
 
             const card = document.createElement('div');
             card.className = `party-card ${p.pos} ${isMine ? 'mine' : ''} ${isAdmin ? 'admin' : ''}`;
@@ -182,7 +188,7 @@
                 <div class="desc">${p.desc}</div>
             `;
             card.querySelector('.delete-btn').onclick = () => {
-                if(confirm("삭제하시겠습니까?")) deleteDoc(doc(db, "parties", d.id));
+                if(confirm("이 글을 삭제하시겠습니까?")) deleteDoc(doc(db, "parties", d.id));
             };
             list.appendChild(card);
         });
