@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overwatch Hub - 파티 찾기</title>
+    <style>
+        :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; }
+        body { background: #111; color: white; font-family: 'Pretendard', sans-serif; margin: 0; }
+        
+        nav { background: #000; padding: 15px 20px; display: flex; gap: 20px; border-bottom: 2px solid var(--accent); }
+        nav a { color: white; text-decoration: none; font-weight: bold; opacity: 0.7; }
+        nav a.active { opacity: 1; color: var(--accent); }
+
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        
+        /* 입력 폼 */
+        .post-form { background: #222; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        input, select, textarea { background: #333; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        .btn-submit { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        /* 필터 바 */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-btn { background: #333; border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
+        .filter-btn.active { background: white; color: black; font-weight: bold; }
+
+        /* 파티 카드 목록 */
+        .party-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .party-card { background: #222; border-radius: 12px; padding: 20px; border-left: 6px solid #555; position: relative; transition: 0.3s; }
+        .party-card:hover { transform: translateY(-3px); background: #282828; }
+        .party-card.tank { border-left-color: var(--tank); }
+        .party-card.dps { border-left-color: var(--dps); }
+        .party-card.sup { border-left-color: var(--sup); }
+
+        .tag { font-size: 12px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin-right: 5px; }
+        .btag { font-weight: bold; color: var(--accent); display: block; margin: 10px 0; font-size: 18px; cursor: pointer; }
+        .btag:hover::after { content: ' (클릭 시 복사)'; font-size: 12px; color: #aaa; }
+        .desc { font-size: 14px; color: #ccc; margin: 10px 0; min-height: 40px; }
+        .most { font-size: 13px; color: #999; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="index.html">🛡️ 전술 보드</a>
+    <a href="party.html" class="active">⚔️ 파티 매칭</a>
+</nav>
+
+<div class="container">
+    <h1>⚔️ 파티 찾기</h1>
+
+    <div class="post-form">
+        <div class="form-grid">
+            <input type="text" id="input-btag" placeholder="배틀태그 (예: 겐지#1234)">
+            <select id="input-tier">
+                <option value="Bronze">브론즈</option>
+                <option value="Silver">실버</option>
+                <option value="Gold">골드</option>
+                <option value="Platinum">플래티넘</option>
+                <option value="Diamond">다이아몬드</option>
+                <option value="Master">마스터</option>
+                <option value="Grandmaster">그랜드마스터</option>
+            </select>
+            <select id="input-position">
+                <option value="tank">돌격 (Tank)</option>
+                <option value="dps">공격 (DPS)</option>
+                <option value="sup">지원 (Support)</option>
+            </select>
+            <input type="text" id="input-most" placeholder="모스트 캐릭터 (예: 트레이서, 겐지)">
+        </div>
+        <textarea id="input-desc" rows="2" placeholder="간단한 자기소개나 찾는 파티 정보를 입력하세요."></textarea>
+        <button class="btn-submit" onclick="addParty()">모집 등록하기</button>
+    </div>
+
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterList('all')">전체</button>
+        <button class="filter-btn" onclick="filterList('tank')">🛡️ 돌격</button>
+        <button class="filter-btn" onclick="filterList('dps')">⚔️ 공격</button>
+        <button class="filter-btn" onclick="filterList('sup')">💉 지원</button>
+    </div>
+
+    <div class="party-list" id="party-list">
+        </div>
+</div>
+
+<script>
+    let parties = [
+        { btag: "Dva#1234", tier: "Diamond", pos: "tank", most: "디바, 윈스턴", desc: "다이아 구간 듀오 구합니다. 마이크 가능해요!", time: Date.now() },
+        { btag: "Mercy#9999", tier: "Platinum", pos: "sup", most: "메르시, 키리코", desc: "함께 즐겜하실 딜러분 찾아요~", time: Date.now() - 3600000 }
+    ];
+
+    function renderList(filter = 'all') {
+        const listEl = document.getElementById('party-list');
+        listEl.innerHTML = '';
+
+        const filtered = filter === 'all' ? parties : parties.filter(p => p.pos === filter);
+
+        filtered.forEach(p => {
+            const card = document.createElement('div');
+            card.className = `party-card ${p.pos}`;
+            card.innerHTML = `
+                <span class="tag">${p.tier}</span>
+                <span class="tag">${p.pos.toUpperCase()}</span>
+                <div class="btag" onclick="copyBtag('${p.btag}')">${p.btag}</div>
+                <div class="desc">${p.desc}</div>
+                <div class="most"><b>모스트:</b> ${p.most}</div>
+            `;
+            listEl.appendChild(card);
+        });
+    }
+
+    function addParty() {
+        const btag = document.getElementById('input-btag').value;
+        const tier = document.getElementById('input-tier').value;
+        const pos = document.getElementById('input-position').value;
+        const most = document.getElementById('input-most').value;
+        const desc = document.getElementById('input-desc').value;
+
+        if(!btag || !most) return alert("배틀태그와 모스트 캐릭터를 입력해주세요!");
+
+        parties.unshift({ btag, tier, pos, most, desc, time: Date.now() });
+        renderList();
+        
+        // 입력창 초기화
+        document.getElementById('input-btag').value = '';
+        document.getElementById('input-most').value = '';
+        document.getElementById('input-desc').value = '';
+    }
+
+    function copyBtag(text) {
+        navigator.clipboard.writeText(text);
+        alert("배틀태그가 복사되었습니다: " + text);
+    }
+
+    function filterList(pos) {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.innerText.toLowerCase().includes(pos) || (pos === 'all' && btn.innerText === '전체'));
+        });
+        renderList(pos);
+    }
+
+    renderList();
+</script>
+</body>
+</html>
