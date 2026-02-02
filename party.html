@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - Premium Rating</title>
+    <title>Overwatch Hub - Final Version</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
@@ -18,27 +18,20 @@
         .btn-main { background: var(--accent); color: black; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; }
         .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
         
-        /* 고급 별점 UI */
-        .rating-container {
-            background: #222; padding: 20px; border-radius: 16px; border: 1px solid #444;
-            margin-top: 15px; text-align: center; transition: 0.3s;
-        }
+        /* 별점 UI */
+        .rating-container { background: #222; padding: 20px; border-radius: 16px; border: 1px solid #444; margin-top: 15px; text-align: center; }
         .stars { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
-        .star-item {
-            font-size: 32px; color: #333; cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            user-select: none;
-        }
-        .star-item.active {
-            color: var(--accent);
-            text-shadow: 0 0 15px rgba(255, 156, 0, 0.9);
-            transform: scale(1.2);
-        }
-        .rating-msg { font-size: 13px; color: #aaa; font-weight: 500; }
-
+        .star-item { font-size: 32px; color: #333; cursor: pointer; transition: all 0.2s; user-select: none; }
+        .star-item.active { color: var(--accent); text-shadow: 0 0 15px rgba(255, 156, 0, 0.9); transform: scale(1.2); }
+        
+        /* 파티 카드 */
         .party-card { background: #1a1a1a; border-radius: 16px; padding: 20px; border: 1px solid #333; margin-bottom: 15px; border-left: 6px solid #444; }
         .status-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
         input, select, textarea { background: #252525; border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        
+        /* 모달 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: #222; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid #444; }
     </style>
 </head>
 <body>
@@ -62,7 +55,7 @@
             <h4 style="margin:0 0 15px 0; color:var(--accent);">🚀 파티 모집글 작성</h4>
             <input type="text" id="post-btag" placeholder="배틀태그#1234">
             <select id="post-pos"><option value="tank">돌격</option><option value="dps">공격</option><option value="sup">지원</option></select>
-            <textarea id="post-desc" placeholder="모집 내용" rows="2"></textarea>
+            <textarea id="post-desc" placeholder="모집 내용 (마이크 유무 등)" rows="2"></textarea>
             <button class="btn-main" id="btn-post">작성하기</button>
         </div>
         <div id="party-list"></div>
@@ -71,8 +64,9 @@
     <div id="page-profile" class="page">
         <div class="box">
             <h3 id="my-btag-display">프로필 로딩 중...</h3>
-            <div id="my-praise-display" style="font-size:24px; color:var(--accent); margin-bottom:20px;">⭐ 0</div>
-            <input type="text" id="profile-btag" placeholder="배틀태그 업데이트">
+            <div id="my-rating-avg" style="font-size:32px; color:var(--accent); font-weight:bold; margin-bottom:5px;">⭐ 0.0</div>
+            <div id="my-rating-count" style="font-size:14px; color:#888; margin-bottom:20px;">0명의 평가</div>
+            <input type="text" id="profile-btag" placeholder="수정할 배틀태그#1234">
             <button class="btn-main" id="btn-save-profile">프로필 저장</button>
         </div>
     </div>
@@ -80,6 +74,17 @@
     <div id="page-noti" class="page">
         <h3>📫 알림 센터</h3>
         <div id="noti-list"></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="request-modal">
+    <div class="modal-content">
+        <h3 id="target-name">신청하기</h3>
+        <textarea id="request-msg" placeholder="상대에게 보낼 메시지" rows="4"></textarea>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-main" id="btn-confirm-send">보내기</button>
+            <button class="btn-sub" onclick="closeModal()" style="flex:1;">취소</button>
+        </div>
     </div>
 </div>
 
@@ -101,6 +106,8 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    let tUser = { uid: null, btag: null };
+
     window.showPage = (id) => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-tabs div').forEach(t => t.classList.remove('active'));
@@ -108,7 +115,14 @@
         document.getElementById('tab-'+id).classList.add('active');
     };
 
-    // 별점 시스템 로직
+    window.openRequestModal = (uid, btag) => {
+        tUser = { uid, btag };
+        document.getElementById('target-name').innerText = btag + "님에게 신청";
+        document.getElementById('request-modal').style.display = 'flex';
+    };
+    window.closeModal = () => document.getElementById('request-modal').style.display = 'none';
+
+    // 칭찬하기 기능 (평균 계산용 합계/횟수 기록)
     window.giveStar = async (matchId, targetUid, stars) => {
         try {
             const mRef = doc(db, "matches", matchId);
@@ -118,7 +132,7 @@
 
             if ((isFromMe && mData.ratedTo) || (!isFromMe && mData.ratedFrom)) return alert("이미 별점을 주셨습니다.");
 
-            await setDoc(doc(db, "users", targetUid), { praise: increment(stars) }, { merge: true });
+            await setDoc(doc(db, "users", targetUid), { praise: increment(stars), praiseCount: increment(1) }, { merge: true });
             await updateDoc(mRef, isFromMe ? { ratedTo: true } : { ratedFrom: true });
             alert(`${stars}점을 보냈습니다! 매너 게임 감사합니다.`);
         } catch(e) { alert("오류: " + e.message); }
@@ -131,23 +145,25 @@
 
     onAuthStateChanged(auth, (user) => {
         if(user) {
-            document.getElementById('auth-ui').innerHTML = `<button onclick="signOut(auth)" class="btn-sub">로그아웃</button>`;
+            document.getElementById('auth-ui').innerHTML = `<button onclick="signOut(auth).then(()=>location.reload())" class="btn-sub">로그아웃</button>`;
             
+            // 내 프로필 로드 (평균 계산)
             onSnapshot(doc(db, "users", user.uid), (d) => {
                 const data = d.data() || {};
-                document.getElementById('my-btag-display').innerText = data.btag || "닉네임을 설정하세요";
-                document.getElementById('my-praise-display').innerText = `⭐ ${data.praise || 0}`;
+                const avg = (data.praiseCount || 0) > 0 ? (data.praise / data.praiseCount).toFixed(1) : "0.0";
+                document.getElementById('my-btag-display').innerText = data.btag || "닉네임 미설정";
+                document.getElementById('my-rating-avg').innerText = `⭐ ${avg}`;
+                document.getElementById('my-rating-count').innerText = `${data.praiseCount || 0}명의 평가`;
             });
 
+            // 알림 실시간 감시
             onSnapshot(collection(db, "matches"), (snap) => {
                 const list = document.getElementById('noti-list');
                 list.innerHTML = '';
                 let newCount = 0;
-
                 snap.docs.sort((a,b)=>b.data().createdAt - a.data().createdAt).forEach(ds => {
                     const m = ds.data();
                     if(m.fromUid !== user.uid && m.toUid !== user.uid) return;
-
                     const isToMe = m.toUid === user.uid;
                     const partnerUid = isToMe ? m.fromUid : m.toUid;
                     const partnerBtag = isToMe ? m.fromBtag : m.toBtag;
@@ -157,30 +173,25 @@
                     if(m.status === 'pending') {
                         if(isToMe) {
                             newCount++;
-                            box.innerHTML = `<span class="status-tag" style="background:var(--accent); color:black;">신청받음</span>
+                            box.innerHTML = `<span class="status-tag" style="background:var(--accent); color:black;">받은 신청</span>
                                 <div><b>${partnerBtag}</b>: ${m.message}</div>
-                                <div style="margin-top:10px; display:flex; gap:5px;">
-                                    <button class="btn-sub" style="background:var(--sup); color:black;" onclick="updateMatch('${ds.id}','accepted')">수락</button>
-                                    <button class="btn-sub" onclick="updateMatch('${ds.id}','rejected')">거절</button>
-                                </div>`;
+                                <div style="margin-top:10px;"><button class="btn-sub" style="background:var(--sup); color:black;" onclick="updateMatch('${ds.id}','accepted')">수락</button></div>`;
                         } else {
                             box.innerHTML = `<span class="status-tag">대기중</span><div><b>${partnerBtag}</b>님께 보낸 신청</div>`;
                         }
                     } else if(m.status === 'accepted') {
                         const rated = isToMe ? m.ratedFrom : m.ratedTo;
-                        box.innerHTML = `
-                            <span class="status-tag" style="background:var(--sup); color:black;">매칭 완료</span>
+                        box.innerHTML = `<span class="status-tag" style="background:var(--sup); color:black;">매칭 완료</span>
                             <div><b>${partnerBtag}</b>님과 연결되었습니다!</div>
                             <div class="rating-container">
-                                ${rated ? '<div class="rating-msg">평가를 완료했습니다. 😊</div>' : `
-                                    <div class="rating-msg">즐거운 게임이었나요? 별점을 선택하세요!</div>
-                                    <div class="stars">
-                                        ${[1,2,3,4,5].map(n => `<span class="star-item" 
-                                            onmouseover="const s=this.parentElement.children; for(let i=0;i<5;i++)s[i].classList.toggle('active',i<${n})"
-                                            onmouseout="const s=this.parentElement.children; for(let i=0;i<5;i++)s[i].classList.remove('active')"
-                                            onclick="giveStar('${ds.id}','${partnerUid}', ${n})">★</span>`).join('')}
-                                    </div>
-                                `}
+                                ${rated ? '평가 완료 😊' : `
+                                <div class="rating-msg">별점을 선택해 칭찬해주세요!</div>
+                                <div class="stars">
+                                    ${[1,2,3,4,5].map(n => `<span class="star-item" 
+                                        onmouseover="const s=this.parentElement.children; for(let i=0;i<5;i++)s[i].classList.toggle('active',i<${n})"
+                                        onmouseout="const s=this.parentElement.children; for(let i=0;i<5;i++)s[i].classList.remove('active')"
+                                        onclick="giveStar('${ds.id}','${partnerUid}', ${n})">★</span>`).join('')}
+                                </div>`}
                                 <button class="btn-sub" style="margin-top:10px; opacity:0.6;" onclick="updateMatch('${ds.id}','delete')">내역 삭제</button>
                             </div>`;
                     }
@@ -192,7 +203,7 @@
         }
     });
 
-    // 게시글 로드 로직
+    // 파티 리스트 불러오기
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
         const container = document.getElementById('party-list');
         container.innerHTML = '';
@@ -203,22 +214,46 @@
             card.style.borderLeftColor = `var(--${p.pos})`;
             const isMine = auth.currentUser && auth.currentUser.uid === p.uid;
             card.innerHTML = `<div style="display:flex; justify-content:space-between;"><b>${p.btag}</b>
-                ${isMine ? '<span>내 글</span>' : `<button class="btn-sub" onclick="openRequestModal('${p.uid}', '${p.btag}')">신청</button>`}</div>
-                <p>${p.desc}</p>`;
+                ${isMine ? '<span style="color:#666; font-size:12px;">내 글</span>' : `<button class="btn-sub" onclick="openRequestModal('${p.uid}', '${p.btag}')">신청</button>`}</div>
+                <p style="font-size:14px; color:#ccc;">${p.desc}</p>`;
             container.appendChild(card);
         });
     });
 
-    // 기타 기능들
+    // 버튼 이벤트들
     document.getElementById('btn-login').onclick = () => {
         const e = document.getElementById('login-email').value;
         const p = document.getElementById('login-password').value;
         signInWithEmailAndPassword(auth, e, p).catch(() => createUserWithEmailAndPassword(auth, e, p));
     };
 
+    document.getElementById('btn-post').onclick = async () => {
+        if(!auth.currentUser) return alert("로그인이 필요합니다.");
+        await addDoc(collection(db, "parties"), {
+            btag: document.getElementById('post-btag').value,
+            pos: document.getElementById('post-pos').value,
+            desc: document.getElementById('post-desc').value,
+            uid: auth.currentUser.uid,
+            createdAt: Date.now()
+        });
+        alert("작성 완료!");
+    };
+
+    document.getElementById('btn-confirm-send').onclick = async () => {
+        const mySnap = await getDoc(doc(db, "users", auth.currentUser.uid));
+        const myData = mySnap.exists() ? mySnap.data() : { btag: "익명" };
+        await addDoc(collection(db, "matches"), {
+            fromUid: auth.currentUser.uid, fromBtag: myData.btag || "익명",
+            toUid: tUser.uid, toBtag: tUser.btag,
+            message: document.getElementById('request-msg').value || "같이 해요!",
+            status: "pending", createdAt: Date.now()
+        });
+        alert("신청 성공!"); closeModal();
+    };
+
     document.getElementById('btn-save-profile').onclick = async () => {
         await setDoc(doc(db, "users", auth.currentUser.uid), { btag: document.getElementById('profile-btag').value }, { merge: true });
-        alert("저장 완료");
+        alert("저장되었습니다.");
     };
 </script>
 </body>
