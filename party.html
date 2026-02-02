@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - Final Complete</title>
+    <title>Overwatch Hub - Noti Fix</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
@@ -12,9 +12,9 @@
         .nav-tabs div { cursor: pointer; font-weight: 600; font-size: 14px; color: #888; transition: 0.2s; position: relative; }
         .nav-tabs div.active { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
         
-        /* 메뉴바 NEW 알림 */
-        .menu-new { background: #ff3c3c; color: white; font-size: 9px; padding: 1px 5px; border-radius: 4px; margin-left: 4px; font-weight: 800; animation: blink 1.2s infinite; vertical-align: top; }
-        @keyframes blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } }
+        /* 상단 메뉴 NEW 뱃지 */
+        .menu-new { background: #ff3c3c; color: white; font-size: 9px; padding: 1px 5px; border-radius: 4px; margin-left: 4px; font-weight: 800; animation: blink 1.2s infinite; vertical-align: top; display: none; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
         .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
         .page { display: none; }
@@ -37,7 +37,7 @@
     <div class="nav-tabs">
         <div onclick="showPage('list')" id="tab-list" class="active">파티찾기</div>
         <div onclick="showPage('profile')" id="tab-profile">내 정보</div>
-        <div onclick="showPage('noti')" id="tab-noti">알림창<span id="menu-new-tag" class="menu-new" style="display:none;">NEW</span></div>
+        <div onclick="showPage('noti')" id="tab-noti">알림창<span id="menu-new-tag" class="menu-new">NEW</span></div>
     </div>
     <div id="auth-ui">
         <div id="login-form" style="display:flex; align-items:center; gap:5px;">
@@ -68,7 +68,6 @@
             <h3>내 프로필</h3>
             <label style="font-size:12px; color:#888;">배틀태그</label>
             <input type="text" id="profile-btag" placeholder="배틀태그#1234">
-            <label style="font-size:12px; color:#888;">주 포지션 및 티어</label>
             <div style="display:flex; gap:5px;"><select id="profile-pos"><option value="tank">돌격</option><option value="dps">공격</option><option value="sup">지원</option></select><select id="profile-tier"><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option></select></div>
             <button class="btn-main" id="btn-save-profile">정보 저장</button>
         </div>
@@ -77,7 +76,7 @@
     <div id="page-noti" class="page"><h3>📫 알림 센터</h3><div id="noti-list"></div></div>
 </div>
 
-<div class="modal-overlay" id="request-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;"><h3>파티 신청</h3><textarea id="request-msg" placeholder="상대방에게 보낼 메시지" rows="4"></textarea><button class="btn-main" id="btn-confirm-send">신청하기</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
+<div class="modal-overlay" id="request-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;"><h3>파티 신청</h3><textarea id="request-msg" placeholder="보낼 메시지" rows="4"></textarea><button class="btn-main" id="btn-confirm-send">신청하기</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -141,14 +140,14 @@
                     const box = document.createElement('div'); box.className = 'box';
                     
                     if(m.status === 'pending') {
-                        if(isToMe) { 
+                        // 관리자이거나 나에게 온 신청인 경우 NEW 체크
+                        if(isToMe || (isAdmin && m.status === 'pending')) { 
                             hasIncomingPending = true;
-                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div>
+                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신규 신청 도착</div>
                             <div style="font-size:13px; margin:8px 0;">상대: <span class="info-label">${m.fromPos}</span> <span class="info-label">${m.fromTier}</span><br>메시지: ${m.message}</div>
                             <button class="btn-main" onclick="acceptMatch('${ds.id}')">수락 (상세 정보 확인)</button>`;
-                        } else { box.innerHTML = `<div style="color:#666; font-size:13px;">⌛ ${m.toBtag.split('#')[0]}#****님께 신청 대기 중...</div>`; }
+                        } else { box.innerHTML = `<div style="color:#666; font-size:13px;">⌛ ${m.toBtag.split('#')[0]}#****님께 보낸 신청 대기 중...</div>`; }
                     } else {
-                        // 수락 완료 후 상태
                         box.innerHTML = `<div style="color:var(--sup); font-weight:bold; margin-bottom:10px;">✅ 매칭 완료!</div>
                         <div style="background:#000; padding:15px; border-radius:8px; border:1px solid var(--sup); text-align:center;">
                             <div style="font-size:20px; color:white; font-weight:bold; margin-bottom:5px;">${isToMe ? m.fromBtag : m.toBtag}</div>
@@ -158,15 +157,18 @@
                     }
                     list.appendChild(box);
                 });
-                // 내가 받은 신청(isToMe)이 있을 때만 NEW 표시
-                document.getElementById('menu-new-tag').style.display = hasIncomingPending ? 'inline' : 'none';
+                
+                // NEW 표시 업데이트
+                const newTag = document.getElementById('menu-new-tag');
+                if(hasIncomingPending) { newTag.style.display = 'inline-block'; } 
+                else { newTag.style.display = 'none'; }
             });
         }
     });
 
     window.acceptMatch = async (id) => { await updateDoc(doc(db, "matches", id), { status: 'accepted' }); };
-    window.delPost = async (id) => { if(confirm("삭제?")) await deleteDoc(doc(db, "parties", id)); };
-    window.delMatch = async (id) => { if(confirm("기록 삭제?")) await deleteDoc(doc(db, "matches", id)); };
+    window.delPost = async (id) => { if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "parties", id)); };
+    window.delMatch = async (id) => { if(confirm("내역을 삭제하시겠습니까?")) await deleteDoc(doc(db, "matches", id)); };
 
     document.getElementById('btn-confirm-send').onclick = async () => {
         const u = auth.currentUser;
