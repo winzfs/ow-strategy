@@ -28,17 +28,21 @@
         .party-card.tank { border-left-color: var(--tank); }
         .party-card.dps { border-left-color: var(--dps); }
         .party-card.sup { border-left-color: var(--sup); }
-        .party-card.CHAMPION { border-left-color: var(--champ); } /* 챔피언 전용 색상 */
+        .party-card.CHAMPION { border-left-color: var(--champ); }
         
-        .delete-btn { position: absolute; top: 10px; right: 10px; color: #ff3c3c; cursor: pointer; font-size: 20px; display: none; padding: 5px; }
+        /* 삭제 버튼: 겹치지 않도록 오른쪽 여백 확보 */
+        .delete-btn { position: absolute; top: 12px; right: 12px; color: #ff3c3c; cursor: pointer; font-size: 20px; display: none; padding: 5px; z-index: 10; }
         .party-card.mine .delete-btn, .party-card.admin .delete-btn { display: block; }
         
         .btag { font-weight: bold; color: var(--accent); font-size: 18px; margin: 5px 0; }
-        .tags { margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+        .tags { margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; padding-right: 30px; } /* 삭제 버튼 공간 확보 */
         .tag { font-size: 11px; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; }
         .tag.tier-label { background: #444; color: white; font-weight: bold; }
-        .time-tag { font-size: 11px; color: #888; margin-left: auto; }
-        .desc { font-size: 14px; color: #ddd; line-height: 1.4; margin-top: 10px; }
+        .time-tag { font-size: 11px; color: #888; }
+        
+        /* Most 표시: 박스 제거하고 텍스트로만 */
+        .most-text { font-size: 12px; color: #aaa; margin-top: 5px; }
+        .desc { font-size: 14px; color: #ddd; line-height: 1.4; margin-top: 8px; border-top: 1px solid #333; padding-top: 8px; }
     </style>
 </head>
 <body>
@@ -100,7 +104,7 @@
     const auth = getAuth(app);
     const colRef = collection(db, "parties");
 
-    // 🔴 본인 이메일 주소로 수정하세요!
+    // 🔴 관리자 이메일 적용 완료
     const ADMIN_EMAIL = "jazzhjm@gmail.com"; 
 
     function formatTime(timestamp) {
@@ -171,17 +175,16 @@
             const isAdmin = user && user.email === ADMIN_EMAIL;
 
             const card = document.createElement('div');
-            // 포지션뿐만 아니라 CHAMPION 등급도 클래스에 추가
             card.className = `party-card ${p.pos} ${p.tier} ${isMine ? 'mine' : ''} ${isAdmin ? 'admin' : ''}`;
             card.innerHTML = `
                 <div class="delete-btn">✕</div>
                 <div class="tags">
                     <span class="tag tier-label">${p.tier} ${p.tierNum}</span>
                     <span class="tag">${p.pos.toUpperCase()}</span>
-                    <span class="time-tag">${formatTime(p.createdAt)}</span>
+                    <span class="time-tag">• ${formatTime(p.createdAt)}</span>
                 </div>
                 <div class="btag">${p.btag}</div>
-                <div class="tag">Most: ${p.most || '-'}</div>
+                <div class="most-text">Most: ${p.most || '-'}</div>
                 <div class="desc">${p.desc}</div>
             `;
             card.querySelector('.delete-btn').onclick = () => {
