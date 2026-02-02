@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - Noti Fix</title>
+    <title>Overwatch Hub - Final Complete</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
@@ -12,7 +12,7 @@
         .nav-tabs div { cursor: pointer; font-weight: 600; font-size: 14px; color: #888; transition: 0.2s; position: relative; }
         .nav-tabs div.active { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
         
-        /* 상단 메뉴 NEW 뱃지 */
+        /* 상단 메뉴 NEW 알림 뱃지 */
         .menu-new { background: #ff3c3c; color: white; font-size: 9px; padding: 1px 5px; border-radius: 4px; margin-left: 4px; font-weight: 800; animation: blink 1.2s infinite; vertical-align: top; display: none; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
@@ -23,12 +23,11 @@
         
         .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
         .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
-        .btn-done { background: #222 !important; color: #555 !important; cursor: default !important; border: 1px solid #333; }
         .btn-danger { background: #ff3c3c; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; }
 
         input, select, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
-        .info-label { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #333; color: #eee; margin-right: 4px; border: 1px solid #444; }
+        .info-label { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #333; border: 1px solid #444; margin-right: 4px; }
     </style>
 </head>
 <body>
@@ -52,8 +51,8 @@
 <div class="container">
     <div id="page-list" class="page active">
         <div class="box">
-            <h4 style="margin:0 0 10px 0; color:var(--accent);">🚀 파티 모집</h4>
-            <div style="display:flex; gap:5px;">
+            <h4 style="margin:0; color:var(--accent);">🚀 파티 모집</h4>
+            <div style="display:flex; gap:5px; margin-top:10px;">
                 <select id="post-main-pos"><option value="tank">🛡️ 돌격</option><option value="dps">⚔️ 공격</option><option value="sup">💉 지원</option></select>
                 <select id="post-tier"><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option><option value="MASTER">MASTER</option></select>
             </div>
@@ -66,7 +65,6 @@
     <div id="page-profile" class="page">
         <div class="box">
             <h3>내 프로필</h3>
-            <label style="font-size:12px; color:#888;">배틀태그</label>
             <input type="text" id="profile-btag" placeholder="배틀태그#1234">
             <div style="display:flex; gap:5px;"><select id="profile-pos"><option value="tank">돌격</option><option value="dps">공격</option><option value="sup">지원</option></select><select id="profile-tier"><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option></select></div>
             <button class="btn-main" id="btn-save-profile">정보 저장</button>
@@ -76,7 +74,7 @@
     <div id="page-noti" class="page"><h3>📫 알림 센터</h3><div id="noti-list"></div></div>
 </div>
 
-<div class="modal-overlay" id="request-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;"><h3>파티 신청</h3><textarea id="request-msg" placeholder="보낼 메시지" rows="4"></textarea><button class="btn-main" id="btn-confirm-send">신청하기</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
+<div class="modal-overlay" id="request-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;"><h3>파티 신청</h3><textarea id="request-msg" placeholder="상대에게 보낼 메시지" rows="4"></textarea><button class="btn-main" id="btn-confirm-send">신청하기</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -109,7 +107,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div><b>${p.btag.split('#')[0]}#****</b> <span style="font-size:12px; color:var(--accent);">[${p.pos.toUpperCase()} / ${p.tier}]</span></div>
                     <div>
-                        ${isMine ? `<button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>` : (isSent ? `<button class="btn-sub btn-done">신청완료</button>` : `<button class="btn-sub" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`)}
+                        ${isMine ? `<button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>` : (isSent ? `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청완료</button>` : `<button class="btn-sub" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`)}
                         ${auth.currentUser?.email === ADMIN_EMAIL && !isMine ? `<button class="btn-danger" style="margin-left:5px;" onclick="delPost('${p.id}')">관리삭제</button>` : ''}
                     </div>
                 </div><p style="margin-top:10px; font-size:14px; color:#bbb;">${p.desc}</p>`;
@@ -124,7 +122,7 @@
         document.getElementById('user-info').style.display = user ? 'block' : 'none';
         if(user) {
             onSnapshot(query(collection(db, "matches"), where("fromUid", "==", user.uid)), (snap) => { mySentRequests = new Set(snap.docs.map(d => d.data().postId)); renderList(); });
-
+            
             onSnapshot(collection(db, "matches"), (snap) => {
                 const list = document.getElementById('noti-list'); list.innerHTML = ''; 
                 let hasIncomingPending = false;
@@ -140,14 +138,14 @@
                     const box = document.createElement('div'); box.className = 'box';
                     
                     if(m.status === 'pending') {
-                        // 관리자이거나 나에게 온 신청인 경우 NEW 체크
-                        if(isToMe || (isAdmin && m.status === 'pending')) { 
+                        if(isToMe) { 
                             hasIncomingPending = true;
-                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신규 신청 도착</div>
+                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div>
                             <div style="font-size:13px; margin:8px 0;">상대: <span class="info-label">${m.fromPos}</span> <span class="info-label">${m.fromTier}</span><br>메시지: ${m.message}</div>
-                            <button class="btn-main" onclick="acceptMatch('${ds.id}')">수락 (상세 정보 확인)</button>`;
+                            <button class="btn-main" onclick="acceptMatch('${ds.id}')">수락 (상세 확인)</button>`;
                         } else { box.innerHTML = `<div style="color:#666; font-size:13px;">⌛ ${m.toBtag.split('#')[0]}#****님께 보낸 신청 대기 중...</div>`; }
                     } else {
+                        // 수락 완료 후
                         box.innerHTML = `<div style="color:var(--sup); font-weight:bold; margin-bottom:10px;">✅ 매칭 완료!</div>
                         <div style="background:#000; padding:15px; border-radius:8px; border:1px solid var(--sup); text-align:center;">
                             <div style="font-size:20px; color:white; font-weight:bold; margin-bottom:5px;">${isToMe ? m.fromBtag : m.toBtag}</div>
@@ -157,41 +155,61 @@
                     }
                     list.appendChild(box);
                 });
-                
-                // NEW 표시 업데이트
-                const newTag = document.getElementById('menu-new-tag');
-                if(hasIncomingPending) { newTag.style.display = 'inline-block'; } 
-                else { newTag.style.display = 'none'; }
+                document.getElementById('menu-new-tag').style.display = hasIncomingPending ? 'inline-block' : 'none';
             });
         }
     });
 
+    // 로그인 & 회원가입 통합 핸들러
+    document.getElementById('btn-login').onclick = async () => {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-password').value;
+        if(!email || !pass) return alert("이메일과 비밀번호를 입력하세요.");
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (e) {
+            try {
+                await createUserWithEmailAndPassword(auth, email, pass);
+            } catch (err) { alert("접속 오류: " + err.message); }
+        }
+    };
+
     window.acceptMatch = async (id) => { await updateDoc(doc(db, "matches", id), { status: 'accepted' }); };
-    window.delPost = async (id) => { if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "parties", id)); };
-    window.delMatch = async (id) => { if(confirm("내역을 삭제하시겠습니까?")) await deleteDoc(doc(db, "matches", id)); };
+    window.delPost = async (id) => { if(confirm("모집 글을 삭제할까요?")) await deleteDoc(doc(db, "parties", id)); };
+    window.delMatch = async (id) => { if(confirm("알림 기록을 삭제할까요?")) await deleteDoc(doc(db, "matches", id)); };
+
+    document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
+
+    document.getElementById('btn-post').onclick = async () => {
+        const myU = await getDoc(doc(db, "users", auth.currentUser.uid));
+        if(!myU.exists() || !myU.data().btag) return alert("내 정보 탭에서 배틀태그를 먼저 등록하세요.");
+        await addDoc(collection(db, "parties"), { 
+            btag: myU.data().btag, pos: document.getElementById('post-main-pos').value, 
+            tier: document.getElementById('post-tier').value, desc: document.getElementById('post-desc').value, 
+            uid: auth.currentUser.uid, createdAt: Date.now() 
+        });
+        alert("모집을 시작했습니다!");
+    };
+
+    document.getElementById('btn-save-profile').onclick = async () => {
+        await setDoc(doc(db, "users", auth.currentUser.uid), { 
+            btag: document.getElementById('profile-btag').value, 
+            tier: document.getElementById('profile-tier').value, 
+            pos: document.getElementById('profile-pos').value 
+        }, {merge:true});
+        alert("프로필 정보가 저장되었습니다.");
+    };
 
     document.getElementById('btn-confirm-send').onclick = async () => {
-        const u = auth.currentUser;
-        const myU = await getDoc(doc(db, "users", u.uid));
+        const myU = await getDoc(doc(db, "users", auth.currentUser.uid));
+        if(!myU.exists() || !myU.data().btag) return alert("프로필에서 배틀태그를 먼저 저장해주세요.");
         const d = myU.data();
-        if(!d?.btag) return alert("프로필에서 태그를 먼저 저장하세요.");
         await addDoc(collection(db, "matches"), { 
-            fromUid: u.uid, fromBtag: d.btag, fromTier: d.tier||"GOLD", fromPos: d.pos||"지원",
+            fromUid: auth.currentUser.uid, fromBtag: d.btag, fromTier: d.tier||"GOLD", fromPos: d.pos||"지원",
             toUid: targetData.uid, toBtag: targetData.btag, postId: targetData.postId, 
             message: document.getElementById('request-msg').value, status: "pending", createdAt: Date.now() 
         });
-        closeModal(); alert("신청 완료!");
-    };
-
-    document.getElementById('btn-login').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value).catch(() => createUserWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value));
-    document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
-    document.getElementById('btn-post').onclick = async () => {
-        const u = auth.currentUser; const myU = await getDoc(doc(db, "users", u.uid));
-        if(!myU.data()?.btag) return alert("배틀태그 등록 필요");
-        await addDoc(collection(db, "parties"), { btag: myU.data().btag, pos: document.getElementById('post-main-pos').value, tier: document.getElementById('post-tier').value, desc: document.getElementById('post-desc').value, uid: u.uid, createdAt: Date.now() }); alert("등록 완료!");
-    };
-    document.getElementById('btn-save-profile').onclick = async () => {
-        await setDoc(doc(db, "users", auth.currentUser.uid), { btag: document.getElementById('profile-btag').value, tier: document.getElementById('profile-tier').value, pos: document.getElementById('profile-pos').value }, {merge:true}); alert("저장됨");
+        closeModal(); alert("신청 메시지를 보냈습니다!");
     };
 </script>
 </body>
