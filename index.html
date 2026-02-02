@@ -34,8 +34,7 @@
         .btn-rec-active { background: #ff3c3c !important; animation: pulse 1.5s infinite; border-color: white; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
-        #viewport { flex-grow: 1; position: relative; overflow: hidden; background: #000; cursor: grab; }
-        #viewport:active { cursor: grabbing; }
+        #viewport { flex-grow: 1; position: relative; overflow: hidden; background: #000; }
         #map-container { position: absolute; transform-origin: 0 0; will-change: transform; }
         #map-image { display: block; user-select: none; -webkit-user-drag: none; }
         
@@ -94,7 +93,6 @@
 <div id="sidebar">
     <div style="height: 55px;"></div>
     <div class="map-selector-wrapper">
-        <label style="font-size: 11px; color: #aaa; margin-bottom: 5px; display: block;">맵 선택</label>
         <select class="map-select" id="map-select">
             <option value="Lijiang_Tower_Top_Down_View.jpg">리장 타워</option>
             <option value="https://overwatch.wiki.gallery/images/3/30/Hanamura_top-down.jpg">하나무라</option>
@@ -127,7 +125,7 @@
     const mapImg = document.getElementById('map-image');
 
     let scale = 0.5, tx = 0, ty = 0;
-    let state = { isDown: false, mode: null, isRecording: false, initialDist: 0, initialScale: 1 };
+    let state = { isDown: false, mode: null, isRecording: false, lastDist: 0 };
     let activeHero = null, history = [], currentTool = 'move', currentTeamColor = '#00a2ff';
     let startPoint = { x: 0, y: 0 }, mapStart = { x: 0, y: 0 };
     let heroPaths = new Map();
@@ -151,21 +149,22 @@
         return { x: (clientX - rect.left) / scale, y: (clientY - rect.top) / scale };
     }
 
-    // --- 줌 & 이동 기능 (PC 휠) ---
+    // --- PC 휠 줌 ---
     viewport.addEventListener('wheel', (e) => {
         e.preventDefault();
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
-        const pointer = { x: e.clientX, y: e.clientY };
-        const coords = getLocalPos(pointer.x, pointer.y);
-        
         const newScale = Math.min(Math.max(0.1, scale * delta), 5);
-        tx = pointer.x - coords.x * newScale;
-        ty = pointer.y - coords.y * newScale;
+        const rect = mapContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        tx -= (mouseX / scale) * (newScale - scale);
+        ty -= (mouseY / scale) * (newScale - scale);
         scale = newScale;
         updateTransform();
     }, { passive: false });
 
-    // --- 애니메이션 로직 ---
+    // --- 녹화 제어 ---
     const btnRecStart = document.getElementById('btn-rec-start');
     const btnRecStop = document.getElementById('btn-rec-stop');
 
@@ -196,16 +195,13 @@
         });
     };
 
-    // --- 상호작용 핸들러 ---
     function onStart(e) {
         if (e.target.closest('#sidebar') || e.target.closest('.controls')) return;
         const isTouch = e.type.includes('touch');
         
-        // 핀치 줌 시작 (모바일)
         if (isTouch && e.touches.length === 2) {
             state.mode = 'zoom';
-            state.initialDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-            state.initialScale = scale;
+            state.lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
             return;
         }
 
@@ -215,7 +211,6 @@
 
         state.isDown = true;
         
-        // 영웅 선택 해제
         if (!heroEl) {
             document.querySelectorAll('.placed-hero').forEach(h => h.classList.remove('selected'));
             activeHero = null;
@@ -240,19 +235,20 @@
     function onMove(e) {
         const isTouch = e.type.includes('touch');
         
-        // 핀치 줌 진행 (모바일)
         if (state.mode === 'zoom' && isTouch && e.touches.length === 2) {
             const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-            const newScale = Math.min(Math.max(0.1, state.initialScale * (dist / state.initialDist)), 5);
+            const delta = dist / state.lastDist;
+            const newScale = Math.min(Math.max(0.1, scale * delta), 5);
             
-            // 중앙 기준 확대
             const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-            const coords = getLocalPos(midX, midY);
+            const rect = mapContainer.getBoundingClientRect();
             
-            tx = midX - coords.x * newScale;
-            ty = midY - coords.y * newScale;
+            tx -= ((midX - rect.left) / scale) * (newScale - scale);
+            ty -= ((midY - rect.top) / scale) * (newScale - scale);
+            
             scale = newScale;
+            state.lastDist = dist;
             updateTransform();
             return;
         }
