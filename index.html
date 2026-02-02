@@ -5,43 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>오버워치 전략 보드 Pro</title>
     <style>
-        :root { --sidebar-width: 250px; --accent-color: #ff9c00; }
-        body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: sans-serif; background: #1a1a1a; color: white; touch-action: none; }
+        :root { --sidebar-width: 260px; --accent-color: #ff9c00; }
+        body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: 'BigNoodleToo', sans-serif; background: #1a1a1a; color: white; touch-action: none; }
         
-        /* 사이드바 */
         #sidebar { 
             width: var(--sidebar-width); background: #2d2d2d; overflow-y: auto; padding: 10px; 
             border-right: 2px solid #444; transition: transform 0.3s ease; z-index: 100;
         }
         #sidebar.hidden { transform: translateX(-100%); position: absolute; height: 100%; }
         
-        /* 숨기기 버튼 */
         #toggle-btn {
             position: absolute; left: 10px; top: 10px; z-index: 101;
             background: var(--accent-color); border: none; color: black; font-weight: bold;
             padding: 8px 12px; cursor: pointer; border-radius: 4px;
         }
 
-        .category h3 { border-bottom: 1px solid #666; padding-bottom: 5px; color: var(--accent-color); font-size: 14px; }
-        .hero-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .category h3 { border-bottom: 1px solid #666; padding-bottom: 5px; color: var(--accent-color); font-size: 14px; margin-top: 20px; }
+        .hero-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        
+        /* 사이드바 아이콘 */
         .hero-item { 
-            background: #444; border-radius: 4px; padding: 5px; cursor: grab; font-size: 11px; 
-            text-align: center; border: 1px solid transparent; user-select: none;
+            aspect-ratio: 1/1; background: #444; border-radius: 4px; overflow: hidden;
+            cursor: pointer; border: 2px solid transparent; transition: 0.1s; position: relative;
         }
-        .hero-item:active { cursor: grabbing; opacity: 0.7; }
+        .hero-item:hover { border-color: var(--accent-color); }
+        .hero-item img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .hero-item span { position: absolute; bottom: 0; width: 100%; font-size: 8px; background: rgba(0,0,0,0.6); text-align: center; }
 
-        /* 맵 영역 */
         #viewport { flex-grow: 1; position: relative; overflow: hidden; background: #000; }
         #map-container { position: absolute; transform-origin: 0 0; will-change: transform; }
         #map-image { display: block; user-select: none; -webkit-user-drag: none; max-width: none; }
 
-        /* 배치된 영웅 */
+        /* 맵에 배치된 아이콘 */
         .placed-hero { 
-            position: absolute; width: 44px; height: 44px; cursor: move; z-index: 10; 
-            transform: translate(-50%, -50%); border: 2px solid var(--accent-color); 
-            border-radius: 50%; background: #333; display: flex; align-items: center; 
-            justify-content: center; font-size: 9px; font-weight: bold;
+            position: absolute; width: 50px; height: 50px; cursor: move; z-index: 10; 
+            transform: translate(-50%, -50%); border: 3px solid var(--accent-color); 
+            border-radius: 50%; background: #333; overflow: hidden;
+            touch-action: none; /* 모바일 드래그 필수 */
         }
+        .placed-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -49,101 +51,149 @@
 <button id="toggle-btn">MENU</button>
 
 <div id="sidebar">
-    <div style="height: 40px;"></div> <div class="category">
-        <h3>돌격 (TANK)</h3>
-        <div class="hero-list" id="tank-list"></div>
-    </div>
-    <div class="category">
-        <h3>공격 (DPS)</h3>
-        <div class="hero-list" id="dps-list"></div>
-    </div>
-    <div class="category">
-        <h3>지원 (SUP)</h3>
-        <div class="hero-list" id="sup-list"></div>
-    </div>
+    <div style="height: 40px;"></div>
+    <div id="hero-categories"></div>
 </div>
 
 <div id="viewport">
     <div id="map-container">
-        <img id="map-image" src="Lijiang_Tower_Top_Down_View.jpg" alt="맵 이미지를 업로드하고 파일명을 맞추세요">
+        <img id="map-image" src="Lijiang_Tower_Top_Down_View.jpg" alt="맵 이미지 로드 대기 중...">
     </div>
 </div>
 
 <script>
+    // 영웅 ID와 이름 매칭 (이미지 파일명을 위해 영어 ID 권장)
     const heroes = {
-        tank: ["디바", "둠피", "라맛", "라인", "레킹", "호그", "마우가", "시그마", "윈스턴", "자리야", "정커퀸"],
-        dps: ["겐지", "리퍼", "메이", "바스", "소전", "솔저", "솜브라", "시메", "애쉬", "에코", "위도우", "정랫", "캐시디", "토브", "트레", "파라", "벤처"],
-        sup: ["라위", "루시우", "바티", "브리기", "아나", "일리리", "젠야타", "키리코", "모이라"]
+        "돌격 (TANK)": [
+            {id: "dva", name: "디바"}, {id: "doomfist", name: "둠피"}, {id: "ramattra", name: "라맛"}, 
+            {id: "reinhardt", name: "라인"}, {id: "wrecking-ball", name: "레킹"}, {id: "roadhog", name: "호그"}, 
+            {id: "mauga", name: "마우가"}, {id: "sigma", name: "시그마"}, {id: "winston", name: "윈스턴"}, 
+            {id: "zarya", name: "자리야"}, {id: "junker-queen", name: "정커퀸"}
+        ],
+        "공격 (DPS)": [
+            {id: "genji", name: "겐지"}, {id: "reaper", name: "리퍼"}, {id: "mei", name: "메이"}, 
+            {id: "bastion", name: "바스"}, {id: "sojourn", name: "소전"}, {id: "soldier-76", name: "솔저"}, 
+            {id: "sombra", name: "솜브라"}, {id: "symmetra", name: "시메"}, {id: "ashe", name: "애쉬"}, 
+            {id: "echo", name: "에코"}, {id: "widowmaker", name: "위도우"}, {id: "junkrat", name: "정랫"}, 
+            {id: "cassidy", name: "캐시디"}, {id: "torbjorn", name: "토브"}, {id: "tracer", name: "트레"}, 
+            {id: "pharah", name: "파라"}, {id: "venture", name: "벤처"}
+        ],
+        "지원 (SUP)": [
+            {id: "lifeweaver", name: "라위"}, {id: "lucio", name: "루시우"}, {id: "baptiste", name: "바티"}, 
+            {id: "brigitte", name: "브리기"}, {id: "ana", name: "아나"}, {id: "illari", name: "일리리"}, 
+            {id: "zenyatta", name: "젠야타"}, {id: "kiriko", name: "키리코"}, {id: "moira", name: "모이라"}
+        ]
     };
-
-    // 사이드바 토글
-    document.getElementById('toggle-btn').onclick = () => {
-        document.getElementById('sidebar').classList.toggle('hidden');
-    };
-
-    // 영웅 목록 생성
-    Object.keys(heroes).forEach(role => {
-        const list = document.getElementById(`${role}-list`);
-        heroes[role].forEach(name => {
-            const item = document.createElement('div');
-            item.className = 'hero-item';
-            item.draggable = true;
-            item.innerText = name;
-            item.onmousedown = () => item.style.cursor = 'grabbing';
-            item.ondragstart = (e) => e.dataTransfer.setData('heroName', name);
-            // 모바일 터치 배치 대응
-            item.ontouchend = (e) => {
-                const touch = e.changedTouches[0];
-                const viewportRect = viewport.getBoundingClientRect();
-                if (touch.clientX > viewportRect.left) {
-                    const x = (touch.clientX - (translateX + viewportRect.left)) / scale;
-                    const y = (touch.clientY - (translateY + viewportRect.top)) / scale;
-                    createHeroOnMap(name, x, y);
-                }
-            };
-            list.appendChild(item);
-        });
-    });
 
     const viewport = document.getElementById('viewport');
     const mapContainer = document.getElementById('map-container');
     let scale = 0.5, translateX = 0, translateY = 0;
     let isDragging = false, startX, startY;
-    let lastPinchDistance = null;
 
-    // 1. 휠 줌 (데스크톱)
+    // 사이드바 생성 및 클릭 이벤트
+    const categoryContainer = document.getElementById('hero-categories');
+    Object.entries(heroes).forEach(([role, list]) => {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'category';
+        catDiv.innerHTML = `<h3>${role}</h3><div class="hero-list"></div>`;
+        const listDiv = catDiv.querySelector('.hero-list');
+        
+        list.forEach(hero => {
+            const item = document.createElement('div');
+            item.className = 'hero-item';
+            // 오버워치 공식 아이콘 API 활용 (일부 다를 수 있음)
+            const imgUrl = `https://d1u1mce87gyfbn.cloudfront.net/hero/${hero.id}/icon-portrait.png`;
+            item.innerHTML = `<img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/50?text=${hero.id}'"><span>${hero.name}</span>`;
+            
+            // 클릭 시 중앙 배치
+            item.onclick = () => {
+                const centerX = (viewport.offsetWidth / 2 - translateX) / scale;
+                const centerY = (viewport.offsetHeight / 2 - translateY) / scale;
+                createHeroOnMap(hero, centerX, centerY);
+            };
+            listDiv.appendChild(item);
+        });
+        categoryContainer.appendChild(catDiv);
+    });
+
+    function createHeroOnMap(hero, x, y) {
+        const div = document.createElement('div');
+        div.className = 'placed-hero';
+        div.style.left = `${x}px`;
+        div.style.top = `${y}px`;
+        const imgUrl = `https://d1u1mce87gyfbn.cloudfront.net/hero/${hero.id}/icon-portrait.png`;
+        div.innerHTML = `<img src="${imgUrl}">`;
+        
+        // 이동 로직 (드래그)
+        let moveStart = false;
+        const onStart = (e) => { 
+            e.stopPropagation(); 
+            moveStart = true; 
+        };
+        const onMove = (ex, ey) => {
+            if (!moveStart) return;
+            const rect = viewport.getBoundingClientRect();
+            div.style.left = `${(ex - rect.left - translateX) / scale}px`;
+            div.style.top = `${(ey - rect.top - translateY) / scale}px`;
+        };
+
+        div.onmousedown = onStart;
+        div.ontouchstart = onStart;
+
+        window.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY));
+        window.addEventListener('touchmove', (e) => {
+            if(moveStart) e.preventDefault();
+            onMove(e.touches[0].clientX, e.touches[0].clientY);
+        }, {passive: false});
+
+        window.addEventListener('mouseup', () => moveStart = false);
+        window.addEventListener('touchend', () => moveStart = false);
+        
+        div.oncontextmenu = (e) => { e.preventDefault(); div.remove(); };
+        mapContainer.appendChild(div);
+    }
+
+    // 맵 줌/드래그 로직 (기존 유지 및 최적화)
+    document.getElementById('toggle-btn').onclick = () => document.getElementById('sidebar').classList.toggle('hidden');
+
     viewport.onwheel = (e) => {
         e.preventDefault();
-        const zoomSpeed = 0.1;
-        const cursorX = (e.clientX - (translateX + viewport.offsetLeft)) / scale;
-        const cursorY = (e.clientY - (translateY + viewport.offsetTop)) / scale;
+        const delta = e.deltaY < 0 ? 1.1 : 0.9;
+        const rect = viewport.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
         
-        if (e.deltaY < 0) scale *= (1 + zoomSpeed);
-        else scale /= (1 + zoomSpeed);
+        const mapX = (mouseX - translateX) / scale;
+        const mapY = (mouseY - translateY) / scale;
         
-        scale = Math.min(Math.max(0.1, scale), 4);
-        translateX = e.clientX - viewport.offsetLeft - cursorX * scale;
-        translateY = e.clientY - viewport.offsetTop - cursorY * scale;
+        scale = Math.min(Math.max(0.1, scale * delta), 4);
+        translateX = mouseX - mapX * scale;
+        translateY = mouseY - mapY * scale;
         update();
     };
 
-    // 2. 터치 및 드래그 (모바일 핀치 줌 포함)
+    viewport.onmousedown = (e) => {
+        if (e.button === 0) { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; }
+    };
+    window.onmousemove = (e) => { if (isDragging) { translateX = e.clientX - startX; translateY = e.clientY - startY; update(); } };
+    window.onmouseup = () => isDragging = false;
+
+    // 모바일 핀치 줌 & 맵 이동
+    let lastDist = 0;
     viewport.ontouchstart = (e) => {
         if (e.touches.length === 2) {
-            lastPinchDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+            lastDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
         } else {
             isDragging = true;
             startX = e.touches[0].clientX - translateX;
             startY = e.touches[0].clientY - translateY;
         }
     };
-
     viewport.ontouchmove = (e) => {
-        if (e.touches.length === 2 && lastPinchDistance) {
+        if (e.touches.length === 2) {
             const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-            const zoom = dist / lastPinchDistance;
-            scale = Math.min(Math.max(0.1, scale * zoom), 4);
-            lastPinchDistance = dist;
+            scale = Math.min(Math.max(0.1, scale * (dist / lastDist)), 4);
+            lastDist = dist;
             update();
         } else if (isDragging) {
             translateX = e.touches[0].clientX - startX;
@@ -151,68 +201,10 @@
             update();
         }
     };
+    viewport.ontouchend = () => { isDragging = false; lastDist = 0; };
 
-    viewport.ontouchend = () => { isDragging = false; lastPinchDistance = null; };
-
-    // 마우스 드래그 이동 (데스크톱)
-    viewport.onmousedown = (e) => {
-        if (e.target === viewport || e.target === document.getElementById('map-image')) {
-            isDragging = true;
-            startX = e.clientX - translateX;
-            startY = e.clientY - translateY;
-        }
-    };
-    window.onmousemove = (e) => {
-        if (isDragging) {
-            translateX = e.clientX - startX;
-            translateY = e.clientY - startY;
-            update();
-        }
-    };
-    window.onmouseup = () => isDragging = false;
-
-    function update() {
-        mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-    }
-
-    // 드롭 및 영웅 생성
-    viewport.ondragover = (e) => e.preventDefault();
-    viewport.ondrop = (e) => {
-        const name = e.dataTransfer.getData('heroName');
-        const rect = viewport.getBoundingClientRect();
-        const x = (e.clientX - rect.left - translateX) / scale;
-        const y = (e.clientY - rect.top - translateY) / scale;
-        createHeroOnMap(name, x, y);
-    };
-
-    function createHeroOnMap(name, x, y) {
-        const div = document.createElement('div');
-        div.className = 'placed-hero';
-        div.style.left = `${x}px`;
-        div.style.top = `${y}px`;
-        div.innerText = name;
-        
-        let moveStart = false;
-        const startMove = () => moveStart = true;
-        div.onmousedown = startMove;
-        div.ontouchstart = (e) => { e.stopPropagation(); moveStart = true; };
-
-        const duringMove = (ex, ey) => {
-            if (!moveStart) return;
-            const rect = viewport.getBoundingClientRect();
-            div.style.left = `${(ex - rect.left - translateX) / scale}px`;
-            div.style.top = `${(ey - rect.top - translateY) / scale}px`;
-        };
-
-        window.addEventListener('mousemove', (e) => duringMove(e.clientX, e.clientY));
-        window.addEventListener('touchmove', (e) => duringMove(e.touches[0].clientX, e.touches[0].clientY));
-        window.onmouseup = window.ontouchend = () => moveStart = false;
-        
-        div.oncontextmenu = (e) => { e.preventDefault(); div.remove(); };
-        mapContainer.appendChild(div);
-    }
-
-    update(); // 초기 상태 업데이트
+    function update() { mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`; }
+    update();
 </script>
 </body>
 </html>
