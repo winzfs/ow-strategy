@@ -281,7 +281,7 @@
                 div.style.top = ((rect.height/2 - ty)/scale) + 'px';
                 div.innerHTML = `<img src="https://d1u1mce87gyfbn.cloudfront.net/hero/${id}/icon-portrait.png"><div class="hero-delete-btn">✕</div>`;
                 
-                 // 삭제 버튼 이벤트 (터치/마우스 공용) // 삭제 버튼 이벤트 (터치/마우스 공용)
+                // 삭제 버튼 이벤트 (터치/마우스 공용)
                 const delBtn = div.querySelector('.hero-delete-btn');
                 const deleteAction = (ev) => { ev.stopPropagation(); div.remove(); };
                 delBtn.addEventListener('mousedown', deleteAction);
