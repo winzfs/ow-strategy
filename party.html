@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - Admin Fixed</title>
+    <title>Overwatch Hub - Final Complete</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
@@ -12,8 +12,9 @@
         .nav-tabs div { cursor: pointer; font-weight: 600; font-size: 14px; color: #888; transition: 0.2s; position: relative; }
         .nav-tabs div.active { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
         
-        .menu-new { background: #ff3c3c; color: white; font-size: 10px; padding: 1px 5px; border-radius: 4px; margin-left: 5px; font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        /* 메뉴바 NEW 알림 */
+        .menu-new { background: #ff3c3c; color: white; font-size: 9px; padding: 1px 5px; border-radius: 4px; margin-left: 4px; font-weight: 800; animation: blink 1.2s infinite; vertical-align: top; }
+        @keyframes blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } }
 
         .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
         .page { display: none; }
@@ -27,7 +28,7 @@
 
         input, select, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
-        .info-tag { font-size: 12px; padding: 2px 6px; border-radius: 4px; margin-right: 5px; background: #333; }
+        .info-label { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #333; color: #eee; margin-right: 4px; border: 1px solid #444; }
     </style>
 </head>
 <body>
@@ -57,7 +58,7 @@
                 <select id="post-tier"><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option><option value="MASTER">MASTER</option></select>
             </div>
             <textarea id="post-desc" placeholder="모집 내용" rows="2"></textarea>
-            <button class="btn-main" id="btn-post">모집 글 올리기</button>
+            <button class="btn-main" id="btn-post">모집 시작</button>
         </div>
         <div id="party-list"></div>
     </div>
@@ -65,9 +66,11 @@
     <div id="page-profile" class="page">
         <div class="box">
             <h3>내 프로필</h3>
+            <label style="font-size:12px; color:#888;">배틀태그</label>
             <input type="text" id="profile-btag" placeholder="배틀태그#1234">
+            <label style="font-size:12px; color:#888;">주 포지션 및 티어</label>
             <div style="display:flex; gap:5px;"><select id="profile-pos"><option value="tank">돌격</option><option value="dps">공격</option><option value="sup">지원</option></select><select id="profile-tier"><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option></select></div>
-            <button class="btn-main" id="btn-save-profile">저장</button>
+            <button class="btn-main" id="btn-save-profile">정보 저장</button>
         </div>
     </div>
 
@@ -92,7 +95,7 @@
         document.querySelectorAll('.nav-tabs div').forEach(t => t.classList.remove('active')); 
         document.getElementById('page-'+id).classList.add('active'); 
         document.getElementById('tab-'+id).classList.add('active');
-        if(id === 'noti') document.getElementById('menu-new-tag').style.display = 'none';
+        if(id === 'noti') { document.getElementById('menu-new-tag').style.display = 'none'; }
     };
     window.closeModal = () => document.getElementById('request-modal').style.display = 'none';
     window.openRequestModal = (uid, btag, postId) => { if(!auth.currentUser) return alert("로그인 필요"); targetData = {uid, btag, postId}; document.getElementById('request-modal').style.display = 'flex'; };
@@ -106,8 +109,11 @@
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div><b>${p.btag.split('#')[0]}#****</b> <span style="font-size:12px; color:var(--accent);">[${p.pos.toUpperCase()} / ${p.tier}]</span></div>
-                    <div>${isMine ? `<button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>` : (isSent ? `<button class="btn-sub btn-done">신청완료</button>` : `<button class="btn-sub" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`)}</div>
-                </div><div style="margin-top:8px; font-size:14px; color:#bbb;">${p.desc}</div>`;
+                    <div>
+                        ${isMine ? `<button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>` : (isSent ? `<button class="btn-sub btn-done">신청완료</button>` : `<button class="btn-sub" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`)}
+                        ${auth.currentUser?.email === ADMIN_EMAIL && !isMine ? `<button class="btn-danger" style="margin-left:5px;" onclick="delPost('${p.id}')">관리삭제</button>` : ''}
+                    </div>
+                </div><p style="margin-top:10px; font-size:14px; color:#bbb;">${p.desc}</p>`;
             listDiv.appendChild(div);
         });
     };
@@ -121,10 +127,13 @@
             onSnapshot(query(collection(db, "matches"), where("fromUid", "==", user.uid)), (snap) => { mySentRequests = new Set(snap.docs.map(d => d.data().postId)); renderList(); });
 
             onSnapshot(collection(db, "matches"), (snap) => {
-                const list = document.getElementById('noti-list'); list.innerHTML = ''; let hasNew = false;
+                const list = document.getElementById('noti-list'); list.innerHTML = ''; 
+                let hasIncomingPending = false;
                 const isAdmin = user.email === ADMIN_EMAIL;
                 
-                snap.docs.forEach(ds => {
+                const sorted = snap.docs.sort((a,b) => (b.data().createdAt || 0) - (a.data().createdAt || 0));
+
+                sorted.forEach(ds => {
                     const m = ds.data();
                     if(!isAdmin && user.uid !== m.toUid && user.uid !== m.fromUid) return;
                     
@@ -133,23 +142,24 @@
                     
                     if(m.status === 'pending') {
                         if(isToMe) { 
-                            hasNew = true;
-                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신규 신청 도착</div>
-                            <p style="font-size:13px;">상대: <span class="info-tag">${m.fromPos}</span> <span class="info-tag">${m.fromTier}</span><br>메시지: ${m.message}</p>
-                            <button class="btn-main" onclick="acceptMatch('${ds.id}')">수락 (상세정보 보기)</button>`;
-                        } else { box.innerHTML = `<div style="color:#666;">⌛ ${m.toBtag.split('#')[0]}님께 보낸 신청 대기중...</div>`; }
+                            hasIncomingPending = true;
+                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div>
+                            <div style="font-size:13px; margin:8px 0;">상대: <span class="info-label">${m.fromPos}</span> <span class="info-label">${m.fromTier}</span><br>메시지: ${m.message}</div>
+                            <button class="btn-main" onclick="acceptMatch('${ds.id}')">수락 (상세 정보 확인)</button>`;
+                        } else { box.innerHTML = `<div style="color:#666; font-size:13px;">⌛ ${m.toBtag.split('#')[0]}#****님께 신청 대기 중...</div>`; }
                     } else {
-                        // 수락 완료 후: 배틀태그, 포지션, 티어 전체 공개
-                        box.innerHTML = `<div style="color:var(--sup); font-weight:bold; margin-bottom:10px;">✅ 매칭 성공! 상대 상세 정보</div>
+                        // 수락 완료 후 상태
+                        box.innerHTML = `<div style="color:var(--sup); font-weight:bold; margin-bottom:10px;">✅ 매칭 완료!</div>
                         <div style="background:#000; padding:15px; border-radius:8px; border:1px solid var(--sup); text-align:center;">
                             <div style="font-size:20px; color:white; font-weight:bold; margin-bottom:5px;">${isToMe ? m.fromBtag : m.toBtag}</div>
-                            <div style="font-size:13px; color:var(--sup);">${isToMe ? m.fromPos : '상대'} | ${isToMe ? m.fromTier : '상대티어'}</div>
+                            <div style="font-size:13px; color:var(--sup);">${isToMe ? m.fromPos : '상대'} | ${isToMe ? m.fromTier : '티어'}</div>
                         </div>
                         <button class="btn-sub" style="width:100%; margin-top:10px;" onclick="delMatch('${ds.id}')">내역 삭제</button>`;
                     }
-                    list.prepend(box);
+                    list.appendChild(box);
                 });
-                if(hasNew) document.getElementById('menu-new-tag').style.display = 'inline';
+                // 내가 받은 신청(isToMe)이 있을 때만 NEW 표시
+                document.getElementById('menu-new-tag').style.display = hasIncomingPending ? 'inline' : 'none';
             });
         }
     });
