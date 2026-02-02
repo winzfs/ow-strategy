@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - 매칭 시스템</title>
+    <title>Overwatch Hub - 최종 수정본</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
@@ -76,8 +76,7 @@
 
     <div id="page-noti" class="page">
         <h3 style="margin-top:0;">📫 매칭 현황</h3>
-        <div id="noti-list" style="text-align:center; padding:40px 0;">로그인 후 확인 가능합니다.</div>
-    </div>
+        <div id="noti-list"></div> </div>
 </div>
 
 <div class="modal-overlay" id="request-modal">
@@ -126,10 +125,25 @@
     window.closeModal = () => document.getElementById('request-modal').style.display = 'none';
     window.handleLogout = () => signOut(auth).then(() => location.reload());
 
-    // 신청 보내기 (오류 감지 보강)
+    // 구인글 쓰기
+    document.getElementById('btn-post-party').onclick = async () => {
+        if(!auth.currentUser) return alert("로그인 후 이용 가능합니다.");
+        await addDoc(collection(db, "parties"), {
+            btag: document.getElementById('post-btag').value,
+            most: document.getElementById('post-most').value,
+            tier: document.getElementById('post-tier').value,
+            subtier: document.getElementById('post-subtier').value,
+            pos: document.getElementById('post-pos').value,
+            desc: document.getElementById('post-desc').value,
+            uid: auth.currentUser.uid,
+            createdAt: Date.now()
+        });
+        alert("게시되었습니다.");
+    };
+
+    // 신청 보내기
     document.getElementById('btn-confirm-send').onclick = async () => {
         try {
-            const msg = document.getElementById('request-msg').value;
             const mySnap = await getDoc(doc(db, "users", auth.currentUser.uid));
             const myData = mySnap.exists() ? mySnap.data() : { btag: "익명" };
             
@@ -138,31 +152,28 @@
                 fromBtag: myData.btag || "익명",
                 toUid: tUser.uid,
                 toBtag: tUser.btag,
-                message: msg || "신청합니다!",
+                message: document.getElementById('request-msg').value || "신청합니다!",
                 status: "pending",
                 createdAt: Date.now()
             });
-            alert("신청이 완료되었습니다! 알림창에서 확인하세요.");
+            alert("신청 성공!");
             closeModal();
-        } catch (e) {
-            console.error(e);
-            alert("신청 실패: " + e.message);
-        }
+        } catch (e) { alert("오류 발생: " + e.message); }
     };
 
     window.acceptMatch = async (id) => await updateDoc(doc(db, "matches", id), {status: "accepted"});
 
+    // 로그인 상태 감시
     onAuthStateChanged(auth, (user) => {
+        const notiList = document.getElementById('noti-list');
         if(user) {
             document.getElementById('auth-ui').innerHTML = `<button onclick="handleLogout()" class="btn-sub">로그아웃</button>`;
             
-            // 매칭 알림 리스너 (실시간)
+            // 알림 데이터 실시간 감시 (본인 것만 필터링)
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-                const list = document.getElementById('noti-list');
-                list.innerHTML = '';
+                notiList.innerHTML = '';
                 let newCount = 0;
-                
-                if (snap.empty) { list.innerHTML = '<div style="color:#666;">내역이 없습니다.</div>'; }
+                if(snap.empty) notiList.innerHTML = '<div style="color:#666; text-align:center;">내역이 없습니다.</div>';
 
                 snap.forEach(ds => {
                     const m = ds.data();
@@ -171,31 +182,46 @@
                     const item = document.createElement('div');
                     item.className = 'box';
                     if(m.toUid === user.uid) { // 받은 신청
-                        if(m.status === 'pending') { 
+                        if(m.status === 'pending') {
                             newCount++;
-                            item.innerHTML = `<span class="status-tag" style="background:var(--accent); color:black;">받은 신청</span><div><b>${m.fromBtag}</b>: ${m.message}</div><button class="btn-main" onclick="acceptMatch('${ds.id}')">수락</button>`;
-                        } else if(m.status === 'accepted') {
-                            item.innerHTML = `<span class="status-tag" style="background:var(--sup); color:black;">매칭 완료</span><div><b>${m.fromBtag}</b>님과 연결되었습니다.</div>`;
+                            item.innerHTML = `<span class="status-tag" style="background:var(--accent); color:black;">받은 신청</span><div><b>${m.fromBtag}</b>: ${m.message}</div><button class="btn-main" style="margin-top:10px;" onclick="acceptMatch('${ds.id}')">수락하기</button>`;
+                        } else {
+                            item.innerHTML = `<span class="status-tag" style="background:var(--sup); color:black;">매칭 완료</span><div><b>${m.fromBtag}</b>님과 연결됨</div>`;
                         }
                     } else { // 보낸 신청
                         const isAcc = m.status === 'accepted';
                         item.innerHTML = `<span class="status-tag" style="background:${isAcc?'var(--sup)':'#555'}; color:black;">${isAcc?'수락됨':'대기중'}</span><div><b>${m.toBtag}</b>님께 보낸 신청</div>`;
                     }
-                    list.appendChild(item);
+                    notiList.appendChild(item);
                 });
                 document.getElementById('noti-badge').innerText = newCount;
                 document.getElementById('noti-badge').style.display = newCount > 0 ? 'inline' : 'none';
             });
+        } else {
+            notiList.innerHTML = '<div style="color:#666; text-align:center; padding:40px 0;">로그인 후 확인 가능합니다.</div>';
         }
     });
 
+    // 파티 리스트 (본인 글 신청 불가 로직 포함)
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
-        const container = document.getElementById('party-list'); container.innerHTML = '';
+        const container = document.getElementById('party-list');
+        container.innerHTML = '';
+        const myUid = auth.currentUser ? auth.currentUser.uid : null;
+
         snap.forEach(d => {
             const p = d.data();
-            const card = document.createElement('div'); card.className = 'party-card';
+            const card = document.createElement('div');
+            card.className = 'party-card';
             card.style.borderLeftColor = `var(--${p.pos})`;
-            card.innerHTML = `<div style="display:flex; justify-content:space-between;"><b>${p.btag}</b><button class="btn-sub" onclick="openRequestModal('${p.uid}', '${p.btag}')">신청</button></div><div>${p.tier} ${p.subtier || ''} · ${p.most}</div><p>${p.desc}</p>`;
+            
+            // 본인 글인 경우 신청 버튼 대신 '내 글' 표시
+            const btnHtml = (myUid === p.uid) 
+                ? `<span style="color:#666; font-size:12px;">내 글입니다</span>` 
+                : `<button class="btn-sub" onclick="openRequestModal('${p.uid}', '${p.btag}')">신청</button>`;
+
+            card.innerHTML = `<div style="display:flex; justify-content:space-between;"><b>${p.btag}</b>${btnHtml}</div>
+                              <div style="font-size:12px; color:#888;">${p.tier} ${p.subtier || ''} · ${p.most}</div>
+                              <p style="margin-top:10px; font-size:14px;">${p.desc}</p>`;
             container.appendChild(card);
         });
     });
@@ -203,6 +229,18 @@
     document.getElementById('btn-login').onclick = () => {
         signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value)
         .catch(() => createUserWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value));
+    };
+
+    document.getElementById('btn-save-game-info').onclick = async () => {
+        await setDoc(doc(db, "users", auth.currentUser.uid), {
+            btag: document.getElementById('my-btag').value,
+            most: document.getElementById('my-most').value,
+            tier: document.getElementById('my-tier').value,
+            subtier: document.getElementById('my-subtier').value,
+            pos: document.getElementById('my-pos').value,
+            desc: document.getElementById('my-desc').value
+        }, {merge: true});
+        alert("저장되었습니다.");
     };
 </script>
 </body>
