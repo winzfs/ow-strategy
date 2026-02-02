@@ -84,63 +84,93 @@
         </div>
 </div>
 
-<script>
-    let parties = [
-        { btag: "Dva#1234", tier: "Diamond", pos: "tank", most: "디바, 윈스턴", desc: "다이아 구간 듀오 구합니다. 마이크 가능해요!", time: Date.now() },
-        { btag: "Mercy#9999", tier: "Platinum", pos: "sup", most: "메르시, 키리코", desc: "함께 즐겜하실 딜러분 찾아요~", time: Date.now() - 3600000 }
-    ];
+<script type="module">
+  // 1. 필요한 기능들(App, Firestore)을 구글 서버에서 가져옵니다.
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } 
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    function renderList(filter = 'all') {
-        const listEl = document.getElementById('party-list');
-        listEl.innerHTML = '';
+  // 2. 사용자님의 고유 설정값 (방금 보여주신 그 코드입니다!)
+  const firebaseConfig = {
+    apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw",
+    authDomain: "ow-party-97936.firebaseapp.com",
+    projectId: "ow-party-97936",
+    storageBucket: "ow-party-97936.firebasestorage.app",
+    messagingSenderId: "15782204013",
+    appId: "1:15782204013:web:5c74ef2e603c311fc82564",
+    measurementId: "G-0M4Z5BETW6"
+  };
 
-        const filtered = filter === 'all' ? parties : parties.filter(p => p.pos === filter);
+  // 3. Firebase 및 데이터베이스(Firestore) 초기화
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const colRef = collection(db, "parties"); // 'parties'라는 이름의 폴더에 글을 저장하겠다는 뜻
 
-        filtered.forEach(p => {
-            const card = document.createElement('div');
-            card.className = `party-card ${p.pos}`;
-            card.innerHTML = `
-                <span class="tag">${p.tier}</span>
-                <span class="tag">${p.pos.toUpperCase()}</span>
-                <div class="btag" onclick="copyBtag('${p.btag}')">${p.btag}</div>
-                <div class="desc">${p.desc}</div>
-                <div class="most"><b>모스트:</b> ${p.most}</div>
-            `;
-            listEl.appendChild(card);
-        });
+  // --- [기능 1] 글 등록하기 ---
+  document.getElementById('submit-btn').onclick = async () => {
+    const btag = document.getElementById('btag').value;
+    const desc = document.getElementById('desc').value;
+
+    if(!btag.includes('#')) return alert("배틀태그 형식을 확인해주세요! (예: 닉네임#1234)");
+    if(!desc) return alert("내용을 입력해주세요!");
+
+    try {
+      await addDoc(colRef, {
+        btag: btag,
+        tier: document.getElementById('tier').value,
+        pos: document.getElementById('pos').value,
+        desc: desc,
+        createdAt: Date.now() // 최신순 정렬을 위한 시간 기록
+      });
+      
+      // 입력창 비우기
+      document.getElementById('btag').value = '';
+      document.getElementById('desc').value = '';
+    } catch (e) {
+      alert("데이터 전송 실패! Firestore가 '테스트 모드'인지 확인하세요.");
+      console.error(e);
     }
+  };
 
-    function addParty() {
-        const btag = document.getElementById('input-btag').value;
-        const tier = document.getElementById('input-tier').value;
-        const pos = document.getElementById('input-position').value;
-        const most = document.getElementById('input-most').value;
-        const desc = document.getElementById('input-desc').value;
+  // --- [기능 2] 실시간으로 글 목록 가져와서 그리기 ---
+  const q = query(colRef, orderBy("createdAt", "desc"));
+  
+  onSnapshot(q, (snapshot) => {
+    const listEl = document.getElementById('party-list');
+    listEl.innerHTML = ''; // 기존 목록 지우고 새로 그림
+    
+    snapshot.docs.forEach(docSnap => {
+      const p = docSnap.data();
+      const id = docSnap.id; // 문서의 고유 ID (삭제할 때 필요)
+      
+      const card = document.createElement('div');
+      card.className = `party-card ${p.pos}`;
+      card.innerHTML = `
+        <div class="delete-btn" onclick="deletePost('${id}')">✕</div>
+        <span class="tag">${p.tier}</span>
+        <div class="btag" onclick="copyText('${p.btag}')">${p.btag}</div>
+        <div style="font-size:14px; color:#ccc;">${p.desc}</div>
+      `;
+      listEl.appendChild(card);
+    });
+  });
 
-        if(!btag || !most) return alert("배틀태그와 모스트 캐릭터를 입력해주세요!");
-
-        parties.unshift({ btag, tier, pos, most, desc, time: Date.now() });
-        renderList();
-        
-        // 입력창 초기화
-        document.getElementById('input-btag').value = '';
-        document.getElementById('input-most').value = '';
-        document.getElementById('input-desc').value = '';
+  // --- [기능 3] 글 삭제 및 텍스트 복사 (HTML 버튼 클릭용) ---
+  window.deletePost = async (id) => {
+    if(confirm("정말 이 모집 글을 삭제할까요?")) {
+      try {
+        await deleteDoc(doc(db, "parties", id));
+      } catch (e) {
+        alert("삭제 권한이 없거나 오류가 발생했습니다.");
+      }
     }
+  };
 
-    function copyBtag(text) {
-        navigator.clipboard.writeText(text);
-        alert("배틀태그가 복사되었습니다: " + text);
-    }
-
-    function filterList(pos) {
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.innerText.toLowerCase().includes(pos) || (pos === 'all' && btn.innerText === '전체'));
-        });
-        renderList(pos);
-    }
-
-    renderList();
+  window.copyText = (text) => {
+    navigator.clipboard.writeText(text);
+    alert("배틀태그가 복사되었습니다: " + text);
+  };
 </script>
+
 </body>
 </html>
