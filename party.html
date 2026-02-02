@@ -7,10 +7,13 @@
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; }
         body { background: #111; color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
-        nav { background: #000; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--accent); }
-        nav a { color: white; text-decoration: none; font-weight: bold; margin-right: 15px; }
-        .auth-section { display: flex; align-items: center; gap: 10px; }
-        .btn-auth { background: #333; color: white; border: 1px solid #444; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        nav { background: #000; padding: 10px 20px; display: flex; flex-direction: column; gap: 10px; border-bottom: 2px solid var(--accent); }
+        @media (min-width: 600px) { nav { flex-direction: row; justify-content: space-between; align-items: center; } }
+        
+        .nav-links a { color: white; text-decoration: none; font-weight: bold; margin-right: 15px; }
+        .auth-box { display: flex; gap: 5px; align-items: center; }
+        .auth-box input { background: #222; border: 1px solid #444; color: white; padding: 5px; border-radius: 4px; font-size: 12px; width: 100px; }
+        .btn-auth { background: var(--accent); color: black; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
         .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
         .post-form { background: #222; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 30px; }
@@ -28,9 +31,7 @@
         
         .delete-btn { position: absolute; top: 10px; right: 10px; color: #ff3c3c; cursor: pointer; font-size: 20px; display: none; padding: 5px; }
         .party-card.mine .delete-btn, .party-card.admin .delete-btn { display: block; }
-        
         .btag { font-weight: bold; color: var(--accent); font-size: 18px; margin: 5px 0; }
-        .tags { margin-bottom: 8px; }
         .tag { font-size: 11px; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; margin-right: 5px; }
         .desc { font-size: 14px; color: #ddd; line-height: 1.4; }
     </style>
@@ -38,13 +39,14 @@
 <body>
 
 <nav>
-    <div>
+    <div class="nav-links">
         <a href="index.html">🛡️ 보드</a>
         <a href="party.html" style="color:var(--accent)">⚔️ 파티</a>
     </div>
-    <div class="auth-section">
-        <span id="user-display" style="font-size:12px; color:#ccc;"></span>
-        <button id="btn-login" class="btn-auth">불러오는 중...</button>
+    <div id="auth-ui" class="auth-box">
+        <input type="email" id="email" placeholder="이메일">
+        <input type="password" id="password" placeholder="비밀번호">
+        <button id="btn-login-action" class="btn-auth">로그인/가입</button>
     </div>
 </nav>
 
@@ -62,18 +64,17 @@
             <select id="input-position">
                 <option value="tank">🛡️ 돌격</option><option value="dps">⚔️ 공격</option><option value="sup">💉 지원</option>
             </select>
-            <textarea id="input-desc" rows="2" placeholder="간단한 자기소개 및 찾는 파티 조건"></textarea>
+            <textarea id="input-desc" rows="2" placeholder="자기소개를 남겨주세요."></textarea>
         </div>
-        <button class="btn-submit" id="btn-add-party" disabled>로그인 후 이용 가능</button>
+        <button class="btn-submit" id="btn-add-party" disabled>로그인이 필요합니다</button>
     </div>
-
     <div class="party-list" id="party-list"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw",
@@ -87,54 +88,60 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
     const colRef = collection(db, "parties");
 
-    const ADMIN_UID = "YOUR_UID_HERE"; // 나중에 로그인 후 F12 눌러서 UID 확인 후 교체
+    const ADMIN_UID = "YOUR_UID_HERE"; 
 
-    // [1] 인증 상태 감시 (UI 즉각 반영)
+    // [1] 로그인/회원가입 로직
+    document.getElementById('btn-login-action').onclick = async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        if(!email || !password) return alert("이메일과 비밀번호를 입력하세요!");
+        if(password.length < 6) return alert("비밀번호는 6자리 이상이어야 합니다.");
+
+        try {
+            // 로그인 시도
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+            // 계정이 없으면 자동 가입
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    alert("새 계정으로 가입 및 로그인 되었습니다!");
+                } catch (e) {
+                    alert("오류: " + e.message);
+                }
+            } else {
+                alert("오류: " + error.message);
+            }
+        }
+    };
+
+    // [2] 인증 상태 감시 (UI 즉각 반영)
     onAuthStateChanged(auth, (user) => {
-        const loginBtn = document.getElementById('btn-login');
-        const display = document.getElementById('user-display');
+        const authUI = document.getElementById('auth-ui');
         const submitBtn = document.getElementById('btn-add-party');
 
         if (user) {
-            console.log("로그인 성공 UID:", user.uid);
-            display.innerText = user.displayName + "님";
-            loginBtn.innerText = "로그아웃";
+            authUI.innerHTML = `
+                <span style="font-size:12px; color:#ccc;">${user.email.split('@')[0]}님</span>
+                <button id="btn-logout" class="btn-auth" style="background:#555; color:white;">로그아웃</button>
+            `;
+            document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
             submitBtn.disabled = false;
             submitBtn.innerText = "모집 글 등록하기";
         } else {
-            console.log("현재 로그아웃 상태");
-            display.innerText = "";
-            loginBtn.innerText = "구글 로그인";
             submitBtn.disabled = true;
             submitBtn.innerText = "로그인이 필요합니다";
         }
     });
 
-    // [2] 로그인 버튼
-    document.getElementById('btn-login').onclick = () => {
-        if (auth.currentUser) {
-            if(confirm("로그아웃 하시겠습니까?")) signOut(auth).then(() => location.reload());
-        } else {
-            signInWithRedirect(auth, provider);
-        }
-    };
-
-    // 리다이렉트 결과 처리 (오류 출력용)
-    getRedirectResult(auth).catch(e => console.error("인증 처리 중 오류:", e));
-
     // [3] 글 등록
     document.getElementById('btn-add-party').onclick = async () => {
-        const user = auth.currentUser;
-        if (!user) return alert("로그인이 필요합니다.");
-
         const btag = document.getElementById('input-btag').value;
         const desc = document.getElementById('input-desc').value;
-
-        if (!btag.includes('#') || btag.length < 3) return alert("올바른 배틀태그를 입력해주세요.");
-        if (!desc) return alert("내용을 입력해주세요.");
+        if (!btag.includes('#') || !desc) return alert("배틀태그와 내용을 입력해주세요.");
 
         try {
             await addDoc(colRef, {
@@ -142,22 +149,20 @@
                 tier: document.getElementById('input-tier').value,
                 pos: document.getElementById('input-position').value,
                 most: document.getElementById('input-most').value,
-                uid: user.uid,
+                uid: auth.currentUser.uid,
                 createdAt: Date.now()
             });
             document.getElementById('input-btag').value = '';
             document.getElementById('input-desc').value = '';
-            alert("등록되었습니다!");
         } catch (e) {
-            alert("등록 오류: " + e.message);
+            alert("등록 실패: " + e.message);
         }
     };
 
-    // [4] 목록 불러오기 (실시간)
+    // [4] 실시간 목록 로드
     onSnapshot(query(colRef, orderBy("createdAt", "desc")), (snap) => {
         const list = document.getElementById('party-list');
         list.innerHTML = '';
-        
         snap.docs.forEach(d => {
             const p = d.data();
             const user = auth.currentUser;
@@ -167,25 +172,17 @@
             const card = document.createElement('div');
             card.className = `party-card ${p.pos} ${isMine ? 'mine' : ''} ${isAdmin ? 'admin' : ''}`;
             card.innerHTML = `
-                <div class="delete-btn" title="삭제">✕</div>
+                <div class="delete-btn">✕</div>
                 <div class="tags">
-                    <span class="tag">${p.tier}</span>
-                    <span class="tag">${p.pos.toUpperCase()}</span>
+                    <span class="tag">${p.tier}</span><span class="tag">${p.pos}</span>
                     <span class="tag">Most: ${p.most || '-'}</span>
                 </div>
                 <div class="btag">${p.btag}</div>
                 <div class="desc">${p.desc}</div>
             `;
-            
             card.querySelector('.delete-btn').onclick = () => {
-                if(confirm("정말 삭제하시겠습니까?")) deleteDoc(doc(db, "parties", d.id));
+                if(confirm("삭제하시겠습니까?")) deleteDoc(doc(db, "parties", d.id));
             };
-            
-            card.querySelector('.btag').onclick = () => {
-                navigator.clipboard.writeText(p.btag);
-                alert("배틀태그가 복사되었습니다.");
-            };
-
             list.appendChild(card);
         });
     });
