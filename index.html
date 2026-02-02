@@ -3,22 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Overwatch Tactical Simulator Pro</title>
+    <title>OW Tactical Board - 시뮬레이터</title>
     <style>
-        :root { --sidebar-width: 240px; --accent-color: #ff9c00; --ally-color: #00a2ff; --enemy-color: #ff3c3c; }
-        body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: 'Pretendard', sans-serif; background: #111; color: white; touch-action: none; }
+        :root { --sidebar-width: 240px; --accent-color: #ff9c00; --ally-color: #00a2ff; --enemy-color: #ff3c3c; --nav-height: 50px; }
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-family: 'Pretendard', sans-serif; background: #111; color: white; touch-action: none; }
         
+        /* 상단 내비게이션 추가 */
+        nav { 
+            background: #000; height: var(--nav-height); display: flex; align-items: center; 
+            padding: 0 20px; gap: 25px; border-bottom: 2px solid var(--accent-color); z-index: 1002; 
+        }
+        nav a { color: white; text-decoration: none; font-weight: bold; font-size: 14px; opacity: 0.6; transition: 0.3s; }
+        nav a:hover { opacity: 1; }
+        nav a.active { opacity: 1; color: var(--accent-color); }
+
+        .main-container { display: flex; flex-grow: 1; position: relative; overflow: hidden; }
+
         #sidebar { 
             width: var(--sidebar-width); background: #222; overflow-y: auto; 
-            -webkit-overflow-scrolling: touch; padding: 10px; border-right: 1px solid #444; 
-            z-index: 100; transition: transform 0.3s ease; 
+            padding: 10px; border-right: 1px solid #444; z-index: 100; 
+            transition: transform 0.3s ease; height: 100%;
         }
-        #sidebar.hidden { transform: translateX(-100%); position: absolute; height: 100%; }
+        #sidebar.hidden { transform: translateX(-100%); position: absolute; }
         
         .controls { 
             position: absolute; right: 10px; top: 10px; bottom: 10px; 
             z-index: 101; display: flex; flex-direction: column; gap: 8px; 
-            overflow-y: auto; padding-right: 5px; -webkit-overflow-scrolling: touch; pointer-events: none; 
+            overflow-y: auto; padding-right: 5px; pointer-events: none; 
         }
         .tool-group { 
             background: rgba(0,0,0,0.9); padding: 8px; border-radius: 10px; 
@@ -57,7 +68,11 @@
         #drawing-canvas { z-index: 20; }
         #temp-canvas { z-index: 21; }
 
-        #toggle-btn { position: absolute; left: 10px; top: 10px; z-index: 101; padding: 12px; background: var(--accent-color); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: black; }
+        #toggle-btn { 
+            position: absolute; left: 10px; top: 10px; z-index: 101; padding: 12px; 
+            background: var(--accent-color); border: none; border-radius: 6px; 
+            font-weight: bold; cursor: pointer; color: black; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
         
         .map-select { width: 100%; padding: 10px; background: #333; color: white; border: 1px solid var(--accent-color); border-radius: 4px; font-weight: bold; margin-bottom: 10px; }
         .hero-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
@@ -67,50 +82,57 @@
 </head>
 <body>
 
-<button id="toggle-btn">영웅/맵 선택</button>
+<nav>
+    <a href="index.html" class="active">🛡️ 전술 보드</a>
+    <a href="party.html">⚔️ 파티 매칭</a>
+</nav>
 
-<div class="controls">
-    <div class="tool-group">
-        <button class="tool-btn active" id="btn-move">✋ 이동/줌</button>
-        <button class="tool-btn" id="tool-pen">✏️ 펜</button>
-        <button class="tool-btn" id="tool-arrow">🏹 화살표</button>
-    </div>
-    <div class="tool-group">
-        <button class="tool-btn" id="btn-rec-start">🔴 녹화 시작</button>
-        <button class="tool-btn" id="btn-rec-stop" disabled>⬛ 녹화 중지</button>
-        <button class="tool-btn" id="btn-play">▶️ 전술 재생</button>
-    </div>
-    <div class="tool-group">
-        <button class="tool-btn active" id="color-ally" style="background:var(--ally-color)">아군</button>
-        <button class="tool-btn" id="color-enemy" style="background:var(--enemy-color)">적군</button>
-    </div>
-    <div class="tool-group">
-        <button class="tool-btn" id="btn-undo">↩️ 취소</button>
-        <button class="tool-btn" id="btn-clear" style="color:#ff8888;">🗑️ 초기화</button>
-    </div>
-</div>
+<div class="main-container">
+    <button id="toggle-btn">영웅/맵 선택</button>
 
-<div id="sidebar">
-    <div style="height: 55px;"></div>
-    <div class="map-selector-wrapper">
-        <select class="map-select" id="map-select">
-            <option value="Lijiang_Tower_Top_Down_View.jpg">리장 타워</option>
-            <option value="https://overwatch.wiki.gallery/images/3/30/Hanamura_top-down.jpg">하나무라</option>
-            <option value="https://overwatch.wiki.gallery/images/f/f6/Kings_Row_top-down.jpg">왕의 길</option>
-            <option value="https://overwatch.wiki.gallery/images/c/c3/Eichenwalde_top-down.jpg">아이헨발데</option>
-            <option value="https://overwatch.wiki.gallery/images/6/6e/Temple_of_Anubis_top-down.jpg">아누비스 신전</option>
-            <option value="https://overwatch.wiki.gallery/images/a/ac/Gibraltar_top-down.jpg">지브롤터</option>
-        </select>
+    <div class="controls">
+        <div class="tool-group">
+            <button class="tool-btn active" id="btn-move">✋ 이동/줌</button>
+            <button class="tool-btn" id="tool-pen">✏️ 펜</button>
+            <button class="tool-btn" id="tool-arrow">🏹 화살표</button>
+        </div>
+        <div class="tool-group">
+            <button class="tool-btn" id="btn-rec-start">🔴 녹화 시작</button>
+            <button class="tool-btn" id="btn-rec-stop" disabled>⬛ 녹화 중지</button>
+            <button class="tool-btn" id="btn-play">▶️ 전술 재생</button>
+        </div>
+        <div class="tool-group">
+            <button class="tool-btn active" id="color-ally" style="background:var(--ally-color)">아군</button>
+            <button class="tool-btn" id="color-enemy" style="background:var(--enemy-color)">적군</button>
+        </div>
+        <div class="tool-group">
+            <button class="tool-btn" id="btn-undo">↩️ 취소</button>
+            <button class="tool-btn" id="btn-clear" style="color:#ff8888;">🗑️ 초기화</button>
+        </div>
     </div>
-    <div id="hero-categories"></div>
-</div>
 
-<div id="viewport">
-    <div id="map-container">
-        <img id="map-image" src="Lijiang_Tower_Top_Down_View.jpg" onerror="this.src='https://via.placeholder.com/1200x800?text=Lijiang+Tower+Map+Needed'">
-        <div id="hero-layer"></div>
-        <canvas id="drawing-canvas"></canvas>
-        <canvas id="temp-canvas"></canvas>
+    <div id="sidebar">
+        <div style="height: 55px;"></div>
+        <div class="map-selector-wrapper">
+            <select class="map-select" id="map-select">
+                <option value="Lijiang_Tower_Top_Down_View.jpg">리장 타워</option>
+                <option value="https://overwatch.wiki.gallery/images/3/30/Hanamura_top-down.jpg">하나무라</option>
+                <option value="https://overwatch.wiki.gallery/images/f/f6/Kings_Row_top-down.jpg">왕의 길</option>
+                <option value="https://overwatch.wiki.gallery/images/c/c3/Eichenwalde_top-down.jpg">아이헨발데</option>
+                <option value="https://overwatch.wiki.gallery/images/6/6e/Temple_of_Anubis_top-down.jpg">아누비스 신전</option>
+                <option value="https://overwatch.wiki.gallery/images/a/ac/Gibraltar_top-down.jpg">지브롤터</option>
+            </select>
+        </div>
+        <div id="hero-categories"></div>
+    </div>
+
+    <div id="viewport">
+        <div id="map-container">
+            <img id="map-image" src="Lijiang_Tower_Top_Down_View.jpg" onerror="this.src='https://via.placeholder.com/1200x800?text=Lijiang+Tower+Map+Needed'">
+            <div id="hero-layer"></div>
+            <canvas id="drawing-canvas"></canvas>
+            <canvas id="temp-canvas"></canvas>
+        </div>
     </div>
 </div>
 
@@ -164,7 +186,6 @@
         updateTransform();
     }, { passive: false });
 
-    // --- 녹화 제어 ---
     const btnRecStart = document.getElementById('btn-rec-start');
     const btnRecStop = document.getElementById('btn-rec-stop');
 
@@ -196,7 +217,7 @@
     };
 
     function onStart(e) {
-        if (e.target.closest('#sidebar') || e.target.closest('.controls')) return;
+        if (e.target.closest('#sidebar') || e.target.closest('.controls') || e.target.closest('nav')) return;
         const isTouch = e.type.includes('touch');
         
         if (isTouch && e.touches.length === 2) {
@@ -239,14 +260,11 @@
             const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
             const delta = dist / state.lastDist;
             const newScale = Math.min(Math.max(0.1, scale * delta), 5);
-            
             const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
             const rect = mapContainer.getBoundingClientRect();
-            
             tx -= ((midX - rect.left) / scale) * (newScale - scale);
             ty -= ((midY - rect.top) / scale) * (newScale - scale);
-            
             scale = newScale;
             state.lastDist = dist;
             updateTransform();
@@ -288,7 +306,7 @@
     viewport.addEventListener('mousedown', onStart);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onEnd);
-    viewport.addEventListener('touchstart', (e) => { onStart(e); }, {passive: false});
+    viewport.addEventListener('touchstart', onStart, {passive: false});
     window.addEventListener('touchmove', (e) => { if(state.isDown || state.mode==='zoom') { e.preventDefault(); onMove(e); } }, {passive: false});
     window.addEventListener('touchend', onEnd);
 
