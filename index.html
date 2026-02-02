@@ -3,35 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>오버워치 전략 보드 - 안정화 버전</title>
+    <title>오버워치 전략 보드 - 최종 안정화</title>
     <style>
         :root { --sidebar-width: 260px; --accent-color: #ff9c00; --ally-color: #00a2ff; --enemy-color: #ff3c3c; }
         body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: sans-serif; background: #111; color: white; }
         
-        #sidebar { width: var(--sidebar-width); background: #222; overflow-y: auto; padding: 15px; border-right: 1px solid #444; z-index: 100; transition: 0.3s; }
-        #sidebar.hidden { transform: translateX(-100%); position: absolute; height: 100%; }
+        #sidebar { width: var(--sidebar-width); background: #222; overflow-y: auto; padding: 15px; border-right: 1px solid #444; z-index: 100; }
+        #sidebar.hidden { display: none; }
         
         .controls { position: absolute; right: 15px; top: 15px; z-index: 101; display: flex; flex-direction: column; gap: 8px; }
         .tool-group { background: rgba(0,0,0,0.85); padding: 8px; border-radius: 8px; display: flex; flex-direction: column; gap: 5px; border: 1px solid #555; }
-        .tool-btn { background: #333; color: white; border: 1px solid #555; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: bold; font-size: 13px; }
+        .tool-btn { background: #333; color: white; border: 1px solid #555; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: bold; }
         .tool-btn.active { border-color: white; background: #555; }
         .btn-ally.active { background: var(--ally-color) !important; }
         .btn-enemy.active { background: var(--enemy-color) !important; }
 
-        .hero-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 15px; }
+        .hero-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
         .hero-item { aspect-ratio: 1/1; background: #333; border-radius: 4px; overflow: hidden; cursor: pointer; }
         .hero-item img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
-        #viewport { flex-grow: 1; position: relative; overflow: hidden; background: #000; touch-action: none; cursor: grab; }
-        #viewport:active { cursor: grabbing; }
-        #map-container { position: absolute; transform-origin: 0 0; will-change: transform; pointer-events: none; }
+        #viewport { flex-grow: 1; position: relative; overflow: hidden; background: #000; touch-action: none; }
+        /* map-container가 모든 이벤트를 직접 받도록 수정 */
+        #map-container { position: absolute; transform-origin: 0 0; cursor: grab; }
         #map-image { display: block; user-select: none; -webkit-user-drag: none; }
         
-        #hero-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .placed-hero { position: absolute; width: 50px; height: 50px; pointer-events: auto; cursor: move; transform: translate(-50%, -50%); border-radius: 50%; border: 3px solid white; background: #222; overflow: hidden; z-index: 10; }
-        .placed-hero.selected { box-shadow: 0 0 15px white; border-color: #fff !important; z-index: 11; }
+        #hero-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
+        .placed-hero { position: absolute; width: 50px; height: 50px; cursor: move; transform: translate(-50%, -50%); border-radius: 50%; border: 3px solid white; background: #222; overflow: hidden; }
+        .placed-hero.selected { box-shadow: 0 0 15px white; border-color: #fff !important; }
         .placed-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-        .hero-delete-btn { position: absolute; top: -5px; right: -5px; background: #f44; color: white; border: 1px solid white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 12; }
+        .hero-delete-btn { position: absolute; top: -5px; right: -5px; background: #f44; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; border: 1px solid white; }
         .selected .hero-delete-btn { display: flex; }
 
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
@@ -48,14 +48,12 @@
 <div class="controls">
     <div class="tool-group">
         <button class="tool-btn active" id="btn-move">✋ 이동 모드</button>
+        <button class="tool-btn" id="tool-pen">✏️ 펜</button>
+        <button class="tool-btn" id="tool-arrow">🏹 화살표</button>
     </div>
     <div class="tool-group">
         <button class="tool-btn btn-ally active" id="color-ally">🔵 아군</button>
         <button class="tool-btn btn-enemy" id="color-enemy">🔴 적군</button>
-    </div>
-    <div class="tool-group">
-        <button class="tool-btn" id="tool-pen">✏️ 펜</button>
-        <button class="tool-btn" id="tool-arrow">🏹 화살표</button>
     </div>
     <div class="tool-group">
         <button class="tool-btn" id="btn-undo">↩️ 취소</button>
@@ -87,152 +85,119 @@
     const tctx = tempCanvas.getContext('2d');
     const mapImg = document.getElementById('map-image');
 
-    let scale = 0.5, translateX = 100, translateY = 100;
-    let isDraggingMap = false, isDraggingHero = false, isDrawing = false;
-    let startX, startY, activeHero = null, heroOffsetX, heroOffsetY;
-    let currentTool = 'move', currentTeamColor = '#00a2ff', drawStartPos = null;
-    let history = [];
+    let scale = 0.5, tx = 0, ty = 0;
+    let isMovingMap = false, isMovingHero = false, isDrawing = false;
+    let mouseStart = { x: 0, y: 0 }, mapStart = { x: 0, y: 0 };
+    let activeHero = null, heroStartPos = { x: 0, y: 0 };
+    let currentTool = 'move', currentTeamColor = '#00a2ff', history = [];
 
     mapImg.onload = () => {
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = tempCanvas.width = mapImg.naturalWidth * dpr;
-        canvas.height = tempCanvas.height = mapImg.naturalHeight * dpr;
-        canvas.style.width = tempCanvas.style.width = mapImg.naturalWidth + 'px';
-        canvas.style.height = tempCanvas.style.height = mapImg.naturalHeight + 'px';
-        ctx.scale(dpr, dpr); tctx.scale(dpr, dpr);
-        saveState(); update();
+        canvas.width = tempCanvas.width = mapImg.naturalWidth;
+        canvas.height = tempCanvas.height = mapImg.naturalHeight;
+        saveState(); updateTransform();
     };
 
-    function update() {
-        mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    function updateTransform() {
+        mapContainer.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
     }
 
-    function saveState() {
-        history.push(canvas.toDataURL());
-        if (history.length > 20) history.shift();
-    }
+    function saveState() { history.push(canvas.toDataURL()); if (history.length > 20) history.shift(); }
 
-    // 좌표 변환 유틸리티: 화면 좌표 -> 맵 내부 좌표
-    function getMapCoords(clientX, clientY) {
-        const rect = viewport.getBoundingClientRect();
-        return {
-            x: (clientX - rect.left - translateX) / scale,
-            y: (clientY - rect.top - translateY) / scale
-        };
-    }
+    // --- 이벤트 핸들러 시작 ---
+    viewport.addEventListener('mousedown', (e) => {
+        const target = e.target;
+        
+        // 1. 영웅 드래그 체크
+        const heroEl = target.closest('.placed-hero');
+        if (heroEl) {
+            isMovingHero = true;
+            activeHero = heroEl;
+            document.querySelectorAll('.placed-hero').forEach(h => h.classList.remove('selected'));
+            activeHero.classList.add('selected');
+            
+            // 맵 스케일이 적용된 상태의 마우스 좌표를 영웅 좌표와 비교
+            const rect = mapContainer.getBoundingClientRect();
+            heroStartPos.x = (e.clientX - rect.left) / scale;
+            heroStartPos.y = (e.clientY - rect.top) / scale;
+            heroStartPos.offX = heroStartPos.x - parseFloat(activeHero.style.left);
+            heroStartPos.offY = heroStartPos.y - parseFloat(activeHero.style.top);
+            return;
+        }
 
-    // --- UI 이벤트 처리 ---
-    document.getElementById('btn-move').onclick = () => { currentTool = 'move'; updateToolUI('btn-move'); };
-    document.getElementById('tool-pen').onclick = () => { currentTool = 'pen'; updateToolUI('tool-pen'); };
-    document.getElementById('tool-arrow').onclick = () => { currentTool = 'arrow'; updateToolUI('tool-arrow'); };
-    document.getElementById('color-ally').onclick = () => { currentTeamColor = '#00a2ff'; updateColorUI('color-ally'); };
-    document.getElementById('color-enemy').onclick = () => { currentTeamColor = '#ff3c3c'; updateColorUI('color-enemy'); };
+        // 2. 맵 이동 혹은 그리기
+        if (currentTool === 'move') {
+            isMovingMap = true;
+            mouseStart = { x: e.clientX, y: e.clientY };
+            mapStart = { x: tx, y: ty };
+            document.querySelectorAll('.placed-hero').forEach(h => h.classList.remove('selected'));
+        } else {
+            isDrawing = true;
+            const rect = mapContainer.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / scale;
+            const y = (e.clientY - rect.top) / scale;
+            mouseStart = { x, y };
+            ctx.strokeStyle = tctx.strokeStyle = currentTeamColor;
+            ctx.lineWidth = 5 / scale;
+            ctx.lineCap = 'round';
+            if (currentTool === 'pen') { ctx.beginPath(); ctx.moveTo(x, y); }
+        }
+    });
 
-    function updateToolUI(id) {
-        ['btn-move', 'tool-pen', 'tool-arrow'].forEach(bid => document.getElementById(bid).classList.toggle('active', bid === id));
-    }
-    function updateColorUI(id) {
-        ['color-ally', 'color-enemy'].forEach(bid => document.getElementById(bid).classList.toggle('active', bid === id));
-    }
+    window.addEventListener('mousemove', (e) => {
+        if (isMovingHero && activeHero) {
+            const rect = mapContainer.getBoundingClientRect();
+            const curX = (e.clientX - rect.left) / scale;
+            const curY = (e.clientY - rect.top) / scale;
+            activeHero.style.left = (curX - heroStartPos.offX) + 'px';
+            activeHero.style.top = (curY - heroStartPos.offY) + 'px';
+        } 
+        else if (isMovingMap) {
+            tx = mapStart.x + (e.clientX - mouseStart.x);
+            ty = mapStart.y + (e.clientY - mouseStart.y);
+            updateTransform();
+        } 
+        else if (isDrawing) {
+            const rect = mapContainer.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / scale;
+            const y = (e.clientY - rect.top) / scale;
+            if (currentTool === 'pen') { ctx.lineTo(x, y); ctx.stroke(); }
+            else if (currentTool === 'arrow') {
+                tctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawArrow(tctx, mouseStart.x, mouseStart.y, x, y);
+            }
+        }
+    });
 
-    document.getElementById('btn-undo').onclick = () => {
-        if (history.length <= 1) return;
-        history.pop();
-        const img = new Image();
-        img.src = history[history.length - 1];
-        img.onload = () => {
-            const dpr = window.devicePixelRatio || 1;
-            ctx.clearRect(0, 0, canvas.width/dpr, canvas.height/dpr);
-            ctx.drawImage(img, 0, 0, canvas.width/dpr, canvas.height/dpr);
-        };
-    };
+    window.addEventListener('mouseup', (e) => {
+        if (isDrawing && currentTool === 'arrow') {
+            const rect = mapContainer.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / scale;
+            const y = (e.clientY - rect.top) / scale;
+            drawArrow(ctx, mouseStart.x, mouseStart.y, x, y);
+            tctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        if (isDrawing) saveState();
+        isMovingMap = isMovingHero = isDrawing = false;
+        activeHero = null;
+    });
 
-    document.getElementById('btn-clear').onclick = () => {
-        if(confirm('전체 초기화?')) { ctx.clearRect(0,0,canvas.width,canvas.height); heroLayer.innerHTML = ''; saveState(); }
-    };
-
-    // --- 통합 인터랙션 (확대/축소, 드래그, 그리기) ---
+    // --- 확대 축소 (FIXED) ---
     viewport.addEventListener('wheel', (e) => {
         e.preventDefault();
+        const delta = e.deltaY < 0 ? 1.1 : 0.9;
+        const oldScale = scale;
+        scale = Math.min(Math.max(0.05, scale * delta), 5);
+        
+        // 커서 위치 기준으로 확대
         const rect = viewport.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
         
-        const mapP = getMapCoords(e.clientX, e.clientY);
-        const delta = e.deltaY < 0 ? 1.1 : 0.9;
-        const nextScale = Math.min(Math.max(0.1, scale * delta), 5);
-
-        translateX = mx - mapP.x * nextScale;
-        translateY = my - mapP.y * nextScale;
-        scale = nextScale;
-        update();
+        tx = mx - (mx - tx) * (scale / oldScale);
+        ty = my - (my - ty) * (scale / oldScale);
+        
+        updateTransform();
     }, { passive: false });
-
-    viewport.onmousedown = (e) => {
-        const target = e.target;
-        const coords = getMapCoords(e.clientX, e.clientY);
-
-        if (target.closest('.placed-hero')) {
-            // 1. 영웅 드래그 시작
-            isDraggingHero = true;
-            activeHero = target.closest('.placed-hero');
-            if(activeHero.classList.contains('selected')) {
-                // 이미 선택된 상태에서 누른 경우 오프셋 계산
-                heroOffsetX = coords.x - parseFloat(activeHero.style.left);
-                heroOffsetY = coords.y - parseFloat(activeHero.style.top);
-            } else {
-                // 처음 선택 시
-                document.querySelectorAll('.placed-hero').forEach(h => h.classList.remove('selected'));
-                activeHero.classList.add('selected');
-                heroOffsetX = coords.x - parseFloat(activeHero.style.left);
-                heroOffsetY = coords.y - parseFloat(activeHero.style.top);
-            }
-        } else if (currentTool === 'move') {
-            // 2. 맵 드래그 시작
-            isDraggingMap = true;
-            startX = e.clientX - translateX;
-            startY = e.clientY - translateY;
-            document.querySelectorAll('.placed-hero').forEach(h => h.classList.remove('selected'));
-        } else {
-            // 3. 그리기 시작
-            isDrawing = true;
-            drawStartPos = coords;
-            ctx.strokeStyle = tctx.strokeStyle = currentTeamColor;
-            ctx.lineWidth = tctx.lineWidth = 5 / scale;
-            ctx.lineCap = 'round';
-            if(currentTool === 'pen') { ctx.beginPath(); ctx.moveTo(coords.x, coords.y); }
-        }
-    };
-
-    window.onmousemove = (e) => {
-        const coords = getMapCoords(e.clientX, e.clientY);
-
-        if (isDraggingHero && activeHero) {
-            activeHero.style.left = (coords.x - heroOffsetX) + 'px';
-            activeHero.style.top = (coords.y - heroOffsetY) + 'px';
-        } else if (isDraggingMap) {
-            translateX = e.clientX - startX;
-            translateY = e.clientY - startY;
-            update();
-        } else if (isDrawing) {
-            if(currentTool === 'pen') { ctx.lineTo(coords.x, coords.y); ctx.stroke(); }
-            else if(currentTool === 'arrow') {
-                tctx.clearRect(0,0,20000, 20000); // 넉넉하게 지움
-                drawArrow(tctx, drawStartPos.x, drawStartPos.y, coords.x, coords.y);
-            }
-        }
-    };
-
-    window.onmouseup = (e) => {
-        if (isDrawing && currentTool === 'arrow') {
-            const coords = getMapCoords(e.clientX, e.clientY);
-            drawArrow(ctx, drawStartPos.x, drawStartPos.y, coords.x, coords.y);
-            tctx.clearRect(0,0,20000, 20000);
-        }
-        if(isDrawing) saveState();
-        isDraggingMap = isDraggingHero = isDrawing = false;
-        activeHero = null;
-    };
 
     function drawArrow(t, fx, fy, tx, ty) {
         const headlen = 15 / scale;
@@ -245,42 +210,51 @@
         t.stroke();
     }
 
-     // --- 영웅 리스트 생성 --- // --- 영웅 리스트 생성 ---
-    const heroData = {
-        "TANK": ["dva", "doomfist", "ramattra", "reinhardt", "wrecking-ball", "roadhog", "mauga", "sigma", "winston", "zarya", "junker-queen"],
-        "DPS": ["genji", "reaper", "mei", "bastion", "sojourn", "soldier-76", "sombra", "symmetra", "ashe", "echo", "widowmaker", "junkrat", "cassidy", "torbjorn", "tracer", "pharah", "venture"],
-        "SUP": ["lifeweaver", "lucio", "baptiste", "brigitte", "ana", "illari", "zenyatta", "kiriko", "moira"]
-    };
+    // --- 도구 선택 UI ---
+    const toolBtns = { 'btn-move': 'move', 'tool-pen': 'pen', 'tool-arrow': 'arrow' };
+    Object.keys(toolBtns).forEach(id => {
+        document.getElementById(id).onclick = () => {
+            currentTool = toolBtns[id];
+            Object.keys(toolBtns).forEach(k => document.getElementById(k).classList.toggle('active', k === id));
+        };
+    });
 
-    Object.entries(heroData).forEach(([role, list]) => {
+    document.getElementById('color-ally').onclick = () => { currentTeamColor = '#00a2ff'; document.getElementById('color-ally').classList.add('active'); document.getElementById('color-enemy').classList.remove('active'); };
+    document.getElementById('color-enemy').onclick = () => { currentTeamColor = '#ff3c3c'; document.getElementById('color-enemy').classList.add('active'); document.getElementById('color-ally').classList.remove('active'); };
+    document.getElementById('btn-undo').onclick = () => {
+        if (history.length <= 1) return;
+        history.pop();
+        const img = new Image();
+ img.src = history[history.length - 1]; img.src = history[history.length - 1];
+        img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
+    };
+    document.getElementById('btn-clear').onclick = () => { if(confirm('초기화?')) { ctx.clearRect(0,0,canvas.width,canvas.height); heroLayer.innerHTML=''; saveState(); } };
+
+     // --- 영웅 생성 --- // --- 영웅 생성 ---
+    const heroes = { "TANK": ["dva", "doomfist", "ramattra", "reinhardt", "wrecking-ball", "roadhog", "mauga", "sigma", "winston", "zarya", "junker-queen"], "DPS": ["genji", "reaper", "mei", "bastion", "sojourn", "soldier-76", "sombra", "symmetra", "ashe", "echo", "widowmaker", "junkrat", "cassidy", "torbjorn", "tracer", "pharah", "venture"], "SUP": ["lifeweaver", "lucio", "baptiste", "brigitte", "ana", "illari", "zenyatta", "kiriko", "moira"] };
+    Object.entries(heroes).forEach(([role, list]) => {
         const cat = document.createElement('div');
-        cat.innerHTML = `<p style="color:var(--accent-color); font-weight:bold; font-size:11px; margin:5px 0;">${role}</p>`;
-        const grid = document.createElement('div');
-        grid.className = 'hero-list';
+        cat.innerHTML = `<p style="color:var(--accent-color); font-size:11px; margin:5px 0;">${role}</p><div class="hero-list"></div>`;
+        const grid = cat.querySelector('.hero-list');
         list.forEach(id => {
             const item = document.createElement('div');
             item.className = 'hero-item';
             item.innerHTML = `<img src="https://d1u1mce87gyfbn.cloudfront.net/hero/${id}/icon-portrait.png">`;
-            item.onclick = (e) => { e.stopPropagation(); createHero(id); };
+            item.onclick = () => {
+                const div = document.createElement('div');
+                div.className = 'placed-hero';
+                div.style.borderColor = currentTeamColor;
+                 // 맵 중앙 부근에 배치 // 맵 중앙 부근에 배치
+                div.style.left = ((-tx + viewport.offsetWidth/2)/scale) + 'px';
+                div.style.top = ((-ty + viewport.offsetHeight/2)/scale) + 'px';
+                div.innerHTML = `<img src="https://d1u1mce87gyfbn.cloudfront.net/hero/${id}/icon-portrait.png"><button class="hero-delete-btn">✕</button>`;
+                div.querySelector('.hero-delete-btn').onclick = (e) => { e.stopPropagation(); div.remove(); };
+                heroLayer.appendChild(div);
+            };
             grid.appendChild(item);
         });
-        cat.appendChild(grid);
         document.getElementById('hero-categories').appendChild(cat);
     });
-
-    function createHero(id) {
-        const div = document.createElement('div');
-        div.className = 'placed-hero';
-        div.style.borderColor = currentTeamColor;
-        
-          // 뷰포트 중앙에 생성 // 뷰포트 중앙에 생성 // 뷰포트 중앙에 생성  
-        const center = getMapCoords(viewport.offsetWidth/2 + viewport.offsetLeft, viewport.offsetHeight/2 + viewport.offsetTop);
-        div.style.left = center.x + 'px'; div.style.top = center.y + 'px';
-        div.innerHTML = `<img src="https://d1u1mce87gyfbn.cloudfront.net/hero/${id}/icon-portrait.png"><button class="hero-delete-btn">✕</button>`;
-        
-        div.querySelector('.hero-delete-btn').onclick = (e) => { e.stopPropagation(); div.remove(); };
-        heroLayer.appendChild(div);
-    }
 
     document.getElementById('toggle-btn').onclick = () => document.getElementById('sidebar').classList.toggle('hidden');
 </script>
