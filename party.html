@@ -31,13 +31,11 @@
         .party-card.tank { border-left-color: var(--tank); }
         .party-card.dps { border-left-color: var(--dps); }
         .party-card.sup { border-left-color: var(--sup); }
-        
         .delete-btn { position: absolute; top: 15px; right: 15px; color: #666; cursor: pointer; font-size: 18px; display: none; }
         .party-card.mine .delete-btn, .party-card.admin .delete-btn { display: block; }
-        
         .tag { font-size: 12px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin-right: 5px; }
         .btag { font-weight: bold; color: var(--accent); display: block; margin: 10px 0; font-size: 18px; cursor: pointer; }
-        .desc { font-size: 14px; color: #ccc; margin: 10px 0; min-height: 40px; line-height: 1.5; }
+        .desc { font-size: 14px; color: #ccc; margin: 10px 0; min-height: 40px; }
     </style>
 </head>
 <body>
@@ -49,13 +47,12 @@
     </div>
     <div class="auth-section">
         <span id="user-display" class="user-name"></span>
-        <button id="btn-login" class="btn-auth">확인 중...</button>
+        <button id="btn-login" class="btn-auth">연결 중...</button>
     </div>
 </nav>
 
 <div class="container">
     <h1>⚔️ 실시간 파티 찾기</h1>
-    
     <div class="post-form">
         <div class="form-grid">
             <input type="text" id="input-btag" placeholder="배틀태그 (예: 닉네임#1234)">
@@ -75,8 +72,8 @@
             </select>
             <input type="text" id="input-most" placeholder="모스트 캐릭터">
         </div>
-        <textarea id="input-desc" rows="2" placeholder="로그인 후 이용 가능합니다." disabled></textarea>
-        <button class="btn-submit" id="btn-add-party" disabled>로그인이 필요합니다</button>
+        <textarea id="input-desc" rows="2" placeholder="로그인 후 글을 등록할 수 있습니다."></textarea>
+        <button class="btn-submit" id="btn-add-party" disabled>로그인 대기 중</button>
     </div>
 
     <div class="filter-bar">
@@ -85,14 +82,13 @@
         <button class="filter-btn" data-filter="dps">⚔️ 공격</button>
         <button class="filter-btn" data-filter="sup">💉 지원</button>
     </div>
-
     <div class="party-list" id="party-list"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, setPersistence, browserLocalPersistence, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw",
@@ -113,46 +109,44 @@
     let currentUser = null;
     let allParties = [];
     let currentFilter = 'all';
-
-    // ⭐ 자신의 UID를 확인하여 여기에 넣으세요!
+    
+    // ⭐ 자신의 UID 확인 후 입력
     const ADMIN_UID = "YOUR_UID_HERE"; 
 
-    // 1. 리다이렉트 로그인 결과 자동 확인
-    getRedirectResult(auth).catch((e) => {
-        if(e.code !== 'auth/invalid-pending-token') console.error("인증 오류:", e.message);
-    });
+    // [핵심] 1. 세션 유지 설정 (브라우저를 닫아도 유지되도록 강제)
+    setPersistence(auth, browserLocalPersistence);
 
-    // 2. 인증 상태 실시간 감시 (UI 업데이트 핵심 로직)
+    // [핵심] 2. 리다이렉트 결과 처리 (성공 시 알림)
+    getRedirectResult(auth).then((result) => {
+        if (result?.user) {
+            alert(result.user.displayName + "님, 환영합니다!");
+        }
+    }).catch(e => console.error("Redirect Error:", e));
+
+    // [핵심] 3. 인증 상태 감시자 (UI 업데이트의 모든 것)
     onAuthStateChanged(auth, (user) => {
+        currentUser = user;
         const loginBtn = document.getElementById('btn-login');
         const userDisplay = document.getElementById('user-display');
         const submitBtn = document.getElementById('btn-add-party');
-        const inputDesc = document.getElementById('input-desc');
-
-        currentUser = user;
 
         if (user) {
-            // 로그인 된 경우
-            userDisplay.innerText = `${user.displayName}님`;
+            userDisplay.innerText = user.displayName + "님";
             loginBtn.innerText = "로그아웃";
             submitBtn.disabled = false;
             submitBtn.innerText = "모집 등록하기";
-            inputDesc.disabled = false;
-            inputDesc.placeholder = "내용을 입력해주세요.";
-            console.log("로그인 감지:", user.uid);
+            console.log("로그인 상태 확인됨:", user.uid);
         } else {
-            // 로그아웃 된 경우
             userDisplay.innerText = "";
             loginBtn.innerText = "구글 로그인";
             submitBtn.disabled = true;
             submitBtn.innerText = "로그인이 필요합니다";
-            inputDesc.disabled = true;
-            inputDesc.placeholder = "로그인 후 이용 가능합니다.";
+            console.log("로그아웃 상태");
         }
-        renderList(); // 인증 상태에 따라 삭제 버튼 업데이트
+        renderList();
     });
 
-    // 3. 로그인 버튼 클릭 핸들러
+    // 로그인 버튼 클릭
     document.getElementById('btn-login').onclick = () => {
         if (currentUser) {
             if(confirm("로그아웃 하시겠습니까?")) signOut(auth).then(() => location.reload());
@@ -161,12 +155,11 @@
         }
     };
 
-    // 4. 파티 모집 등록
+    // 파티 등록
     document.getElementById('btn-add-party').onclick = async () => {
         const btag = document.getElementById('input-btag').value;
         const desc = document.getElementById('input-desc').value;
-        
-        if (!btag.includes('#') || !desc) return alert("배틀태그(#포함)와 내용을 입력해주세요.");
+        if (!btag.includes('#') || !desc) return alert("내용을 채워주세요.");
 
         try {
             await addDoc(colRef, {
@@ -179,19 +172,17 @@
             });
             document.getElementById('input-btag').value = '';
             document.getElementById('input-desc').value = '';
-            alert("등록되었습니다!");
         } catch (e) {
-            alert("등록 실패: " + e.message);
+            alert("등록 실패: 권한이 없습니다.");
         }
     };
 
-    // 5. 실시간 데이터 스트리밍
+    // 데이터 로드
     onSnapshot(query(colRef, orderBy("createdAt", "desc")), (snapshot) => {
         allParties = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderList();
     });
 
-    // 6. 목록 렌더링 함수
     function renderList() {
         const listEl = document.getElementById('party-list');
         listEl.innerHTML = '';
@@ -200,7 +191,6 @@
         filtered.forEach(p => {
             const isMine = currentUser && p.uid === currentUser.uid;
             const isAdmin = currentUser && currentUser.uid === ADMIN_UID;
-            
             const card = document.createElement('div');
             card.className = `party-card ${p.pos} ${isMine ? 'mine' : ''} ${isAdmin ? 'admin' : ''}`;
             card.innerHTML = `
@@ -210,21 +200,17 @@
                 <div class="desc">${p.desc}</div>
                 <div class="most"><b>모스트:</b> ${p.most || '-'}</div>
             `;
-            
-            card.querySelector('.delete-btn').onclick = async () => {
-                if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "parties", p.id));
+            card.querySelector('.delete-btn').onclick = () => {
+                if(confirm("삭제할까요?")) deleteDoc(doc(db, "parties", p.id));
             };
-            
             card.querySelector('.btag').onclick = () => {
                 navigator.clipboard.writeText(p.btag);
-                alert("복사되었습니다.");
+                alert("복사됨!");
             };
-
             listEl.appendChild(card);
         });
     }
 
-    // 7. 필터 버튼 설정
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
