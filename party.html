@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - Final Complete</title>
+    <title>Overwatch Hub - Stable Final</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
@@ -12,14 +12,14 @@
         .nav-tabs div { cursor: pointer; font-weight: 600; font-size: 14px; color: #888; transition: 0.2s; position: relative; }
         .nav-tabs div.active { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
         
-        /* 상단 NEW 표시 (가장 눈에 띄게 수정) */
+        /* NEW 알림 뱃지 - 최상단 우선순위 */
         .menu-new { display: none; background: #ff3c3c; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 5px; font-weight: 900; animation: blink 1s infinite; vertical-align: middle; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
         .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
         .page { display: none; }
         .page.active { display: block; }
-        .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; position: relative; }
+        .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
         
         .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
         .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
@@ -28,7 +28,6 @@
         input, select, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
         
-        /* 별점 스타일 */
         .stars { color: #444; font-size: 24px; cursor: pointer; text-align: center; margin: 10px 0; }
         .stars span.active { color: var(--accent); }
         .info-label { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #333; border: 1px solid #444; margin-right: 4px; color: #eee; }
@@ -44,7 +43,7 @@
     </div>
     <div id="auth-ui">
         <div id="login-form" style="display:flex; gap:5px;">
-            <input type="email" id="login-email" placeholder="이메일" style="width:100px; font-size:11px; height:30px;">
+            <input type="email" id="login-email" placeholder="이메일" style="width:110px; font-size:11px; height:30px;">
             <input type="password" id="login-password" placeholder="비번" style="width:70px; font-size:11px; height:30px;">
             <button id="btn-login" class="btn-sub" style="height:30px; padding:0 10px;">접속</button>
         </div>
@@ -83,7 +82,7 @@
 
 <div class="modal-overlay" id="request-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;"><h3>파티 신청</h3><textarea id="request-msg" placeholder="상대에게 보낼 메시지" rows="4"></textarea><button class="btn-main" id="btn-confirm-send">신청하기</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
 
-<div class="modal-overlay" id="rate-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px; text-align:center;"><h3>팀원 평가</h3><p style="font-size:12px; color:#888;">매칭된 팀원의 매너는 어땠나요?</p><div class="stars" id="rate-stars"><span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span></div><button class="btn-main" id="btn-confirm-rate">평가 완료</button></div></div>
+<div class="modal-overlay" id="rate-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px; text-align:center;"><h3>팀원 평가</h3><div class="stars" id="rate-stars"><span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span></div><button class="btn-main" id="btn-confirm-rate">평가 완료</button></div></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -107,7 +106,6 @@
     window.closeModal = () => { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); };
     window.openRequestModal = (uid, btag, postId) => { if(!auth.currentUser) return alert("로그인 필요"); targetData = {uid, btag, postId}; document.getElementById('request-modal').style.display = 'flex'; };
 
-    // 별점 클릭 이벤트
     document.querySelectorAll('#rate-stars span').forEach(s => {
         s.onclick = () => {
             selectedRate = s.dataset.v;
@@ -134,7 +132,6 @@
         if(user) {
             onSnapshot(query(collection(db, "matches"), where("fromUid", "==", user.uid)), (snap) => { mySentRequests = new Set(snap.docs.map(d => d.data().postId)); renderList(); });
             
-            // 실시간 알림창 및 NEW 감지
             onSnapshot(collection(db, "matches"), (snap) => {
                 const list = document.getElementById('noti-list'); list.innerHTML = ''; 
                 let hasNew = false;
@@ -143,30 +140,30 @@
                 snap.docs.sort((a,b) => b.data().createdAt - a.data().createdAt).forEach(ds => {
                     const m = ds.data();
                     if(!isAdmin && user.uid !== m.toUid && user.uid !== m.fromUid) return;
-                    const isToMe = m.toUid === user.uid;
                     
+                    const isToMe = m.toUid === user.uid;
                     if(m.status === 'pending' && isToMe) hasNew = true;
 
                     const box = document.createElement('div'); box.className = 'box';
-                    const userInfo = `<span class="info-label">${m.fromPos.toUpperCase()}</span><span class="info-label">${m.fromTier}</span>`;
+                    const senderLabel = `<span class="info-label">${m.fromPos.toUpperCase()}</span><span class="info-label">${m.fromTier}</span>`;
                     const starDisplay = m.rating ? `<span style="color:var(--accent); margin-left:10px;">${"★".repeat(m.rating)}</span>` : '';
 
                     if(m.status === 'pending') {
                         if(isToMe) { 
                             box.innerHTML = `<div style="color:var(--accent); font-weight:bold; margin-bottom:8px;">📩 신청 도착!</div>
-                            <div style="font-size:13px; line-height:1.6;">보낸사람: ${userInfo}<br>메시지: <span style="color:#eee;">${m.message}</span></div>
+                            <div style="font-size:13px; line-height:1.6;">신청자 정보: ${senderLabel}<br>메시지: <span style="color:#eee;">${m.message}</span></div>
                             <button class="btn-main" onclick="acceptMatch('${ds.id}')">수락하고 상세정보 보기</button>`;
                         } else { 
                             box.innerHTML = `<div style="color:#666; font-size:13px;">⌛ 신청 대기 중...</div>
                             <div style="font-size:12px; color:#444; margin-top:5px;">내 메시지: ${m.message}</div>`; 
                         }
                     } else {
-                        // 수락 후 매칭 완료 상태
+                        // [중요] 매칭 완료 후에도 포지션/티어/메시지 모두 출력
                         box.innerHTML = `<div style="color:var(--sup); font-weight:bold; margin-bottom:10px;">✅ 매칭 완료! ${starDisplay}</div>
                         <div style="background:#000; padding:15px; border-radius:8px; border:1px solid var(--sup);">
                             <div style="font-size:18px; color:white; font-weight:bold; margin-bottom:8px;">${isToMe ? m.fromBtag : m.toBtag}</div>
-                            <div style="font-size:13px; color:#bbb;">상대 정보: ${isToMe ? userInfo : `<span class="info-label">모집자</span>`}</div>
-                            <div style="font-size:13px; color:#888; margin-top:8px; border-top:1px solid #222; padding-top:8px;">메시지: ${m.message}</div>
+                            <div style="font-size:13px; color:#bbb; margin-bottom:5px;">정보: ${senderLabel}</div>
+                            <div style="font-size:13px; color:#888; border-top:1px solid #222; padding-top:8px;">메시지: ${m.message}</div>
                         </div>
                         <div style="display:flex; gap:5px; margin-top:10px;">
                             ${!m.rating && !isToMe ? `<button class="btn-sub" style="flex:1; background:var(--accent); color:black;" onclick="openRateModal('${ds.id}')">칭찬/별점 남기기</button>` : ''}
@@ -180,7 +177,6 @@
         }
     });
 
-    // 수락 및 평가 로직
     window.acceptMatch = async (id) => { await updateDoc(doc(db, "matches", id), { status: 'accepted' }); };
     window.openRateModal = (id) => { rateTargetId = id; selectedRate = 5; document.querySelectorAll('#rate-stars span').forEach(i => i.classList.add('active')); document.getElementById('rate-modal').style.display = 'flex'; };
     document.getElementById('btn-confirm-rate').onclick = async () => {
@@ -188,7 +184,6 @@
         closeModal(); alert("평가가 완료되었습니다!");
     };
 
-    // 기본 기능
     document.getElementById('btn-login').onclick = async () => {
         const e = document.getElementById('login-email').value; const p = document.getElementById('login-password').value;
         if(!e || !p) return alert("입력창 확인!");
@@ -202,7 +197,6 @@
         const myU = await getDoc(doc(db, "users", auth.currentUser.uid));
         if(!myU.data()?.btag) return alert("내 정보에서 배틀태그 먼저 등록!");
         await addDoc(collection(db, "parties"), { btag: myU.data().btag, pos: document.getElementById('post-main-pos').value, tier: document.getElementById('post-tier').value, desc: document.getElementById('post-desc').value, uid: auth.currentUser.uid, createdAt: Date.now() });
-        alert("등록 완료!");
     };
     document.getElementById('btn-save-profile').onclick = async () => {
         await setDoc(doc(db, "users", auth.currentUser.uid), { btag: document.getElementById('profile-btag').value, tier: document.getElementById('profile-tier').value, pos: document.getElementById('profile-pos').value }, {merge:true}); alert("저장됨");
