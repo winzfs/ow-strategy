@@ -8,7 +8,6 @@
         :root { --sidebar-width: 240px; --accent-color: #ff9c00; --ally-color: #00a2ff; --enemy-color: #ff3c3c; }
         body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: 'Pretendard', sans-serif; background: #111; color: white; touch-action: none; }
         
-        /* 사이드바 스크롤 최적화 */
         #sidebar { 
             width: var(--sidebar-width); background: #222; overflow-y: auto; 
             -webkit-overflow-scrolling: touch; padding: 10px; border-right: 1px solid #444; 
@@ -16,7 +15,6 @@
         }
         #sidebar.hidden { transform: translateX(-100%); position: absolute; height: 100%; }
         
-        /* 도구함 컨트롤 */
         .controls { 
             position: absolute; right: 10px; top: 10px; bottom: 10px; 
             z-index: 101; display: flex; flex-direction: column; gap: 8px; 
@@ -27,7 +25,6 @@
             display: flex; flex-direction: column; gap: 6px; border: 1px solid #444; pointer-events: auto; 
         }
 
-        /* 버튼 스타일 및 상태 표시 */
         .tool-btn { 
             background: #333; color: white; border: 2px solid transparent; 
             padding: 10px; cursor: pointer; border-radius: 6px; font-weight: bold; font-size: 13px; 
@@ -37,12 +34,10 @@
         .btn-rec-active { background: #ff3c3c !important; animation: pulse 1.5s infinite; border-color: white; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
-        /* 메인 뷰포트 */
         #viewport { flex-grow: 1; position: relative; overflow: hidden; background: #000; }
         #map-container { position: absolute; transform-origin: 0 0; will-change: transform; }
         #map-image { display: block; user-select: none; -webkit-user-drag: none; }
         
-        /* 영웅 레이어 */
         #hero-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
         .placed-hero { 
             position: absolute; width: 48px; height: 48px; transform: translate(-50%, -50%); 
@@ -58,16 +53,14 @@
         }
         .selected .hero-delete-btn { display: flex; }
 
-        /* 캔버스 */
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
         #drawing-canvas { z-index: 20; }
         #temp-canvas { z-index: 21; }
 
-        /* 레이저 */
         #laser-dot { 
-            position: absolute; width: 12px; height: 12px; background: red; 
-            border-radius: 50%; box-shadow: 0 0 15px 5px red; pointer-events: none; 
-            display: none; z-index: 100; 
+            position: absolute; width: 20px; height: 20px; background: red; 
+            border-radius: 50%; box-shadow: 0 0 20px 8px red; pointer-events: none; 
+            display: none; z-index: 1000; transform: translate(-50%, -50%);
         }
 
         #toggle-btn { position: absolute; left: 10px; top: 10px; z-index: 101; padding: 12px; background: var(--accent-color); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: black; }
@@ -76,9 +69,6 @@
         .hero-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .hero-item { aspect-ratio: 1/1; background: #333; border-radius: 4px; overflow: hidden; border: 1px solid #444; cursor: pointer; }
         .hero-item img { width: 100%; height: 100%; object-fit: cover; }
-        
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -148,9 +138,8 @@
     let state = { isDown: false, mode: null, isRecording: false };
     let activeHero = null, history = [], currentTool = 'move', currentTeamColor = '#00a2ff';
     let startPoint = { x: 0, y: 0 }, mapStart = { x: 0, y: 0 };
-    let heroPaths = new Map(); // 영웅별 이동 경로 기록
+    let heroPaths = new Map();
 
-    // --- 초기화 ---
     mapImg.onload = () => {
         canvas.width = tempCanvas.width = mapImg.naturalWidth;
         canvas.height = tempCanvas.height = mapImg.naturalHeight;
@@ -166,13 +155,12 @@
         return { x: (clientX - rect.left) / scale, y: (clientY - rect.top) / scale };
     }
 
-    // --- 애니메이션 로직 ---
     const btnRecStart = document.getElementById('btn-rec-start');
     const btnRecStop = document.getElementById('btn-rec-stop');
 
     btnRecStart.onclick = () => {
         state.isRecording = true;
-        heroPaths.clear(); // 새로 시작 시 이전 기록 삭제
+        heroPaths.clear();
         btnRecStart.classList.add('btn-rec-active');
         btnRecStart.innerText = "● 녹화 중...";
         btnRecStop.disabled = false;
@@ -198,21 +186,21 @@
         });
     };
 
-    // --- 이벤트 핸들러 ---
     function onStart(e) {
         if (e.target.closest('#sidebar') || e.target.closest('.controls')) return;
         const isTouch = e.type.includes('touch');
-        if (isTouch && e.touches.length === 2) {
-            state.mode = 'zoom';
-            state.initialDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-            state.initialScale = scale;
-            return;
-        }
         const point = isTouch ? e.touches[0] : e;
         const heroEl = e.target.closest('.placed-hero');
         const coords = getLocalPos(point.clientX, point.clientY);
 
         state.isDown = true;
+        
+        // 맵 터치 시 영웅 선택 해제 로직 (X 표시 사라짐)
+        if (!heroEl) {
+            document.querySelectorAll('.placed-hero').forEach(h => h.classList.remove('selected'));
+            activeHero = null;
+        }
+
         if (currentTool === 'laser') {
             laserDot.style.display = 'block';
             updateLaser(point.clientX, point.clientY);
@@ -237,11 +225,6 @@
         const point = isTouch ? e.touches[0] : e;
         const coords = getLocalPos(point.clientX, point.clientY);
 
-        if (state.mode === 'zoom' && isTouch && e.touches.length === 2) {
-            const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-            scale = Math.min(Math.max(0.1, state.initialScale * (dist / state.initialDist)), 5);
-            updateTransform(); return;
-        }
         if (!state.isDown) return;
         
         if (currentTool === 'laser') {
@@ -263,9 +246,10 @@
         }
     }
 
+    // 레이저 포인터 위치 업데이트 함수 (모바일 대응)
     function updateLaser(x, y) {
-        laserDot.style.left = (x - 6) + 'px';
-        laserDot.style.top = (y - 6) + 'px';
+        laserDot.style.left = x + 'px';
+        laserDot.style.top = y + 'px';
     }
 
     function onEnd(e) {
@@ -280,15 +264,17 @@
         state.isDown = false; state.mode = null;
     }
 
-    // --- 리스너 ---
     viewport.addEventListener('mousedown', onStart);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onEnd);
-    viewport.addEventListener('touchstart', (e) => { if(e.touches.length < 3) onStart(e); }, {passive: false});
-    window.addEventListener('touchmove', (e) => { if(state.isDown || state.mode==='zoom') { e.preventDefault(); onMove(e); } }, {passive: false});
+    viewport.addEventListener('touchstart', (e) => { 
+        if(e.touches.length === 1) onStart(e); 
+    }, {passive: false});
+    window.addEventListener('touchmove', (e) => { 
+        if(state.isDown) { e.preventDefault(); onMove(e); } 
+    }, {passive: false});
     window.addEventListener('touchend', onEnd);
 
-    // --- 도구 UI 제어 ---
     const toolIds = ['btn-move', 'tool-pen', 'tool-arrow', 'tool-laser'];
     toolIds.forEach(id => {
         document.getElementById(id).onclick = () => {
@@ -312,7 +298,7 @@
     };
 
     document.getElementById('btn-clear').onclick = () => {
-        if(confirm('모든 그림과 영웅을 초기화할까요?')) {
+        if(confirm('모든 내용을 초기화할까요?')) {
             ctx.clearRect(0,0,canvas.width,canvas.height);
             heroLayer.innerHTML = '';
             heroPaths.clear();
@@ -330,7 +316,6 @@
         t.stroke();
     }
 
-    // --- 전체 영웅 리스트 (생략 없이 로드) ---
     const heroes = { 
         "TANK": ["dva", "doomfist", "junker-queen", "mauga", "orisa", "ramattra", "reinhardt", "roadhog", "sigma", "winston", "wrecking-ball", "zarya"], 
         "DPS": ["ashe", "bastion", "cassidy", "echo", "genji", "hanzo", "junkrat", "mei", "pharah", "reaper", "sojourn", "soldier-76", "sombra", "symmetra", "torbjorn", "tracer", "widowmaker", "venture"], 
@@ -362,12 +347,10 @@
 
     document.getElementById('toggle-btn').onclick = () => document.getElementById('sidebar').classList.toggle('hidden');
     document.getElementById('map-select').onchange = (e) => {
-        if(confirm('맵을 변경하면 그려진 내용이 초기화됩니다.')) {
-            mapImg.src = e.target.value;
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            heroLayer.innerHTML = '';
-            heroPaths.clear();
-        }
+        mapImg.src = e.target.value;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        heroLayer.innerHTML = '';
+        heroPaths.clear();
     };
 </script>
 </body>
