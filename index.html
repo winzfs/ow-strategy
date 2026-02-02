@@ -2,33 +2,54 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오버워치 전략 보드</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>오버워치 전략 보드 Pro</title>
     <style>
-        body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: sans-serif; background: #1a1a1a; color: white; }
+        :root { --sidebar-width: 250px; --accent-color: #ff9c00; }
+        body { margin: 0; display: flex; height: 100vh; overflow: hidden; font-family: sans-serif; background: #1a1a1a; color: white; touch-action: none; }
         
-        /* 사이드바 설정 */
-        #sidebar { width: 250px; background: #2d2d2d; overflow-y: auto; padding: 10px; border-right: 2px solid #444; }
-        .category { margin-bottom: 20px; }
-        .category h3 { border-bottom: 1px solid #666; padding-bottom: 5px; color: #ff9c00; }
-        .hero-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .hero-item { width: 60px; height: 60px; cursor: grab; background: #444; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; text-align: center; border: 1px solid transparent; }
-        .hero-item:hover { border-color: #ff9c00; }
-        .hero-item img { width: 100%; height: 100%; border-radius: 5px; pointer-events: none; }
+        /* 사이드바 */
+        #sidebar { 
+            width: var(--sidebar-width); background: #2d2d2d; overflow-y: auto; padding: 10px; 
+            border-right: 2px solid #444; transition: transform 0.3s ease; z-index: 100;
+        }
+        #sidebar.hidden { transform: translateX(-100%); position: absolute; height: 100%; }
+        
+        /* 숨기기 버튼 */
+        #toggle-btn {
+            position: absolute; left: 10px; top: 10px; z-index: 101;
+            background: var(--accent-color); border: none; color: black; font-weight: bold;
+            padding: 8px 12px; cursor: pointer; border-radius: 4px;
+        }
 
-        /* 맵 영역 설정 */
-        #viewport { flex-grow: 1; position: relative; overflow: hidden; cursor: grab; background: #000; }
-        #map-container { position: absolute; transform-origin: 0 0; cursor: default; }
-        #map-image { display: block; user-select: none; -webkit-user-drag: none; }
+        .category h3 { border-bottom: 1px solid #666; padding-bottom: 5px; color: var(--accent-color); font-size: 14px; }
+        .hero-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .hero-item { 
+            background: #444; border-radius: 4px; padding: 5px; cursor: grab; font-size: 11px; 
+            text-align: center; border: 1px solid transparent; user-select: none;
+        }
+        .hero-item:active { cursor: grabbing; opacity: 0.7; }
 
-        /* 드래그되는 아이콘 */
-        .placed-hero { position: absolute; width: 50px; height: 50px; cursor: move; z-index: 10; transform: translate(-50%, -50%); border: 2px solid #ff9c00; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        /* 맵 영역 */
+        #viewport { flex-grow: 1; position: relative; overflow: hidden; background: #000; }
+        #map-container { position: absolute; transform-origin: 0 0; will-change: transform; }
+        #map-image { display: block; user-select: none; -webkit-user-drag: none; max-width: none; }
+
+        /* 배치된 영웅 */
+        .placed-hero { 
+            position: absolute; width: 44px; height: 44px; cursor: move; z-index: 10; 
+            transform: translate(-50%, -50%); border: 2px solid var(--accent-color); 
+            border-radius: 50%; background: #333; display: flex; align-items: center; 
+            justify-content: center; font-size: 9px; font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
+<button id="toggle-btn">MENU</button>
+
 <div id="sidebar">
-    <div class="category">
+    <div style="height: 40px;"></div> <div class="category">
         <h3>돌격 (TANK)</h3>
         <div class="hero-list" id="tank-list"></div>
     </div>
@@ -44,119 +65,154 @@
 
 <div id="viewport">
     <div id="map-container">
-        <img id="map-image" src="Lijiang_Tower_Top_Down_View.jpg" alt="Map">
+        <img id="map-image" src="Lijiang_Tower_Top_Down_View.jpg" alt="맵 이미지를 업로드하고 파일명을 맞추세요">
     </div>
 </div>
 
 <script>
-    // 1. 영웅 데이터 (이미지 경로를 실제 아이콘 링크로 바꾸면 됩니다)
     const heroes = {
-        tank: ["디바", "둠피스트", "라마트라", "라인하르트", "레킹볼", "로드호그", "마우가", "시그마", "윈스턴", "자리야", "정커퀸"],
-        dps: ["겐지", "리퍼", "메이", "바스티온", "소전", "솔저", "솜브라", "시메트라", "애쉬", "에코", "위도우", "정크랫", "캐시디", "토르비욘", "트레이서", "파라", "벤처"],
-        sup: ["라이프위버", "루시우", "바티스트", "브리기테", "아나", "일리리", "젠야타", "키리코", "바티스트", "모이라"]
+        tank: ["디바", "둠피", "라맛", "라인", "레킹", "호그", "마우가", "시그마", "윈스턴", "자리야", "정커퀸"],
+        dps: ["겐지", "리퍼", "메이", "바스", "소전", "솔저", "솜브라", "시메", "애쉬", "에코", "위도우", "정랫", "캐시디", "토브", "트레", "파라", "벤처"],
+        sup: ["라위", "루시우", "바티", "브리기", "아나", "일리리", "젠야타", "키리코", "모이라"]
     };
 
-    // 2. 사이드바에 영웅 추가
+    // 사이드바 토글
+    document.getElementById('toggle-btn').onclick = () => {
+        document.getElementById('sidebar').classList.toggle('hidden');
+    };
+
+    // 영웅 목록 생성
     Object.keys(heroes).forEach(role => {
         const list = document.getElementById(`${role}-list`);
         heroes[role].forEach(name => {
             const item = document.createElement('div');
             item.className = 'hero-item';
             item.draggable = true;
-            item.innerHTML = `<span>${name}</span>`; // 이미지가 없으므로 텍스트 표시
-            item.dataset.name = name;
-            item.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('heroName', name);
-            });
+            item.innerText = name;
+            item.onmousedown = () => item.style.cursor = 'grabbing';
+            item.ondragstart = (e) => e.dataTransfer.setData('heroName', name);
+            // 모바일 터치 배치 대응
+            item.ontouchend = (e) => {
+                const touch = e.changedTouches[0];
+                const viewportRect = viewport.getBoundingClientRect();
+                if (touch.clientX > viewportRect.left) {
+                    const x = (touch.clientX - (translateX + viewportRect.left)) / scale;
+                    const y = (touch.clientY - (translateY + viewportRect.top)) / scale;
+                    createHeroOnMap(name, x, y);
+                }
+            };
             list.appendChild(item);
         });
     });
 
     const viewport = document.getElementById('viewport');
     const mapContainer = document.getElementById('map-container');
-    let scale = 1;
-    let isDraggingMap = false;
-    let startX, startY, translateX = 0, translateY = 0;
+    let scale = 0.5, translateX = 0, translateY = 0;
+    let isDragging = false, startX, startY;
+    let lastPinchDistance = null;
 
-    // 3. 줌(확대/축소) 기능
-    viewport.addEventListener('wheel', (e) => {
+    // 1. 휠 줌 (데스크톱)
+    viewport.onwheel = (e) => {
         e.preventDefault();
-        const delta = e.deltaY > 0 ? 0.9 : 1.1;
-        scale *= delta;
-        scale = Math.min(Math.max(0.2, scale), 5); // 최소 0.2배, 최대 5배
-        updateTransform();
-    }, { passive: false });
-
-    function updateTransform() {
-        mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-    }
-
-    // 4. 드래그 앤 드롭으로 배치
-    viewport.addEventListener('dragover', (e) => e.preventDefault());
-    viewport.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const name = e.dataTransfer.getData('heroName');
-        if (!name) return;
-
-        const rect = mapContainer.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / scale;
-        const y = (e.clientY - rect.top) / scale;
-
-        createHeroOnMap(name, x, y);
-    });
-
-    function createHeroOnMap(name, x, y) {
-        const img = document.createElement('div');
-        img.className = 'placed-hero';
-        img.style.left = `${x}px`;
-        img.style.top = `${y}px`;
-        img.style.background = '#555'; // 실제 영웅 이미지로 대체 가능
-        img.innerHTML = `<span style="font-size:8px;">${name}</span>`;
+        const zoomSpeed = 0.1;
+        const cursorX = (e.clientX - (translateX + viewport.offsetLeft)) / scale;
+        const cursorY = (e.clientY - (translateY + viewport.offsetTop)) / scale;
         
-        // 맵 위에서 다시 움직이기
-        let isMoving = false;
-        img.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-            isMoving = true;
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isMoving) return;
-            const rect = mapContainer.getBoundingClientRect();
-            img.style.left = `${(e.clientX - rect.left) / scale}px`;
-            img.style.top = `${(e.clientY - rect.top) / scale}px`;
-        });
-
-        window.addEventListener('mouseup', () => isMoving = false);
+        if (e.deltaY < 0) scale *= (1 + zoomSpeed);
+        else scale /= (1 + zoomSpeed);
         
-        // 우클릭 시 삭제
-        img.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            img.remove();
-        });
+        scale = Math.min(Math.max(0.1, scale), 4);
+        translateX = e.clientX - viewport.offsetLeft - cursorX * scale;
+        translateY = e.clientY - viewport.offsetTop - cursorY * scale;
+        update();
+    };
 
-        mapContainer.appendChild(img);
-    }
+    // 2. 터치 및 드래그 (모바일 핀치 줌 포함)
+    viewport.ontouchstart = (e) => {
+        if (e.touches.length === 2) {
+            lastPinchDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+        } else {
+            isDragging = true;
+            startX = e.touches[0].clientX - translateX;
+            startY = e.touches[0].clientY - translateY;
+        }
+    };
 
-    // 5. 맵 이동 (우클릭 드래그 또는 마우스 휠 클릭)
-    viewport.addEventListener('mousedown', (e) => {
-        if (e.button === 0 && e.target === viewport) { // 배경 클릭 시만
-            isDraggingMap = true;
+    viewport.ontouchmove = (e) => {
+        if (e.touches.length === 2 && lastPinchDistance) {
+            const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+            const zoom = dist / lastPinchDistance;
+            scale = Math.min(Math.max(0.1, scale * zoom), 4);
+            lastPinchDistance = dist;
+            update();
+        } else if (isDragging) {
+            translateX = e.touches[0].clientX - startX;
+            translateY = e.touches[0].clientY - startY;
+            update();
+        }
+    };
+
+    viewport.ontouchend = () => { isDragging = false; lastPinchDistance = null; };
+
+    // 마우스 드래그 이동 (데스크톱)
+    viewport.onmousedown = (e) => {
+        if (e.target === viewport || e.target === document.getElementById('map-image')) {
+            isDragging = true;
             startX = e.clientX - translateX;
             startY = e.clientY - translateY;
         }
-    });
-
-    window.addEventListener('mousemove', (e) => {
-        if (isDraggingMap) {
+    };
+    window.onmousemove = (e) => {
+        if (isDragging) {
             translateX = e.clientX - startX;
             translateY = e.clientY - startY;
-            updateTransform();
+            update();
         }
-    });
+    };
+    window.onmouseup = () => isDragging = false;
 
-    window.addEventListener('mouseup', () => isDraggingMap = false);
+    function update() {
+        mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    }
+
+    // 드롭 및 영웅 생성
+    viewport.ondragover = (e) => e.preventDefault();
+    viewport.ondrop = (e) => {
+        const name = e.dataTransfer.getData('heroName');
+        const rect = viewport.getBoundingClientRect();
+        const x = (e.clientX - rect.left - translateX) / scale;
+        const y = (e.clientY - rect.top - translateY) / scale;
+        createHeroOnMap(name, x, y);
+    };
+
+    function createHeroOnMap(name, x, y) {
+        const div = document.createElement('div');
+        div.className = 'placed-hero';
+        div.style.left = `${x}px`;
+        div.style.top = `${y}px`;
+        div.innerText = name;
+        
+        let moveStart = false;
+        const startMove = () => moveStart = true;
+        div.onmousedown = startMove;
+        div.ontouchstart = (e) => { e.stopPropagation(); moveStart = true; };
+
+        const duringMove = (ex, ey) => {
+            if (!moveStart) return;
+            const rect = viewport.getBoundingClientRect();
+            div.style.left = `${(ex - rect.left - translateX) / scale}px`;
+            div.style.top = `${(ey - rect.top - translateY) / scale}px`;
+        };
+
+        window.addEventListener('mousemove', (e) => duringMove(e.clientX, e.clientY));
+        window.addEventListener('touchmove', (e) => duringMove(e.touches[0].clientX, e.touches[0].clientY));
+        window.onmouseup = window.ontouchend = () => moveStart = false;
+        
+        div.oncontextmenu = (e) => { e.preventDefault(); div.remove(); };
+        mapContainer.appendChild(div);
+    }
+
+    update(); // 초기 상태 업데이트
 </script>
-
 </body>
 </html>
