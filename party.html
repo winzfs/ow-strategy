@@ -205,6 +205,7 @@
 
     const firebaseConfig = { apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", authDomain: "ow-party-97936.firebaseapp.com", projectId: "ow-party-97936", storageBucket: "ow-party-97936.firebasestorage.app", messagingSenderId: "15782204013", appId: "1:15782204013:web:5c74ef2e603c311fc82564" };
     const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
+    auth.languageCode = 'ko'; 
     const ADMIN_EMAIL = "jazzhjm@gmail.com";
 
     // 전역 상태 변수
