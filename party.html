@@ -415,42 +415,52 @@
     });
 
 
-  // 알림창 하단에 상호 평가 섹션 추가 로직
-onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
-    const evalList = document.getElementById('group-eval-list'); // HTML에 추가한 id
+  // 알림창 하단에 상호 평가 섹션 추가 로직 (중복 방지 버전)
+onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), async (snap) => {
+    const evalList = document.getElementById('group-eval-list');
     if(!evalList || !auth.currentUser) return;
-    evalList.innerHTML = ''; // 👈 먼저 비워줘야 중복이 안 생깁니다!
+    
+    // 현재 유저가 이미 누구를 평가했는지 정보를 가져오면 좋겠지만, 
+    // 우선 UI상에서 파티별로 중복 노출되는 것부터 막습니다.
+    evalList.innerHTML = ''; 
 
-    snap.docs.forEach(docSnap => {
+    // 현재 유저가 참여 중인(방장 혹은 멤버) 파티만 필터링
+    const myParties = snap.docs.filter(docSnap => {
         const p = docSnap.data();
-        const isOwner = p.uid === auth.currentUser.uid;
-        const isMember = p.members && p.members.some(m => m.uid === auth.currentUser.uid);
+        return p.uid === auth.currentUser.uid || (p.members && p.members.some(m => m.uid === auth.currentUser.uid));
+    });
 
-        if(isOwner || isMember) {
-            const groupDiv = document.createElement('div');
-            groupDiv.className = 'box';
-            groupDiv.style.border = "1px solid var(--accent)";
-            
-            // 나를 제외한 모든 파티원(방장 포함) 추출
-            let allParticipants = [{uid: p.uid, btag: p.btag, pos: p.pos}, ...(p.members || [])];
-            let others = allParticipants.filter(m => m.uid !== auth.currentUser.uid);
+    myParties.forEach(docSnap => {
+        const p = docSnap.data();
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'box';
+        groupDiv.style.border = "1px solid var(--accent)";
+        
+        // 나를 제외한 모든 파티원(방장 포함) 추출
+        let allParticipants = [{uid: p.uid, btag: p.btag, pos: p.pos}, ...(p.members || [])];
+        let others = allParticipants.filter(m => m.uid !== auth.currentUser.uid);
 
-            let membersHtml = others.map(m => `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:8px; background:#000; border-radius:5px;">
-                    <span style="font-size:12px;">${m.btag.split('#')[0]}#**** (${m.pos})</span>
-                    <button class="btn-sub" style="background:var(--accent); color:black; font-size:10px;" 
-                        onclick="openRateModal('${docSnap.id}', 'group_rate', '${m.uid}')">평가</button>
-                </div>
-            `).join('');
+        // [중복 제거] 동일 인물이 여러 번 보이지 않게 UID 기준으로 유니크하게 필터링
+        const uniqueOthers = Array.from(new Map(others.map(item => [item.uid, item])).values());
 
+        let membersHtml = uniqueOthers.map(m => `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:8px; background:#000; border-radius:5px;">
+                <span style="font-size:12px;">${m.btag.split('#')[0]}#**** (${m.pos || '역할미정'})</span>
+                <button class="btn-sub" style="background:var(--accent); color:black; font-size:10px;" 
+                    onclick="openRateModal('${docSnap.id}', 'group_rate', '${m.uid}')">평가하기</button>
+            </div>
+        `).join('');
+
+        if(uniqueOthers.length > 0) {
             groupDiv.innerHTML = `
-                <div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티원 상호 평가</div>
-                ${membersHtml || '<div style="font-size:11px; color:#666; margin-top:5px;">팀원을 기다리는 중...</div>'}
+                <div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티원 상호 평가 (${p.pos} 파티)</div>
+                ${membersHtml}
             `;
             evalList.appendChild(groupDiv);
         }
     });
 });
+
   
 
     // 버튼 액션 함수들
