@@ -168,9 +168,13 @@
 
 
 
-    <div id="page-noti" class="page"><h3>📫 알림 센터</h3><div id="noti-list"></div></div>
+    <div id="page-noti" class="page">
+    <h3>📫 알림 센터</h3>
+    <div id="noti-list"></div>
+    <hr style="border: 0; border-top: 1px dashed #333; margin: 20px 0;">
     <div id="group-eval-list"></div>
 </div>
+
 
 <div class="modal-overlay" id="request-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;"><h3>파티 신청</h3><textarea id="request-msg" placeholder="상대에게 보낼 메시지" rows="4"></textarea><button class="btn-main" id="btn-confirm-send">신청하기</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
 <div class="modal-overlay" id="rate-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px; text-align:center;"><h3>팀원 평가</h3><div class="stars" id="rate-stars"><span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span></div><button class="btn-main" id="btn-confirm-rate">평가 완료</button></div></div>
@@ -431,7 +435,7 @@ onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap
                 <div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티원 상호 평가</div>
                 ${membersHtml || '<div style="font-size:11px; color:#666; margin-top:5px;">팀원을 기다리는 중...</div>'}
             `;
-            list.appendChild(groupDiv);
+            evalList.appendChild(groupDiv);
         }
     });
 });
