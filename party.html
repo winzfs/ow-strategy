@@ -291,47 +291,47 @@
     };
 
     // [통합] 파티 목록 + 상호 평가 리스너
+        // [수정] 파티원 전체 상호 평가 로직
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), async (snap) => {
         currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); 
         window.renderList(); 
 
-        // 상호 평가 리스트 업데이트
         const evalList = document.getElementById('group-eval-list');
         if(!evalList || !auth.currentUser) return;
         evalList.innerHTML = ''; 
 
+        // 내가 방장이거나 멤버로 포함된 파티 찾기
         const myParties = currentPosts.filter(p => p.uid === auth.currentUser.uid || (p.members && p.members.some(m => m.uid === auth.currentUser.uid)));
 
-            // [수정] 같은 파티에 모인 모든 사람이 서로를 평가할 수 있는 상호 평가 로직
         myParties.forEach(p => {
-        const groupDiv = document.createElement('div');
-        groupDiv.className = 'box';
-        groupDiv.style.border = "1px solid var(--accent)";
-        
-        // 1. 방장과 참여 승인된 모든 팀원을 하나의 배열로 합침
-        let allParticipants = [
-            { uid: p.uid, btag: p.btag, pos: p.pos }, // 방장
-            ...(p.members || [])                     // 승인된 팀원들
-        ];
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'box';
+            groupDiv.style.border = "1px solid var(--accent)";
+            
+            // 핵심: 방장 정보와 모든 팀원 정보를 하나로 합침
+            let allParticipants = [
+                { uid: p.uid, btag: p.btag, pos: p.pos || '방장' }, 
+                ...(p.members || []) 
+            ];
 
-        // 2. 합쳐진 명단에서 '나' 자신은 제외 (내가 나를 평가할 순 없으므로)
-        let others = allParticipants.filter(m => m.uid !== auth.currentUser.uid);
+            // 나를 제외한 모든 사람 필터링
+            let others = allParticipants.filter(m => m.uid !== auth.currentUser.uid);
+            
+            // 중복 제거
+            const uniqueOthers = Array.from(new Map(others.map(item => [item.uid, item])).values());
 
-        // 3. 중복된 데이터가 들어가지 않도록 UID 기준으로 유니크하게 필터링
-        const uniqueOthers = Array.from(new Map(others.map(item => [item.uid, item])).values());
-
-        if(uniqueOthers.length > 0) {
-            let membersHtml = uniqueOthers.map(m => `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:8px; background:#000; border-radius:5px;">
-                    <span style="font-size:12px;">${m.btag ? m.btag.split('#')[0] : '유저'}#**** (${m.pos || '미정'})</span>
-                    <button class="btn-sub" style="background:var(--accent); color:black; font-size:10px;" 
-                        onclick="openRateModal('${p.id}', 'group_rate', '${m.uid}')">평가하기</button>
-                </div>
-            `).join('');
-
-            groupDiv.innerHTML = `<div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티원 상호 평가 (${p.pos} 파티)</div>${membersHtml}`;
-            evalList.appendChild(groupDiv);
-        }
+            if(uniqueOthers.length > 0) {
+                let membersHtml = uniqueOthers.map(m => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:8px; background:#000; border-radius:5px;">
+                        <span style="font-size:12px;">${m.btag ? m.btag.split('#')[0] : '유저'}#**** (${m.pos})</span>
+                        <button class="btn-sub" style="background:var(--accent); color:black; font-size:10px;" 
+                            onclick="openRateModal('${p.id}', 'group_rate', '${m.uid}')">평가하기</button>
+                    </div>
+                `).join('');
+                groupDiv.innerHTML = `<div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티원 상호 평가 (${p.pos} 파티)</div>${membersHtml}`;
+                evalList.appendChild(groupDiv);
+            }
+        });
     });
 
     });
@@ -409,25 +409,35 @@
     });
 
     // --- 기능 함수들 (window 객체에 등록) ---
-    window.acceptMatch = async (id) => {
+        window.acceptMatch = async (id) => {
         const mRef = doc(db, "matches", id);
         const mSnap = await getDoc(mRef);
-        const mData = mSnap.data();
+        const mData = mSnap.data(); // 신청 데이터 (신청자의 btag, pos가 들어있음)
+        
         await updateDoc(mRef, { status: 'accepted' });
 
         const pRef = doc(db, "parties", mData.postId);
         const pSnap = await getDoc(pRef);
+        
         if(pSnap.exists()){
             const pData = pSnap.data();
             const currentM = pData.members || [];
+            
             if(currentM.length + 1 >= (pData.maxp || 5)) return alert("이미 만원입니다.");
+            
+            // 이미 추가된 멤버인지 확인 후 추가
             if(!currentM.find(m => m.uid === mData.fromUid)){
-                currentM.push({ uid: mData.fromUid, btag: mData.fromBtag, pos: mData.fromPos });
+                currentM.push({ 
+                    uid: mData.fromUid, 
+                    btag: mData.fromBtag, // 신청자의 배틀태그 저장
+                    pos: mData.fromPos    // 신청자의 포지션 저장
+                });
                 await updateDoc(pRef, { members: currentM });
                 alert("수락했습니다!");
             }
         }
     };
+
 
     window.delMatch = async (id) => { if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "matches", id)); };
     window.delPost = async (id) => { if(confirm("삭제?")) await deleteDoc(doc(db, "parties", id)); };
