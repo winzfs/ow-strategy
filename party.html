@@ -517,34 +517,41 @@ onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap
 
 
     document.getElementById('btn-login').onclick = async () => {
-    const email = document.getElementById('login-email').value;
+    const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
 
     if (!email || !password) return alert("이메일과 비번을 입력해주세요.");
+
+    // [추가] 인증 예외 이메일 리스트 (관리자 및 테스트 계정)
+    const EXCEPT_EMAILS = [ADMIN_EMAIL, "test1@test.com", "test2@test.com", "jazzhjm@gmail.com"];
 
     try {
         // 1. 로그인 시도
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // 2. 이메일 인증 여부 확인
-        if (!user.emailVerified) {
+        // 2. 이메일 인증 여부 확인 (예외 리스트에 없을 때만 체크)
+        if (!EXCEPT_EMAILS.includes(user.email) && !user.emailVerified) {
             alert("이메일 인증이 완료되지 않았습니다.\n가입하신 메일함(또는 스팸함)을 확인해주세요.");
             await signOut(auth);
             return;
         }
         
-        alert("접속 성공!");
+        alert(EXCEPT_EMAILS.includes(user.email) ? "관리자/테스트 계정으로 접속합니다." : "접속 성공!");
     } catch (error) {
         // 3. 계정이 없는 경우 새로 가입 처리
         if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
             try {
                 const newUserCredential = await createUserWithEmailAndPassword(auth, email, password);
-                // 가입 즉시 인증 메일 발송
-                await sendEmailVerification(newUserCredential.user);
                 
-                alert("가입을 환영합니다!\n입력하신 메일로 인증 링크를 보냈습니다.\n인증 후 다시 로그인해주세요.");
-                await signOut(auth);
+                // 예외 계정이면 가입 즉시 인증 없이 로그인 유지, 아니면 메일 발송
+                if (EXCEPT_EMAILS.includes(email)) {
+                    alert("예외 계정으로 생성되었습니다. 바로 이용 가능합니다.");
+                } else {
+                    await sendEmailVerification(newUserCredential.user);
+                    alert("가입을 환영합니다!\n입력하신 메일로 인증 링크를 보냈습니다.\n인증 후 다시 로그인해주세요.");
+                    await signOut(auth);
+                }
             } catch (signupError) {
                 alert("가입 오류: " + signupError.message);
             }
@@ -553,6 +560,7 @@ onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap
         }
     }
 };
+
 
     document.getElementById('btn-post').onclick = async () => {
     if (!auth.currentUser) return alert("로그인 후 이용해주세요.");
