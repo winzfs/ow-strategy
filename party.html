@@ -321,35 +321,45 @@
         filtered.forEach(p => {
             const isMine = auth.currentUser?.uid === p.uid;
             const isSent = mySentRequests.has(p.id);
-            const currentCount = (p.members ? p.members.length : 0) + 1; // 수락된 인원 + 방장(1명)
-    const maxCount = p.maxp || 5; // 설정한 최대 인원 (없으면 기본 5)
-    const isFull = currentCount >= maxCount; // 인원이 다 찼는지 확인
+            const currentCount = (p.members ? p.members.length : 0) + 1; // 수락된 인원 + 방장
+        const maxCount = p.maxp || 5; 
+        const isFull = currentCount >= maxCount; 
+
+        const div = document.createElement('div'); 
+        div.className = 'box';
     // ------------------------------
             
             const div = document.createElement('div'); 
             div.className = 'box';
-            let buttons = isMine ? 
-        `<button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button><button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>` : 
-        (isFull ? `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">모집 마감</button>` : 
-        (isSent ? `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : 
-        `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`));
-            div.innerHTML = `
-        <div style="display:flex; justify-content:space-between;">
-            <div>
-                <b>${p.btag.split('#')[0]}#****</b> 
-                <span style="margin-left:8px; font-size:12px; color:${isFull ? '#ff3c3c' : 'var(--sup)'};">
-                    ● ${currentCount}/${maxCount}
-                </span>
-                <br>
-                <span style="color:var(--accent); font-weight:bold;">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span>
+            let buttons = "";
+        if (isMine) {
+            buttons = `<button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button><button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>`;
+        } else if (isFull) {
+            buttons = `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">모집 마감</button>`;
+        } else if (isSent) {
+            // [추가] 신청 버튼 대신 '승인 대기 중' 상태 표시
+            buttons = `<button class="btn-sub" style="background:#444; color:#aaa; cursor:default;">⌛ 승인 대기</button>`;
+        } else {
+            buttons = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`;
+        }
+
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between;">
+                <div>
+                    <b>${p.btag.split('#')[0]}#****</b> 
+                    <span style="margin-left:8px; font-size:12px; color:${isFull ? '#ff3c3c' : 'var(--sup)'};">
+                        ● ${currentCount}/${maxCount}
+                    </span>
+                    <br>
+                    <span style="color:var(--accent); font-weight:bold;">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span>
+                </div>
+                <div>${buttons}</div>
             </div>
-            <div>${buttons}</div>
-        </div>
-        <p style="margin-top:10px; color:#bbb;">${p.desc}</p>`;
-    
-    listDiv.appendChild(div);
-});
-    };
+            <p style="margin-top:10px; color:#bbb;">${p.desc}</p>`;
+        
+        listDiv.appendChild(div);
+    });
+};
 
     // Firebase 이벤트 리스너
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => { 
@@ -457,6 +467,11 @@ onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap
         const pData = pSnap.data();
         const currentM = pData.members || [];
         // 중복 방지 후 추가
+        if(currentM.length + 1 >= (pData.maxp || 5)) {
+            alert("이미 파티 인원이 가득 찼습니다.");
+            return;
+        }
+
         if(!currentM.find(m => m.uid === mData.fromUid)){
             currentM.push({
                 uid: mData.fromUid, 
@@ -464,6 +479,7 @@ onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap
                 pos: mData.fromPos
             });
             await updateDoc(pRef, { members: currentM });
+            alert("파티원을 수락했습니다!");
         }
     }
 };
