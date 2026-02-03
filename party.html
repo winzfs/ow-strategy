@@ -146,11 +146,23 @@
     
     let currentPosts = []; let mySentRequests = new Set(); let targetData = null; let rateTargetId = null; let selectedRate = 5;
 
-    window.showPage = async (id) => { 
+        window.showPage = async (id) => {
+        // 내 정보 탭 접근 시 로그인 체크
+        if (id === 'profile' && !auth.currentUser) {
+            alert("로그인이 필요한 메뉴입니다.");
+            showPage('list'); // 로그인 안 되어 있으면 파티찾기로 강제 이동
+            return;
+        }
+
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
         document.querySelectorAll('.nav-tabs div').forEach(t => t.classList.remove('active')); 
-        document.getElementById('page-'+id).classList.add('active'); 
-        document.getElementById('tab-'+id).classList.add('active');
+        
+        const targetPage = document.getElementById('page-' + id);
+        const targetTab = document.getElementById('tab-' + id);
+        
+        if (targetPage) targetPage.classList.add('active');
+        if (targetTab) targetTab.classList.add('active');
+
         if(id === 'noti') document.getElementById('menu-new-tag').style.display = 'none';
         
         if(id === 'profile' && auth.currentUser) {
@@ -165,6 +177,7 @@
             }
         }
     };
+
 
     // window.showPage 정의 바로 아래나 적당한 빈 공간에 추가
 const updateAvgRating = async (uid) => {
@@ -300,7 +313,13 @@ const updateAvgRating = async (uid) => {
         }); closeModal();
     };
     window.delPost = async (id) => { if(confirm("삭제?")) await deleteDoc(doc(db, "parties", id)); };
-    document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
+        document.getElementById('btn-logout').onclick = () => {
+        signOut(auth).then(() => {
+            alert("로그아웃 되었습니다.");
+            location.reload(); // 페이지 새로고침하여 초기 상태(파티찾기)로 이동
+        });
+    };
+
     document.querySelectorAll('#rate-stars span').forEach(s => {
         s.onclick = () => {
             let v = s.dataset.v;
