@@ -182,156 +182,14 @@
     </div>
 </div>
 
+
+
+
+
+
+
     
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, getDoc, setDoc, deleteDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    const firebaseConfig = { apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", authDomain: "ow-party-97936.firebaseapp.com", projectId: "ow-party-97936", storageBucket: "ow-party-97936.firebasestorage.app", messagingSenderId: "15782204013", appId: "1:15782204013:web:5c74ef2e603c311fc82564" };
-    const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
-    const ADMIN_EMAIL = "jazzhjm@gmail.com";
-    let rateTargetInfo = null;
-    
-    // 시간을 "방금 전", "n분 전" 형태로 변환하는 함수
-const timeSince = (date) => {
-    const seconds = Math.floor((Date.now() - date) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + "년 전";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + "달 전";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + "일 전";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + "시간 전";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + "분 전";
-    return "방금 전";
-};
-
-    let currentPosts = []; let mySentRequests = new Set(); let targetData = null; let rateTargetId = null; let selectedRate = 5; let editPostId = null;
-
-        window.showPage = async (id) => {
-        // 내 정보 탭 접근 시 로그인 체크
-        if (id === 'profile' && !auth.currentUser) {
-            alert("로그인이 필요한 메뉴입니다.");
-            showPage('list'); // 로그인 안 되어 있으면 파티찾기로 강제 이동
-            return;
-        }
-
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
-        document.querySelectorAll('.nav-tabs div').forEach(t => t.classList.remove('active')); 
-        
-        const targetPage = document.getElementById('page-' + id);
-        const targetTab = document.getElementById('tab-' + id);
-        
-        if (targetPage) targetPage.classList.add('active');
-        if (targetTab) targetTab.classList.add('active');
-
-        if(id === 'noti') document.getElementById('menu-new-tag').style.display = 'none';
-        
-        if(id === 'profile' && auth.currentUser) {
-            updateAvgRating(auth.currentUser.uid);
-            const u = await getDoc(doc(db, "users", auth.currentUser.uid));
-            if(u.exists()) {
-                const d = u.data();
-                document.getElementById('profile-btag').value = d.btag || '';
-                if(d.tank) { document.getElementById('tier-tank').value = d.tank.tier; document.getElementById('num-tank').value = d.tank.num; }
-                if(d.dps) { document.getElementById('tier-dps').value = d.dps.tier; document.getElementById('num-dps').value = d.dps.num; }
-                if(d.sup) { document.getElementById('tier-sup').value = d.sup.tier; document.getElementById('num-sup').value = d.sup.num; }
-            }
-        }
-    };
-
-
-    // window.showPage 정의 바로 아래나 적당한 빈 공간에 추가
-// 이 코드를 복사해서 붙여넣으세요
-const updateAvgRating = async (uid) => {
-    try {
-        // 상대방이 나를 평가해서 내 users 문서에 쌓인 데이터를 가져옴
-        const u = await getDoc(doc(db, "users", uid));
-        const avgArea = document.getElementById('avg-rating-area');
-        const starDiv = document.getElementById('profile-avg-stars');
-
-        avgArea.style.display = 'block'; // 영역 보이기
-
-        if (u.exists()) {
-            const d = u.data();
-            // rateCount(평가 횟수)가 있을 때만 계산
-            if (d.rateCount && d.rateCount > 0) {
-                const avg = (d.rateTotal / d.rateCount).toFixed(1);
-                starDiv.innerHTML = `★ ${avg} <span style="font-size:12px; color:#666; font-weight:normal;">(${d.rateCount}건의 평가)</span>`;
-            } else {
-                starDiv.innerHTML = `<span style="font-size:14px; color:#555; font-weight:normal;">아직 받은 평가가 없습니다</span>`;
-            }
-        }
-    } catch (e) { console.error(e); }
-};
-
-
-                // ... snap.forEach 루프가 끝난 직후 ...
-
-        const avgArea = document.getElementById('avg-rating-area');
-        const starDiv = document.getElementById('profile-avg-stars');
-
-        // 1. 영역은 무조건 보이게 설정 (숨기지 않음)
-        avgArea.style.display = 'block'; 
-
-        // 2. 데이터 유무에 따라 내용만 갈라짐
-        if (count > 0) {
-            const avg = (total / count).toFixed(1);
-            starDiv.innerHTML = `★ ${avg} <span style="font-size:12px; color:#666; font-weight:normal;">(${count}건의 평가)</span>`;
-        } else {
-            // 평가가 0건일 때 보여줄 기본 메시지
-            starDiv.innerHTML = `<span style="font-size:14px; color:#555; font-weight:normal;">아직 받은 평가가 없습니다</span>`;
-        }
-    } catch (e) { console.error(e); }
-};
-
- // 수정 모달을 열고 기존 내용을 채워넣는 함수
-window.openEditModal = (id) => {
-    const post = currentPosts.find(p => p.id === id); // 현재 글 목록에서 해당 ID의 데이터를 찾음
-    if(!post) return;
-    
-    editPostId = id; // 나중에 저장할 때 쓰려고 ID를 저장해둠
-    
-    // 모달창의 입력칸들에 기존 글 내용을 미리 채워넣음
-    document.getElementById('edit-post-pos').value = post.pos;
-    document.getElementById('edit-post-tier').value = post.tier;
-    document.getElementById('edit-post-tier-num').value = post.tierNum;
-    document.getElementById('edit-post-desc').value = post.desc;
-    
-    document.getElementById('edit-modal').style.display = 'flex'; // 모달 보이기
-};
-
-// [수정 완료] 버튼을 눌렀을 때 DB를 업데이트하는 로직
-document.getElementById('btn-confirm-edit').onclick = async () => {
-    if(!editPostId) return;
-    try {
-        await updateDoc(doc(db, "parties", editPostId), {
-            pos: document.getElementById('edit-post-pos').value,
-            tier: document.getElementById('edit-post-tier').value,
-            tierNum: document.getElementById('edit-post-tier-num').value,
-            desc: document.getElementById('edit-post-desc').value
-        });
-        alert("성공적으로 수정되었습니다.");
-        closeModal(); // 모달 닫기
-    } catch(e) { 
-        console.error(e); 
-        alert("수정 중 오류가 발생했습니다."); 
-    }
-};
-
-
-    window.closeModal = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-    window.openRequestModal = (uid, btag, postId, pos) => { 
-        if(!auth.currentUser) return alert("로그인 필요"); 
-        targetData = {uid, btag, postId, pos};
-        document.getElementById('request-modal').style.display = 'flex'; 
-    };
-
-        window.renderList = () => {
-    const listDiv = document.getElementById('party-list'); 
+                    const     const listDiv = document.getElementById('party-list'); 
     listDiv.innerHTML = '';
     
     const fPos = document.getElementById('filter-pos').value;
@@ -506,92 +364,254 @@ document.getElementById('btn-confirm-edit').onclick = async () => {
         const userRef = doc(db, "users", rateTargetInfo.targetUid);
         const userSnap = await getDoc(userRef);
         
-        let newCount = 1;
-        let newTotal = score;
 
-        if (userSnap.exists()) {
-            const userData = userSnap.data();
-            newCount = (userData.rateCount || 0) + 1;
-            newTotal = (userData.rateTotal || 0) + score;
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, getDoc, setDoc, deleteDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", authDomain: "ow-party-97936.firebaseapp.com", projectId: "ow-party-97936", storageBucket: "ow-party-97936.firebasestorage.app", messagingSenderId: "15782204013", appId: "1:15782204013:web:5c74ef2e603c311fc82564" };
+    const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
+    const ADMIN_EMAIL = "jazzhjm@gmail.com";
+
+    // 전역 상태 변수
+    let currentPosts = []; 
+    let mySentRequests = new Set(); 
+    let targetData = null; 
+    let rateTargetId = null; 
+    let rateTargetInfo = null;
+    let editPostId = null;
+
+    // 시간 변환 함수
+    const timeSince = (date) => {
+        const seconds = Math.floor((Date.now() - date) / 1000);
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + "년 전";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + "달 전";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + "일 전";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + "시간 전";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + "분 전";
+        return "방금 전";
+    };
+
+    // 별점 업데이트 함수 (중복 제거됨)
+    const updateAvgRating = async (uid) => {
+        try {
+            const u = await getDoc(doc(db, "users", uid));
+            const avgArea = document.getElementById('avg-rating-area');
+            const starDiv = document.getElementById('profile-avg-stars');
+            if (!avgArea || !starDiv) return;
+
+            avgArea.style.display = 'block'; 
+            if (u.exists()) {
+                const d = u.data();
+                if (d.rateCount && d.rateCount > 0) {
+                    const avg = (d.rateTotal / d.rateCount).toFixed(1);
+                    starDiv.innerHTML = `★ ${avg} <span style="font-size:12px; color:#666; font-weight:normal;">(${d.rateCount}건의 평가)</span>`;
+                } else {
+                    starDiv.innerHTML = `<span style="font-size:14px; color:#555; font-weight:normal;">아직 받은 평가가 없습니다</span>`;
+                }
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    // 페이지 전환 함수
+    window.showPage = async (id) => {
+        if (id === 'profile' && !auth.currentUser) {
+            alert("로그인이 필요한 메뉴입니다.");
+            return;
+        }
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+        document.querySelectorAll('.nav-tabs div').forEach(t => t.classList.remove('active')); 
+        document.getElementById('page-' + id).classList.add('active');
+        document.getElementById('tab-' + id).classList.add('active');
+
+        if(id === 'noti') document.getElementById('menu-new-tag').style.display = 'none';
+        
+        if(id === 'profile' && auth.currentUser) {
+            updateAvgRating(auth.currentUser.uid);
+            const u = await getDoc(doc(db, "users", auth.currentUser.uid));
+            if(u.exists()) {
+                const d = u.data();
+                document.getElementById('profile-btag').value = d.btag || '';
+                if(d.tank) { document.getElementById('tier-tank').value = d.tank.tier; document.getElementById('num-tank').value = d.tank.num; }
+                if(d.dps) { document.getElementById('tier-dps').value = d.dps.tier; document.getElementById('num-dps').value = d.dps.num; }
+                if(d.sup) { document.getElementById('tier-sup').value = d.sup.tier; document.getElementById('num-sup').value = d.sup.num; }
+            }
+        }
+    };
+
+    // 모달 제어
+    window.closeModal = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    
+    window.openRequestModal = (uid, btag, postId, pos) => { 
+        if(!auth.currentUser) return alert("로그인 필요"); 
+        targetData = {uid, btag, postId, pos};
+        document.getElementById('request-modal').style.display = 'flex'; 
+    };
+
+    window.openEditModal = (id) => {
+        const post = currentPosts.find(p => p.id === id);
+        if(!post) return;
+        editPostId = id;
+        document.getElementById('edit-post-pos').value = post.pos;
+        document.getElementById('edit-post-tier').value = post.tier;
+        document.getElementById('edit-post-tier-num').value = post.tierNum;
+        document.getElementById('edit-post-desc').value = post.desc;
+        document.getElementById('edit-modal').style.display = 'flex';
+    };
+
+    window.openRateModal = (matchId, type, targetUid) => { 
+        rateTargetId = matchId; 
+        rateTargetInfo = { type, targetUid }; 
+        document.getElementById('rate-modal').style.display = 'flex'; 
+    };
+
+    // 리스트 렌더링
+    window.renderList = () => {
+        const listDiv = document.getElementById('party-list'); 
+        if(!listDiv) return;
+        listDiv.innerHTML = '';
+        const fPos = document.getElementById('filter-pos').value;
+        const fTier = document.getElementById('filter-tier').value;
+
+        const filtered = currentPosts.filter(p => (fPos === 'all' || p.pos === fPos) && (fTier === 'all' || p.tier === fTier));
+        if (filtered.length === 0) {
+            listDiv.innerHTML = `<div style="text-align:center; padding:40px; color:#666;">조건에 맞는 파티가 없습니다.</div>`;
+            return;
         }
 
-        await setDoc(userRef, { 
-            rateCount: newCount, 
-            rateTotal: newTotal 
-        }, { merge: true });
+        filtered.forEach(p => {
+            const isMine = auth.currentUser?.uid === p.uid;
+            const isSent = mySentRequests.has(p.id);
+            const div = document.createElement('div'); 
+            div.className = 'box';
+            let buttons = isMine ? 
+                `<button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button><button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>` : 
+                (isSent ? `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`);
+            
+            div.innerHTML = `<div style="display:flex; justify-content:space-between;"><div><b>${p.btag.split('#')[0]}#****</b> <small style="color:#666">${timeSince(p.createdAt)}</small><br><span style="color:var(--accent); font-weight:bold;">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span></div><div>${buttons}</div></div><p style="margin-top:10px; color:#bbb;">${p.desc}</p>`;
+            listDiv.appendChild(div);
+        });
+    };
 
-        alert("상대방 평가가 완료되었습니다!");
-        closeModal();
-    } catch (e) {
-        console.error(e);
-        alert("평가 중 오류 발생");
-    }
-};
+    // Firebase 이벤트 리스너
+    onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => { 
+        currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); 
+        window.renderList(); 
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+        const loginForm = document.getElementById('login-form');
+        const userInfo = document.getElementById('user-info');
+        if (user) {
+            loginForm.style.display = 'none'; userInfo.style.display = 'block';
+            const isAdmin = user.email === ADMIN_EMAIL;
+            
+            // 알림 배지
+            onSnapshot(isAdmin ? query(collection(db, "matches"), where("status", "==", "pending")) : query(collection(db, "matches"), where("toUid", "==", user.uid), where("status", "==", "pending")), (snap) => {
+                document.getElementById('menu-new-tag').style.display = (!snap.empty && !document.getElementById('page-noti').classList.contains('active')) ? 'inline-block' : 'none';
+            });
+
+            // 알림 리스트
+            onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
+                const list = document.getElementById('noti-list'); 
+                if(!list) return;
+                list.innerHTML = '';
+                snap.docs.forEach(ds => {
+                    const m = ds.data();
+                    if (!isAdmin && user.uid !== m.toUid && user.uid !== m.fromUid) return;
+                    const box = document.createElement('div'); box.className = 'box';
+                    const sInfo = `<span class="info-label">${m.fromPos}</span><span class="info-label">${m.fromTier} ${m.fromTierNum}</span>`;
+                    
+                    if (m.status === 'pending') {
+                        if (user.uid === m.toUid || isAdmin) {
+                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div><div style="margin:10px 0; font-size:13px;">신청자: ${sInfo}<br>메시지: ${m.message}</div><div style="display:flex; gap:5px;"><button class="btn-main" style="margin-top:0; flex:2;" onclick="acceptMatch('${ds.id}')">수락</button><button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button></div>`;
+                        } else {
+                            box.innerHTML = `<div style="color:#666;">⌛ 대기 중... (${m.toBtag.split('#')[0]})</div>`;
+                        }
+                    } else {
+                        const isOwner = user.uid === m.toUid;
+                        const type = isOwner ? 'ratingToGuest' : 'ratingToOwner';
+                        const already = m[type];
+                        box.innerHTML = `<div style="color:var(--sup); font-weight:bold;">✅ 매칭 완료!</div><div style="background:#000; padding:10px; border-radius:8px; margin-top:10px;"><b>${isOwner ? m.fromBtag : m.toBtag}</b><br><small style="color:#bbb;">정보: ${sInfo}</small></div><div style="display:flex; gap:5px; margin-top:10px;">${!already ? `<button class="btn-sub" style="flex:1; background:var(--accent); color:black;" onclick="openRateModal('${ds.id}', '${type}', '${isOwner?m.fromUid:m.toUid}')">평가하기</button>` : `<span style="padding:8px; color:#666;">평가완료(★${already})</span>`}<button class="btn-sub" style="flex:1;" onclick="delMatch('${ds.id}')">삭제</button></div>`;
+                    }
+                    list.appendChild(box);
+                });
+            });
+
+            onSnapshot(query(collection(db, "matches"), where("fromUid", "==", user.uid)), (snap) => { mySentRequests = new Set(snap.docs.map(d => d.data().postId)); window.renderList(); });
+        } else {
+            loginForm.style.display = 'flex'; userInfo.style.display = 'none';
+        }
+    });
+
+    // 버튼 액션 함수들
+    window.acceptMatch = async (id) => await updateDoc(doc(db, "matches", id), { status: 'accepted' });
+    window.delMatch = async (id) => { if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "matches", id)); };
+    window.delPost = async (id) => { if(confirm("삭제?")) await deleteDoc(doc(db, "parties", id)); };
+
+    document.getElementById('btn-confirm-rate').onclick = async () => {
+        const score = document.querySelectorAll('#rate-stars span.active').length;
+        if (score === 0) return alert("별점을 선택해주세요.");
+        try {
+            const mRef = doc(db, "matches", rateTargetId);
+            const up = {}; up[rateTargetInfo.type] = score;
+            await updateDoc(mRef, up);
+
+            const uRef = doc(db, "users", rateTargetInfo.targetUid);
+            const uSnap = await getDoc(uRef);
+            let nC = 1, nT = score;
+            if (uSnap.exists()) { const d = uSnap.data(); nC = (d.rateCount || 0) + 1; nT = (d.rateTotal || 0) + score; }
+            await setDoc(uRef, { rateCount: nC, rateTotal: nT }, { merge: true });
+            alert("평가 완료!"); closeModal();
+        } catch (e) { alert("오류 발생"); }
+    };
+
     document.getElementById('btn-login').onclick = async () => {
         const e = document.getElementById('login-email').value, p = document.getElementById('login-password').value;
         try { await signInWithEmailAndPassword(auth, e, p); } catch { try { await createUserWithEmailAndPassword(auth, e, p); } catch { alert("계정 확인 필요"); } }
     };
-        document.getElementById('btn-post').onclick = async () => {
-        if (!auth.currentUser) return alert("로그인 후 이용 가능합니다.");
 
-        // 1. 입력창의 배틀태그 가져오기
-        let inputBtag = document.getElementById('post-btag').value.trim();
-        
-        // 2. 입력창이 비어있으면 프로필 정보에서 가져오기
-        if (!inputBtag) {
-            const u = await getDoc(doc(db, "users", auth.currentUser.uid));
-            if (u.exists() && u.data().btag) {
-                inputBtag = u.data().btag;
-            }
-        }
-
-        // 3. 둘 다 없으면 차단
-        if (!inputBtag) return alert("표시할 배틀태그가 없습니다. 직접 입력하거나 프로필을 저장해 주세요.");
-
-        await addDoc(collection(db, "parties"), { 
-            btag: inputBtag, // 결정된 배틀태그 사용
-            pos: document.getElementById('post-main-pos').value, 
-            tier: document.getElementById('post-tier').value, 
-            tierNum: document.getElementById('post-tier-num').value, 
-            desc: document.getElementById('post-desc').value, 
-            uid: auth.currentUser.uid, 
-            createdAt: Date.now() 
-        });
-        
-        alert("모집글이 등록되었습니다.");
-        document.getElementById('post-desc').value = ""; // 내용 초기화
+    document.getElementById('btn-post').onclick = async () => {
+        if (!auth.currentUser) return;
+        let btag = document.getElementById('post-btag').value.trim();
+        if (!btag) { const u = await getDoc(doc(db, "users", auth.currentUser.uid)); btag = u.data()?.btag; }
+        if (!btag) return alert("배틀태그를 입력하거나 프로필을 저장하세요.");
+        await addDoc(collection(db, "parties"), { btag, pos: document.getElementById('post-main-pos').value, tier: document.getElementById('post-tier').value, tierNum: document.getElementById('post-tier-num').value, desc: document.getElementById('post-desc').value, uid: auth.currentUser.uid, createdAt: Date.now() });
+        document.getElementById('post-desc').value = "";
     };
 
     document.getElementById('btn-save-profile').onclick = async () => {
-        await setDoc(doc(db, "users", auth.currentUser.uid), { 
-            btag: document.getElementById('profile-btag').value,
-            tank: { tier: document.getElementById('tier-tank').value, num: document.getElementById('num-tank').value },
-            dps: { tier: document.getElementById('tier-dps').value, num: document.getElementById('num-dps').value },
-            sup: { tier: document.getElementById('tier-sup').value, num: document.getElementById('num-sup').value }
-        }, {merge:true}); alert("저장됨");
+        await setDoc(doc(db, "users", auth.currentUser.uid), { btag: document.getElementById('profile-btag').value, tank: { tier: document.getElementById('tier-tank').value, num: document.getElementById('num-tank').value }, dps: { tier: document.getElementById('tier-dps').value, num: document.getElementById('num-dps').value }, sup: { tier: document.getElementById('tier-sup').value, num: document.getElementById('num-sup').value } }, {merge:true}); alert("저장됨");
     };
+
     document.getElementById('btn-confirm-send').onclick = async () => {
         const u = (await getDoc(doc(db, "users", auth.currentUser.uid))).data();
-        const myTier = u[targetData.pos] || {tier:"UNRANKED", num:"5"};
-        await addDoc(collection(db, "matches"), { 
-            fromUid: auth.currentUser.uid, fromBtag: u.btag, fromTier: myTier.tier, fromTierNum: myTier.num, fromPos: targetData.pos,
-            toUid: targetData.uid, toBtag: targetData.btag, postId: targetData.postId, message: document.getElementById('request-msg').value, status: "pending", createdAt: Date.now() 
-        }); closeModal();
+        await addDoc(collection(db, "matches"), { fromUid: auth.currentUser.uid, fromBtag: u.btag, fromTier: (u[targetData.pos]?.tier || "UNRANKED"), fromTierNum: (u[targetData.pos]?.num || "5"), fromPos: targetData.pos, toUid: targetData.uid, toBtag: targetData.btag, postId: targetData.postId, message: document.getElementById('request-msg').value, status: "pending", createdAt: Date.now() }); 
+        closeModal();
     };
-    window.delPost = async (id) => { if(confirm("삭제?")) await deleteDoc(doc(db, "parties", id)); };
-        document.getElementById('btn-logout').onclick = () => {
-        signOut(auth).then(() => {
-            alert("로그아웃 되었습니다.");
-            location.reload(); // 페이지 새로고침하여 초기 상태(파티찾기)로 이동
-        });
+
+    document.getElementById('btn-confirm-edit').onclick = async () => {
+        await updateDoc(doc(db, "parties", editPostId), { pos: document.getElementById('edit-post-pos').value, tier: document.getElementById('edit-post-tier').value, tierNum: document.getElementById('edit-post-tier-num').value, desc: document.getElementById('edit-post-desc').value });
+        closeModal();
     };
+
+    document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
 
     document.querySelectorAll('#rate-stars span').forEach(s => {
         s.onclick = () => {
-            let v = s.dataset.v;
+            const v = s.dataset.v;
             document.querySelectorAll('#rate-stars span').forEach(i => i.classList.toggle('active', i.dataset.v <= v));
         };
     });
 </script>
+
+    
 </body>
 </html>
