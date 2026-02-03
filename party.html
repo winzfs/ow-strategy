@@ -685,16 +685,11 @@ onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), async
     alert("저장됨");
 };
 
-    document.getElementById('btn-confirm-send').onclick = async () => {
-        const u = (await getDoc(doc(db, "users", auth.currentUser.uid))).data();
-        await addDoc(collection(db, "matches"), { fromUid: auth.currentUser.uid, fromBtag: u.btag, fromTier: (u[targetData.pos]?.tier || "UNRANKED"), fromTierNum: (u[targetData.pos]?.num || "5"), fromPos: targetData.pos, toUid: targetData.uid, toBtag: targetData.btag, postId: targetData.postId, message: document.getElementById('request-msg').value, status: "pending", createdAt: Date.now() }); 
-        closeModal();
-    };
-
-    document.getElementById('btn-confirm-send').onclick = async () => {
-    // 통합된 신청 확정 로직 (정보 박제 포함)
+    // 하단의 btn-confirm-send 로직을 이 하나로 통합하세요.
 document.getElementById('btn-confirm-send').onclick = async () => {
     try {
+        if (!auth.currentUser) return alert("로그인이 필요합니다.");
+        
         const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
         const u = userDoc.data();
         
@@ -716,8 +711,8 @@ document.getElementById('btn-confirm-send').onclick = async () => {
             
             toUid: targetData.uid, 
             toBtag: targetData.btag, 
-            toPos: postData.pos,      // 방장 포지션 저장
-            toTier: postData.tier,    // 방장 티어 저장
+            toPos: postData.pos,      
+            toTier: postData.tier,    
             toTierNum: postData.tierNum,
             
             postId: targetData.postId, 
@@ -727,7 +722,7 @@ document.getElementById('btn-confirm-send').onclick = async () => {
         }); 
         
         alert("신청을 보냈습니다!");
-        document.getElementById('request-msg').value = ""; // 입력창 초기화
+        document.getElementById('request-msg').value = ""; 
         closeModal();
     } catch (e) {
         console.error(e);
