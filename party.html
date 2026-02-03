@@ -135,6 +135,23 @@
 <div class="modal-overlay" id="request-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;"><h3>파티 신청</h3><textarea id="request-msg" placeholder="상대에게 보낼 메시지" rows="4"></textarea><button class="btn-main" id="btn-confirm-send">신청하기</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
 <div class="modal-overlay" id="rate-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px; text-align:center;"><h3>팀원 평가</h3><div class="stars" id="rate-stars"><span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span></div><button class="btn-main" id="btn-confirm-rate">평가 완료</button></div></div>
 
+<div class="modal-overlay" id="edit-modal">
+    <div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;">
+        <h3>수정</h3>
+        <select id="edit-post-pos"><option value="tank">🛡️ 돌격</option><option value="dps">⚔️ 공격</option><option value="sup">💉 지원</option></select>
+        <select id="edit-post-tier">
+            <option value="UNRANKED">UNRANKED</option><option value="BRONZE">BRONZE</option><option value="SILVER">SILVER</option>
+            <option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option>
+            <option value="MASTER">MASTER</option><option value="GRANDMASTER">GM</option><option value="CHAMPION">CHAMPION</option>
+        </select>
+        <select id="edit-post-tier-num"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+        <textarea id="edit-post-desc" placeholder="수정할 내용" rows="3"></textarea>
+        <button class="btn-main" id="btn-confirm-edit">수정 완료</button>
+        <button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button>
+    </div>
+</div>
+
+    
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, getDoc, setDoc, deleteDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -144,7 +161,7 @@
     const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
     const ADMIN_EMAIL = "jazzhjm@gmail.com";
     
-    let currentPosts = []; let mySentRequests = new Set(); let targetData = null; let rateTargetId = null; let selectedRate = 5;
+    let currentPosts = []; let mySentRequests = new Set(); let targetData = null; let rateTargetId = null; let selectedRate = 5; let editPostId = null;
 
         window.showPage = async (id) => {
         // 내 정보 탭 접근 시 로그인 체크
@@ -215,6 +232,39 @@ const updateAvgRating = async (uid) => {
     } catch (e) { console.error(e); }
 };
 
+ // 수정 모달을 열고 기존 내용을 채워넣는 함수
+window.openEditModal = (id) => {
+    const post = currentPosts.find(p => p.id === id); // 현재 글 목록에서 해당 ID의 데이터를 찾음
+    if(!post) return;
+    
+    editPostId = id; // 나중에 저장할 때 쓰려고 ID를 저장해둠
+    
+    // 모달창의 입력칸들에 기존 글 내용을 미리 채워넣음
+    document.getElementById('edit-post-pos').value = post.pos;
+    document.getElementById('edit-post-tier').value = post.tier;
+    document.getElementById('edit-post-tier-num').value = post.tierNum;
+    document.getElementById('edit-post-desc').value = post.desc;
+    
+    document.getElementById('edit-modal').style.display = 'flex'; // 모달 보이기
+};
+
+// [수정 완료] 버튼을 눌렀을 때 DB를 업데이트하는 로직
+document.getElementById('btn-confirm-edit').onclick = async () => {
+    if(!editPostId) return;
+    try {
+        await updateDoc(doc(db, "parties", editPostId), {
+            pos: document.getElementById('edit-post-pos').value,
+            tier: document.getElementById('edit-post-tier').value,
+            tierNum: document.getElementById('edit-post-tier-num').value,
+            desc: document.getElementById('edit-post-desc').value
+        });
+        alert("성공적으로 수정되었습니다.");
+        closeModal(); // 모달 닫기
+    } catch(e) { 
+        console.error(e); 
+        alert("수정 중 오류가 발생했습니다."); 
+    }
+};
 
 
     window.closeModal = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
@@ -231,9 +281,24 @@ const updateAvgRating = async (uid) => {
             const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
             const isSent = mySentRequests.has(p.id);
             const div = document.createElement('div'); div.className = 'box';
-            let buttons = isMine ? `<button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>` : 
-                        (isSent ? `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`);
-            if (isAdmin && !isMine) buttons += `<button class="btn-sub" style="background:#666; margin-left:5px;" onclick="delPost('${p.id}')">관리삭제</button>`;
+            // --- 여기서부터 버튼 로직 교체 ---
+        let buttons = "";
+        if (isMine) {
+            // 내가 쓴 글이면 [수정]과 [삭제] 버튼 표시
+            buttons = `
+                <button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button>
+                <button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>
+            `;
+        } else {
+            // 남이 쓴 글이면 [신청] 또는 [신청됨] 표시
+            buttons = isSent ? 
+                `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : 
+                `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`;
+        }
+        
+        if (isAdmin && !isMine) buttons += `<button class="btn-sub" style="background:#666; margin-left:5px;" onclick="delPost('${p.id}')">관리삭제</button>`;
+        // --- 여기까지 ---
+            
             div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><div><b>${p.btag.split('#')[0]}#****</b> <span style="font-size:12px; color:var(--accent);">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span></div><div>${buttons}</div></div><p style="margin-top:10px; font-size:14px; color:#bbb;">${p.desc}</p>`;
             listDiv.appendChild(div);
         });
