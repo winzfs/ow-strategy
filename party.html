@@ -54,19 +54,24 @@
 <div class="container">
     <div id="page-list" class="page active">
         <div class="box">
-            <h4 style="margin:0; color:var(--accent);">🚀 파티 모집 시작</h4>
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <select id="post-main-pos"><option value="tank">🛡️ 돌격</option><option value="dps">⚔️ 공격</option><option value="sup">💉 지원</option></select>
-                <select id="post-tier">
-                    <option value="UNRANKED">UNRANKED</option><option value="BRONZE">BRONZE</option><option value="SILVER">SILVER</option>
-                    <option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option>
-                    <option value="MASTER">MASTER</option><option value="GRANDMASTER">GM</option><option value="CHAMPION">CHAMPION</option>
-                </select>
-                <select id="post-tier-num"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option></select>
-            </div>
-            <textarea id="post-desc" placeholder="모집 내용 (마이크 유무 등)" rows="2"></textarea>
-            <button class="btn-main" id="btn-post">모집 시작</button>
+    <h4 style="margin:0; color:var(--accent);">🚀 파티 모집 시작</h4>
+    <div style="margin-top:10px;">
+        <input type="text" id="post-btag" placeholder="배틀태그#1234 (미입력 시 프로필 정보 사용)" style="margin-bottom:8px;">
+        
+        <div style="display:flex; gap:5px;">
+            <select id="post-main-pos"><option value="tank">🛡️ 돌격</option><option value="dps">⚔️ 공격</option><option value="sup">💉 지원</option></select>
+            <select id="post-tier">
+                <option value="UNRANKED">UNRANKED</option><option value="BRONZE">BRONZE</option><option value="SILVER">SILVER</option>
+                <option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option>
+                <option value="MASTER">MASTER</option><option value="GRANDMASTER">GM</option><option value="CHAMPION">CHAMPION</option>
+            </select>
+            <select id="post-tier-num"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option></select>
         </div>
+    </div>
+    <textarea id="post-desc" placeholder="모집 내용 (마이크 유무 등)" rows="2"></textarea>
+    <button class="btn-main" id="btn-post">모집 시작</button>
+</div>
+
         <div id="party-list"></div>
     </div>
 
@@ -356,11 +361,37 @@ document.getElementById('btn-confirm-edit').onclick = async () => {
         const e = document.getElementById('login-email').value, p = document.getElementById('login-password').value;
         try { await signInWithEmailAndPassword(auth, e, p); } catch { try { await createUserWithEmailAndPassword(auth, e, p); } catch { alert("계정 확인 필요"); } }
     };
-    document.getElementById('btn-post').onclick = async () => {
-        const u = await getDoc(doc(db, "users", auth.currentUser.uid));
-        if(!u.exists()) return alert("프로필 저장 필요");
-        await addDoc(collection(db, "parties"), { btag: u.data().btag, pos: document.getElementById('post-main-pos').value, tier: document.getElementById('post-tier').value, tierNum: document.getElementById('post-tier-num').value, desc: document.getElementById('post-desc').value, uid: auth.currentUser.uid, createdAt: Date.now() });
+        document.getElementById('btn-post').onclick = async () => {
+        if (!auth.currentUser) return alert("로그인 후 이용 가능합니다.");
+
+        // 1. 입력창의 배틀태그 가져오기
+        let inputBtag = document.getElementById('post-btag').value.trim();
+        
+        // 2. 입력창이 비어있으면 프로필 정보에서 가져오기
+        if (!inputBtag) {
+            const u = await getDoc(doc(db, "users", auth.currentUser.uid));
+            if (u.exists() && u.data().btag) {
+                inputBtag = u.data().btag;
+            }
+        }
+
+        // 3. 둘 다 없으면 차단
+        if (!inputBtag) return alert("표시할 배틀태그가 없습니다. 직접 입력하거나 프로필을 저장해 주세요.");
+
+        await addDoc(collection(db, "parties"), { 
+            btag: inputBtag, // 결정된 배틀태그 사용
+            pos: document.getElementById('post-main-pos').value, 
+            tier: document.getElementById('post-tier').value, 
+            tierNum: document.getElementById('post-tier-num').value, 
+            desc: document.getElementById('post-desc').value, 
+            uid: auth.currentUser.uid, 
+            createdAt: Date.now() 
+        });
+        
+        alert("모집글이 등록되었습니다.");
+        document.getElementById('post-desc').value = ""; // 내용 초기화
     };
+
     document.getElementById('btn-save-profile').onclick = async () => {
         await setDoc(doc(db, "users", auth.currentUser.uid), { 
             btag: document.getElementById('profile-btag').value,
