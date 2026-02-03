@@ -191,7 +191,23 @@
     const firebaseConfig = { apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", authDomain: "ow-party-97936.firebaseapp.com", projectId: "ow-party-97936", storageBucket: "ow-party-97936.firebasestorage.app", messagingSenderId: "15782204013", appId: "1:15782204013:web:5c74ef2e603c311fc82564" };
     const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
     const ADMIN_EMAIL = "jazzhjm@gmail.com";
-    
+
+    // 시간을 "방금 전", "n분 전" 형태로 변환하는 함수
+const timeSince = (date) => {
+    const seconds = Math.floor((Date.now() - date) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + "년 전";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + "달 전";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + "일 전";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + "시간 전";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + "분 전";
+    return "방금 전";
+};
+
     let currentPosts = []; let mySentRequests = new Set(); let targetData = null; let rateTargetId = null; let selectedRate = 5; let editPostId = null;
 
         window.showPage = async (id) => {
@@ -308,57 +324,65 @@ document.getElementById('btn-confirm-edit').onclick = async () => {
         window.renderList = () => {
     const listDiv = document.getElementById('party-list'); 
     listDiv.innerHTML = '';
+    
+    const fPos = document.getElementById('filter-pos').value;
+    const fTier = document.getElementById('filter-tier').value;
+
+    const filteredPosts = currentPosts.filter(p => {
+        const posMatch = (fPos === 'all' || p.pos === fPos);
+        const tierMatch = (fTier === 'all' || p.tier === fTier);
+        return posMatch && tierMatch;
+    });
+
+    if (filteredPosts.length === 0) {
+        listDiv.innerHTML = `<div style="text-align:center; padding:40px; color:#666;">조건에 맞는 파티가 없습니다.</div>`;
+        return;
+    }
+
+    filteredPosts.forEach(p => {
+        const isMine = auth.currentUser?.uid === p.uid;
+        const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+        const isSent = mySentRequests.has(p.id);
         
-        // 필터 값 가져오기
-        const fPos = document.getElementById('filter-pos').value;
-        const fTier = document.getElementById('filter-tier').value;
+        // 작성 시간 계산
+        const displayTime = timeSince(p.createdAt);
 
-        // 필터링 적용
-        const filteredPosts = currentPosts.filter(p => {
-            const posMatch = (fPos === 'all' || p.pos === fPos);
-            const tierMatch = (fTier === 'all' || p.tier === fTier);
-            return posMatch && tierMatch;
-        });
+        const div = document.createElement('div'); 
+        div.className = 'box';
 
-        if (filteredPosts.length === 0) {
-            listDiv.innerHTML = `<div style="text-align:center; padding:40px; color:#666;">조건에 맞는 파티가 없습니다.</div>`;
-            return;
-        }
-
-        filteredPosts.forEach(p => {
-            const isMine = auth.currentUser?.uid === p.uid;
-            const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
-            const isSent = mySentRequests.has(p.id);
-            const div = document.createElement('div'); 
-            div.className = 'box';
-
-            let buttons = "";
-            if (isMine) {
-                buttons = `
-                    <button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button>
-                    <button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>
-                `;
-            } else {
-                buttons = isSent ? 
-                    `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : 
-                    `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`;
-            }
-            
-            if (isAdmin && !isMine) buttons += `<button class="btn-sub" style="background:#666; margin-left:5px;" onclick="delPost('${p.id}')">관리삭제</button>`;
-            
-            div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <b>${p.btag.split('#')[0]}#****</b> 
-                        <span style="font-size:12px; color:var(--accent);">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span>
-                    </div>
-                    <div>${buttons}</div>
-                </div>
-                <p style="margin-top:10px; font-size:14px; color:#bbb;">${p.desc}</p>
+        let buttons = "";
+        if (isMine) {
+            buttons = `
+                <button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button>
+                <button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>
             `;
-            listDiv.appendChild(div);
-        });
-    };
+        } else {
+            buttons = isSent ? 
+                `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : 
+                `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`;
+        }
+        
+        if (isAdmin && !isMine) buttons += `<button class="btn-sub" style="background:#666; margin-left:5px;" onclick="delPost('${p.id}')">관리삭제</button>`;
+        
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <b style="font-size:15px;">${p.btag.split('#')[0]}#****</b> 
+                        <span style="font-size:11px; color:#666;">${displayTime}</span>
+                    </div>
+                    <div style="margin-top:4px;">
+                        <span style="font-size:12px; color:var(--accent); font-weight:bold;">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span>
+                    </div>
+                </div>
+                <div>${buttons}</div>
+            </div>
+            <p style="margin-top:12px; font-size:14px; color:#bbb; line-height:1.5;">${p.desc}</p>
+        `;
+        listDiv.appendChild(div);
+    });
+};
+
 
 
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => { currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); window.renderList(); });
