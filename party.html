@@ -343,18 +343,18 @@
         }
 
         div.innerHTML = `
-            <div style="display:flex; justify-content:space-between;">
-                <div>
-                    <b>${p.btag.split('#')[0]}#****</b> 
-                    <span style="margin-left:8px; font-size:12px; color:${isFull ? '#ff3c3c' : 'var(--sup)'};">
-                        ● ${currentCount}/${maxCount}
-                    </span>
-                    <br>
-                    <span style="color:var(--accent); font-weight:bold;">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span>
-                </div>
-                <div>${buttons}</div>
-            </div>
-            <p style="margin-top:10px; color:#bbb;">${p.desc}</p>`;
+    <div style="display:flex; justify-content:space-between;">
+        <div>
+            <b>${p.btag.split('#')[0]}#****</b> 
+            <span style="font-size:11px; color:#666; margin-left:5px;">${timeSince(p.createdAt)}</span> <span style="margin-left:8px; font-size:12px; color:${isFull ? '#ff3c3c' : 'var(--sup)'};">
+                ● ${currentCount}/${maxCount}
+            </span>
+            <br>
+            <span style="color:var(--accent); font-weight:bold;">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span>
+        </div>
+        <div>${buttons}</div>
+    </div>
+    <p style="margin-top:10px; color:#bbb;">${p.desc}</p>`;
         
         listDiv.appendChild(div);
     });
