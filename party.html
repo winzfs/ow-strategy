@@ -396,60 +396,93 @@ document.getElementById('btn-confirm-edit').onclick = async () => {
 
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => { currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); window.renderList(); });
 
-    onAuthStateChanged(auth, async (user) => {
-        document.getElementById('login-form').style.display = user ? 'none' : 'flex';
-        document.getElementById('user-info').style.display = user ? 'block' : 'none';
-        if(user) {
-            const isAdmin = user.email === ADMIN_EMAIL;
-            const badgeQuery = isAdmin ? query(collection(db, "matches"), where("status", "==", "pending")) : query(collection(db, "matches"), where("toUid", "==", user.uid), where("status", "==", "pending"));
-            onSnapshot(badgeQuery, (snap) => {
-                const isNotiPage = document.getElementById('page-noti').classList.contains('active');
-                document.getElementById('menu-new-tag').style.display = (!snap.empty && !isNotiPage) ? 'inline-block' : 'none';
-            });
-
-            // onSnapshot(query(collection(db, "matches")... 부분 찾기
-onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-    const list = document.getElementById('noti-list'); 
-    list.innerHTML = '';
-    snap.docs.forEach(ds => {
-        const m = ds.data();
-        if(!isAdmin && auth.currentUser.uid !== m.toUid && auth.currentUser.uid !== m.fromUid) return;
+        onAuthStateChanged(auth, async (user) => {
+        const loginForm = document.getElementById('login-form');
+        const userInfo = document.getElementById('user-info');
         
-        const box = document.createElement('div'); 
-        box.className = 'box';
-        const senderInfo = `<span class="info-label">${m.fromPos}</span><span class="info-label">${m.fromTier} ${m.fromTierNum}</span>`;
-        
-        if(m.status === 'pending') {
-            // ... (기존 대기 중 로직과 동일) ...
-        } else {
-            // 매칭 완료 상태일 때
-            const isOwner = auth.currentUser.uid === m.toUid; // 글 작성자
-            const targetUid = isOwner ? m.fromUid : m.toUid; // 내가 평가해야 할 대상
-            const type = isOwner ? 'ratingToGuest' : 'ratingToOwner'; // 내가 채워야 할 필드명
-            const alreadyRated = m[type]; // 이미 평가했는지 확인
+        if (!user) {
+            if (loginForm) loginForm.style.display = 'flex';
+            if (userInfo) userInfo.style.display = 'none';
+            return;
+        }
 
-            box.innerHTML = `
-                <div style="color:var(--sup); font-weight:bold;">✅ 매칭 완료!</div>
-                <div style="background:#000; padding:12px; border-radius:8px; border:1px solid var(--sup); margin-top:10px;">
-                    <div style="font-size:16px; font-weight:bold;">${isOwner ? m.fromBtag : m.toBtag}</div>
-                    <div style="font-size:12px; color:#bbb;">정보: ${senderInfo} | 메시지: ${m.message}</div>
-                </div>
-                <div style="display:flex; gap:5px; margin-top:10px;">
-                    ${!alreadyRated ? 
-                        `<button class="btn-sub" style="flex:1; background:var(--accent); color:black;" 
-                                 onclick="openRateModal('${ds.id}', '${type}', '${targetUid}')">상대 평가하기</button>` : 
-                        `<span style="color:#666; font-size:12px; padding:8px;">평가 완료 (★ ${alreadyRated})</span>`
+        // 로그인 상태일 때 UI 전환
+        if (loginForm) loginForm.style.display = 'none';
+        if (userInfo) userInfo.style.display = 'block';
+
+        const isAdmin = user.email === ADMIN_EMAIL;
+
+        // 알림 배지 (NEW 표시) 로직
+        const badgeQuery = isAdmin ? 
+            query(collection(db, "matches"), where("status", "==", "pending")) : 
+            query(collection(db, "matches"), where("toUid", "==", user.uid), where("status", "==", "pending"));
+        
+        onSnapshot(badgeQuery, (snap) => {
+            const isNotiPage = document.getElementById('page-noti').classList.contains('active');
+            document.getElementById('menu-new-tag').style.display = (!snap.empty && !isNotiPage) ? 'inline-block' : 'none';
+        });
+
+        // 알림 센터 리스트 로직 (쌍방 평가 버튼 포함)
+        onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
+            const list = document.getElementById('noti-list'); 
+            if (!list) return;
+            list.innerHTML = '';
+
+            snap.docs.forEach(ds => {
+                const m = ds.data();
+                // 관리자거나, 내가 보냈거나, 나에게 온 알림만 표시
+                if (!isAdmin && user.uid !== m.toUid && user.uid !== m.fromUid) return;
+                
+                const box = document.createElement('div'); 
+                box.className = 'box';
+                const senderInfo = `<span class="info-label">${m.fromPos}</span><span class="info-label">${m.fromTier} ${m.fromTierNum}</span>`;
+                
+                if (m.status === 'pending') {
+                    // 수락 대기 중 로직
+                    if (user.uid === m.toUid || isAdmin) {
+                        box.innerHTML = `
+                            <div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div>
+                            <div style="margin:10px 0; font-size:13px;">신청자: ${senderInfo}<br>메시지: ${m.message}</div>
+                            <div style="display:flex; gap:5px;">
+                                <button class="btn-main" style="margin-top:0; flex:2;" onclick="acceptMatch('${ds.id}')">수락하기</button>
+                                <button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button>
+                            </div>`;
+                    } else {
+                        box.innerHTML = `<div style="color:#666; font-size:13px;">⌛ 대기 중... (${m.toBtag.split('#')[0]})</div>`;
                     }
-                    <button class="btn-sub" style="flex:1;" onclick="delMatch('${ds.id}')">내역삭제</button>
-                </div>`;
-        }
-        list.appendChild(box);
-    });
-});
+                } else {
+                    // 매칭 완료(수락됨) 상태 - 쌍방 평가 버튼 노출
+                    const isOwner = user.uid === m.toUid; 
+                    const targetUid = isOwner ? m.fromUid : m.toUid; 
+                    const type = isOwner ? 'ratingToGuest' : 'ratingToOwner'; 
+                    const alreadyRated = m[type]; 
 
-            onSnapshot(query(collection(db, "matches"), where("fromUid", "==", user.uid)), (snap) => { mySentRequests = new Set(snap.docs.map(d => d.data().postId)); renderList(); });
-        }
+                    box.innerHTML = `
+                        <div style="color:var(--sup); font-weight:bold;">✅ 매칭 완료!</div>
+                        <div style="background:#000; padding:12px; border-radius:8px; border:1px solid var(--sup); margin-top:10px;">
+                            <div style="font-size:16px; font-weight:bold;">${isOwner ? m.fromBtag : m.toBtag}</div>
+                            <div style="font-size:12px; color:#bbb;">정보: ${senderInfo} | 메시지: ${m.message}</div>
+                        </div>
+                        <div style="display:flex; gap:5px; margin-top:10px;">
+                            ${!alreadyRated ? 
+                                `<button class="btn-sub" style="flex:1; background:var(--accent); color:black;" 
+                                         onclick="openRateModal('${ds.id}', '${type}', '${targetUid}')">상대 평가하기</button>` : 
+                                `<span style="color:#666; font-size:12px; padding:8px;">평가 완료 (★ ${alreadyRated})</span>`
+                            }
+                            <button class="btn-sub" style="flex:1;" onclick="delMatch('${ds.id}')">내역삭제</button>
+                        </div>`;
+                }
+                list.appendChild(box);
+            });
+        });
+
+        // 신청 완료된 글 표시용 (Set 업데이트)
+        onSnapshot(query(collection(db, "matches"), where("fromUid", "==", user.uid)), (snap) => {
+            mySentRequests = new Set(snap.docs.map(d => d.data().postId)); 
+            renderList(); 
+        });
     });
+
 
     window.acceptMatch = async (id) => await updateDoc(doc(db, "matches", id), { status: 'accepted' });
     window.delMatch = async (id) => { if(confirm("내역을 삭제(거절)하시겠습니까?")) await deleteDoc(doc(db, "matches", id)); };
