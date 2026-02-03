@@ -401,15 +401,15 @@
 
   // 알림창 하단에 상호 평가 섹션 추가 로직
 onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
-    const list = document.getElementById('noti-list');
-    if(!list || !auth.currentUser) return;
+    const evalList = document.getElementById('group-eval-list'); // HTML에 추가한 id
+    if(!evalList || !auth.currentUser) return;
+    evalList.innerHTML = ''; // 👈 먼저 비워줘야 중복이 안 생깁니다!
 
     snap.docs.forEach(docSnap => {
         const p = docSnap.data();
         const isOwner = p.uid === auth.currentUser.uid;
         const isMember = p.members && p.members.some(m => m.uid === auth.currentUser.uid);
 
-        // 내가 참여한 파티인 경우에만 평가창 노출
         if(isOwner || isMember) {
             const groupDiv = document.createElement('div');
             groupDiv.className = 'box';
@@ -468,21 +468,34 @@ onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap
     window.delPost = async (id) => { if(confirm("삭제?")) await deleteDoc(doc(db, "parties", id)); };
 
     document.getElementById('btn-confirm-rate').onclick = async () => {
-        const score = document.querySelectorAll('#rate-stars span.active').length;
-        if (score === 0) return alert("별점을 선택해주세요.");
-        try {
+    const score = document.querySelectorAll('#rate-stars span.active').length;
+    if (score === 0) return alert("별점을 선택해주세요.");
+    try {
+        // 상호 평가(group_rate)가 아닐 때만 matches 업데이트
+        if (rateTargetInfo.type !== 'group_rate') {
             const mRef = doc(db, "matches", rateTargetId);
             const up = {}; up[rateTargetInfo.type] = score;
             await updateDoc(mRef, up);
+        }
 
-            const uRef = doc(db, "users", rateTargetInfo.targetUid);
-            const uSnap = await getDoc(uRef);
-            let nC = 1, nT = score;
-            if (uSnap.exists()) { const d = uSnap.data(); nC = (d.rateCount || 0) + 1; nT = (d.rateTotal || 0) + score; }
-            await setDoc(uRef, { rateCount: nC, rateTotal: nT }, { merge: true });
-            alert("평가 완료!"); closeModal();
-        } catch (e) { alert("오류 발생"); }
-    };
+        // 상대방 유저 정보 업데이트 (공통)
+        const uRef = doc(db, "users", rateTargetInfo.targetUid);
+        const uSnap = await getDoc(uRef);
+        let nC = 1, nT = score;
+        if (uSnap.exists()) { 
+            const d = uSnap.data(); 
+            nC = (d.rateCount || 0) + 1; 
+            nT = (d.rateTotal || 0) + score; 
+        }
+        await setDoc(uRef, { rateCount: nC, rateTotal: nT }, { merge: true });
+        alert("평가 완료!"); 
+        closeModal();
+    } catch (e) { 
+        console.error(e);
+        alert("평가 중 오류가 발생했습니다."); 
+    }
+};
+
 
     document.getElementById('btn-login').onclick = async () => {
         const e = document.getElementById('login-email').value, p = document.getElementById('login-password').value;
