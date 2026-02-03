@@ -66,6 +66,14 @@
                 <option value="MASTER">MASTER</option><option value="GRANDMASTER">GM</option><option value="CHAMPION">CHAMPION</option>
             </select>
             <select id="post-tier-num"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option></select>
+            <select id="post-maxp" style="margin-top:8px;">
+    <option value="2">2인 파티</option>
+    <option value="3">3인 파티</option>
+    <option value="4">4인 파티</option>
+    <option value="5">5인 파티</option>
+    <option value="6">6인 파티</option>
+</select>
+
         </div>
     </div>
     <textarea id="post-desc" placeholder="모집 내용 (마이크 유무 등)" rows="2"></textarea>
@@ -489,15 +497,34 @@
         filtered.forEach(p => {
             const isMine = auth.currentUser?.uid === p.uid;
             const isSent = mySentRequests.has(p.id);
+            const currentCount = (p.members ? p.members.length : 0) + 1; // 수락된 인원 + 방장(1명)
+    const maxCount = p.maxp || 5; // 설정한 최대 인원 (없으면 기본 5)
+    const isFull = currentCount >= maxCount; // 인원이 다 찼는지 확인
+    // ------------------------------
+            
             const div = document.createElement('div'); 
             div.className = 'box';
             let buttons = isMine ? 
-                `<button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button><button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>` : 
-                (isSent ? `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`);
-            
-            div.innerHTML = `<div style="display:flex; justify-content:space-between;"><div><b>${p.btag.split('#')[0]}#****</b> <small style="color:#666">${timeSince(p.createdAt)}</small><br><span style="color:var(--accent); font-weight:bold;">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span></div><div>${buttons}</div></div><p style="margin-top:10px; color:#bbb;">${p.desc}</p>`;
-            listDiv.appendChild(div);
-        });
+        `<button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button><button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>` : 
+        (isFull ? `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">모집 마감</button>` : 
+        (isSent ? `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : 
+        `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`));
+            div.innerHTML = `
+        <div style="display:flex; justify-content:space-between;">
+            <div>
+                <b>${p.btag.split('#')[0]}#****</b> 
+                <span style="margin-left:8px; font-size:12px; color:${isFull ? '#ff3c3c' : 'var(--sup)'};">
+                    ● ${currentCount}/${maxCount}
+                </span>
+                <br>
+                <span style="color:var(--accent); font-weight:bold;">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span>
+            </div>
+            <div>${buttons}</div>
+        </div>
+        <p style="margin-top:10px; color:#bbb;">${p.desc}</p>`;
+    
+    listDiv.appendChild(div);
+});
     };
 
     // Firebase 이벤트 리스너
@@ -551,8 +578,72 @@
         }
     });
 
+
+  // 알림창 하단에 상호 평가 섹션 추가 로직
+onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
+    const list = document.getElementById('noti-list');
+    if(!list || !auth.currentUser) return;
+
+    snap.docs.forEach(docSnap => {
+        const p = docSnap.data();
+        const isOwner = p.uid === auth.currentUser.uid;
+        const isMember = p.members && p.members.some(m => m.uid === auth.currentUser.uid);
+
+        // 내가 참여한 파티인 경우에만 평가창 노출
+        if(isOwner || isMember) {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'box';
+            groupDiv.style.border = "1px solid var(--accent)";
+            
+            // 나를 제외한 모든 파티원(방장 포함) 추출
+            let allParticipants = [{uid: p.uid, btag: p.btag, pos: p.pos}, ...(p.members || [])];
+            let others = allParticipants.filter(m => m.uid !== auth.currentUser.uid);
+
+            let membersHtml = others.map(m => `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:8px; background:#000; border-radius:5px;">
+                    <span style="font-size:12px;">${m.btag.split('#')[0]}#**** (${m.pos})</span>
+                    <button class="btn-sub" style="background:var(--accent); color:black; font-size:10px;" 
+                        onclick="openRateModal('${docSnap.id}', 'group_rate', '${m.uid}')">평가</button>
+                </div>
+            `).join('');
+
+            groupDiv.innerHTML = `
+                <div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티원 상호 평가</div>
+                ${membersHtml || '<div style="font-size:11px; color:#666; margin-top:5px;">팀원을 기다리는 중...</div>'}
+            `;
+            list.appendChild(groupDiv);
+        }
+    });
+});
+  
+
     // 버튼 액션 함수들
-    window.acceptMatch = async (id) => await updateDoc(doc(db, "matches", id), { status: 'accepted' });
+    window.acceptMatch = async (id) => {
+    const mRef = doc(db, "matches", id);
+    const mSnap = await getDoc(mRef);
+    const mData = mSnap.data();
+
+    // 1. 매칭 상태 완료
+    await updateDoc(mRef, { status: 'accepted' });
+
+    // 2. 파티 데이터의 members 배열에 신청자 정보 넣기
+    const pRef = doc(db, "parties", mData.postId);
+    const pSnap = await getDoc(pRef);
+    if(pSnap.exists()){
+        const pData = pSnap.data();
+        const currentM = pData.members || [];
+        // 중복 방지 후 추가
+        if(!currentM.find(m => m.uid === mData.fromUid)){
+            currentM.push({
+                uid: mData.fromUid, 
+                btag: mData.fromBtag, 
+                pos: mData.fromPos
+            });
+            await updateDoc(pRef, { members: currentM });
+        }
+    }
+};
+
     window.delMatch = async (id) => { if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "matches", id)); };
     window.delPost = async (id) => { if(confirm("삭제?")) await deleteDoc(doc(db, "parties", id)); };
 
@@ -579,13 +670,35 @@
     };
 
     document.getElementById('btn-post').onclick = async () => {
-        if (!auth.currentUser) return;
-        let btag = document.getElementById('post-btag').value.trim();
-        if (!btag) { const u = await getDoc(doc(db, "users", auth.currentUser.uid)); btag = u.data()?.btag; }
-        if (!btag) return alert("배틀태그를 입력하거나 프로필을 저장하세요.");
-        await addDoc(collection(db, "parties"), { btag, pos: document.getElementById('post-main-pos').value, tier: document.getElementById('post-tier').value, tierNum: document.getElementById('post-tier-num').value, desc: document.getElementById('post-desc').value, uid: auth.currentUser.uid, createdAt: Date.now() });
+    if (!auth.currentUser) return alert("로그인 후 이용해주세요.");
+    
+    let btag = document.getElementById('post-btag').value.trim();
+    if (!btag) { 
+        const u = await getDoc(doc(db, "users", auth.currentUser.uid)); 
+        btag = u.data()?.btag; 
+    }
+    if (!btag) return alert("배틀태그를 입력하거나 프로필을 저장하세요.");
+
+    try {
+        await addDoc(collection(db, "parties"), { 
+            btag, 
+            pos: document.getElementById('post-main-pos').value, 
+            tier: document.getElementById('post-tier').value, 
+            tierNum: document.getElementById('post-tier-num').value, 
+            desc: document.getElementById('post-desc').value, 
+            uid: auth.currentUser.uid, 
+            createdAt: Date.now(),
+            // --- 데이터 구조 안에 포함 ---
+            maxp: parseInt(document.getElementById('post-maxp').value || 5), 
+            members: [] 
+        });
         document.getElementById('post-desc').value = "";
-    };
+        alert("모집글이 등록되었습니다!");
+    } catch (e) {
+        console.error("등록 오류:", e);
+    }
+};
+
 
     document.getElementById('btn-save-profile').onclick = async () => {
         await setDoc(doc(db, "users", auth.currentUser.uid), { btag: document.getElementById('profile-btag').value, tank: { tier: document.getElementById('tier-tank').value, num: document.getElementById('num-tank').value }, dps: { tier: document.getElementById('tier-dps').value, num: document.getElementById('num-dps').value }, sup: { tier: document.getElementById('tier-sup').value, num: document.getElementById('num-sup').value } }, {merge:true}); alert("저장됨");
