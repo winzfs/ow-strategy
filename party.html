@@ -312,6 +312,8 @@
         const fPos = document.getElementById('filter-pos').value;
         const fTier = document.getElementById('filter-tier').value;
 
+        const isAdmin = auth.currentUser && auth.currentUser.email === ADMIN_EMAIL;
+
         const filtered = currentPosts.filter(p => (fPos === 'all' || p.pos === fPos) && (fTier === 'all' || p.tier === fTier));
         if (filtered.length === 0) {
             listDiv.innerHTML = `<div style="text-align:center; padding:40px; color:#666;">조건에 맞는 파티가 없습니다.</div>`;
@@ -330,30 +332,32 @@
     // ------------------------------
             
             let buttons = "";
-        if (isMine) {
-            buttons = `<button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button><button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>`;
+         if (isMine || isAdmin) {
+            buttons = `
+                <button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button>
+                <button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>
+            `;
         } else if (isFull) {
             buttons = `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">모집 마감</button>`;
         } else if (isSent) {
-            // [추가] 신청 버튼 대신 '승인 대기 중' 상태 표시
             buttons = `<button class="btn-sub" style="background:#444; color:#aaa; cursor:default;">⌛ 승인 대기</button>`;
         } else {
             buttons = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`;
         }
 
-        // renderList 함수 내부
-div.innerHTML = `
-    <div style="display:flex; justify-content:space-between;">
-        <div>
-            <b>${p.btag.split('#')[0]}#****</b> 
-            <span style="font-size:11px; color:#666; margin-left:5px;">${timeSince(p.createdAt)}</span>
-            <span style="margin-left:8px; font-size:12px; color:${isFull ? '#ff3c3c' : 'var(--sup)'};">● ${currentCount}/${maxCount}</span>
-            <br>
-            <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span> </div>
-        <div>${buttons}</div>
-    </div>
-    <p style="margin-top:10px; color:#bbb;">${p.desc}</p>`;
-
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between;">
+                <div>
+                    <b>${p.btag.split('#')[0]}#****</b> 
+                    ${isAdmin ? `<small style="color:var(--accent); ml-1;">(ADMIN)</small>` : ''} 
+                    <span style="font-size:11px; color:#666; margin-left:5px;">${timeSince(p.createdAt)}</span>
+                    <span style="margin-left:8px; font-size:12px; color:${isFull ? '#ff3c3c' : 'var(--sup)'};">● ${currentCount}/${maxCount}</span>
+                    <br>
+                    <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span> 
+                </div>
+                <div>${buttons}</div>
+            </div>
+            <p style="margin-top:10px; color:#bbb;">${p.desc}</p>`;
         
         listDiv.appendChild(div);
     });
