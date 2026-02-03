@@ -191,7 +191,8 @@
     const firebaseConfig = { apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", authDomain: "ow-party-97936.firebaseapp.com", projectId: "ow-party-97936", storageBucket: "ow-party-97936.firebasestorage.app", messagingSenderId: "15782204013", appId: "1:15782204013:web:5c74ef2e603c311fc82564" };
     const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
     const ADMIN_EMAIL = "jazzhjm@gmail.com";
-
+    let rateTargetInfo = null;
+    
     // 시간을 "방금 전", "n분 전" 형태로 변환하는 함수
 const timeSince = (date) => {
     const seconds = Math.floor((Date.now() - date) / 1000);
@@ -244,21 +245,29 @@ const timeSince = (date) => {
 
 
     // window.showPage 정의 바로 아래나 적당한 빈 공간에 추가
+// 이 코드를 복사해서 붙여넣으세요
 const updateAvgRating = async (uid) => {
     try {
-        const q = query(collection(db, "matches"), where("toUid", "==", uid), where("status", "==", "accepted"));
-        const snap = await getDocs(q);
-        
-        let total = 0;
-        let count = 0;
-        
-        snap.forEach(doc => {
-            const data = doc.data();
-            if (data.rating) {
-                total += data.rating;
-                count++;
+        // 상대방이 나를 평가해서 내 users 문서에 쌓인 데이터를 가져옴
+        const u = await getDoc(doc(db, "users", uid));
+        const avgArea = document.getElementById('avg-rating-area');
+        const starDiv = document.getElementById('profile-avg-stars');
+
+        avgArea.style.display = 'block'; // 영역 보이기
+
+        if (u.exists()) {
+            const d = u.data();
+            // rateCount(평가 횟수)가 있을 때만 계산
+            if (d.rateCount && d.rateCount > 0) {
+                const avg = (d.rateTotal / d.rateCount).toFixed(1);
+                starDiv.innerHTML = `★ ${avg} <span style="font-size:12px; color:#666; font-weight:normal;">(${d.rateCount}건의 평가)</span>`;
+            } else {
+                starDiv.innerHTML = `<span style="font-size:14px; color:#555; font-weight:normal;">아직 받은 평가가 없습니다</span>`;
             }
-        });
+        }
+    } catch (e) { console.error(e); }
+};
+
 
                 // ... snap.forEach 루프가 끝난 직후 ...
 
@@ -398,41 +407,93 @@ document.getElementById('btn-confirm-edit').onclick = async () => {
                 document.getElementById('menu-new-tag').style.display = (!snap.empty && !isNotiPage) ? 'inline-block' : 'none';
             });
 
-            onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-                const list = document.getElementById('noti-list'); list.innerHTML = '';
-                snap.docs.forEach(ds => {
-                    const m = ds.data();
-                    if(!isAdmin && user.uid !== m.toUid && user.uid !== m.fromUid) return;
-                    const box = document.createElement('div'); box.className = 'box';
-                    const senderInfo = `<span class="info-label">${m.fromPos}</span><span class="info-label">${m.fromTier} ${m.fromTierNum}</span>`;
-                    
-                    if(m.status === 'pending') {
-                        if(user.uid === m.toUid || isAdmin) {
-                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div><div style="margin:10px 0; font-size:13px;">신청자: ${senderInfo}<br>메시지: ${m.message}</div>
-                                <div style="display:flex; gap:5px;">
-                                    <button class="btn-main" style="margin-top:0; flex:2;" onclick="acceptMatch('${ds.id}')">수락하기</button>
-                                    <button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절하기</button>
-                                </div>`;
-                        } else {
-                            box.innerHTML = `<div style="color:#666; font-size:13px;">⌛ 대기 중... (${m.toBtag.split('#')[0]})</div>`;
-                        }
-                    } else {
-                        box.innerHTML = `<div style="color:var(--sup); font-weight:bold;">✅ 매칭 완료! ${m.rating ? "★".repeat(m.rating) : ""}</div><div style="background:#000; padding:12px; border-radius:8px; border:1px solid var(--sup); margin-top:10px;"><div style="font-size:16px; font-weight:bold;">${user.uid === m.toUid ? m.fromBtag : m.toBtag}</div><div style="font-size:12px; color:#bbb;">정보: ${senderInfo} | 메시지: ${m.message}</div></div><div style="display:flex; gap:5px; margin-top:10px;">${!m.rating && user.uid === m.toUid ? `<button class="btn-sub" style="flex:1; background:var(--accent); color:black;" onclick="openRateModal('${ds.id}')">평가하기</button>` : ''}<button class="btn-sub" style="flex:1;" onclick="delMatch('${ds.id}')">내역삭제</button></div>`;
+            // onSnapshot(query(collection(db, "matches")... 부분 찾기
+onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
+    const list = document.getElementById('noti-list'); 
+    list.innerHTML = '';
+    snap.docs.forEach(ds => {
+        const m = ds.data();
+        if(!isAdmin && auth.currentUser.uid !== m.toUid && auth.currentUser.uid !== m.fromUid) return;
+        
+        const box = document.createElement('div'); 
+        box.className = 'box';
+        const senderInfo = `<span class="info-label">${m.fromPos}</span><span class="info-label">${m.fromTier} ${m.fromTierNum}</span>`;
+        
+        if(m.status === 'pending') {
+            // ... (기존 대기 중 로직과 동일) ...
+        } else {
+            // 매칭 완료 상태일 때
+            const isOwner = auth.currentUser.uid === m.toUid; // 글 작성자
+            const targetUid = isOwner ? m.fromUid : m.toUid; // 내가 평가해야 할 대상
+            const type = isOwner ? 'ratingToGuest' : 'ratingToOwner'; // 내가 채워야 할 필드명
+            const alreadyRated = m[type]; // 이미 평가했는지 확인
+
+            box.innerHTML = `
+                <div style="color:var(--sup); font-weight:bold;">✅ 매칭 완료!</div>
+                <div style="background:#000; padding:12px; border-radius:8px; border:1px solid var(--sup); margin-top:10px;">
+                    <div style="font-size:16px; font-weight:bold;">${isOwner ? m.fromBtag : m.toBtag}</div>
+                    <div style="font-size:12px; color:#bbb;">정보: ${senderInfo} | 메시지: ${m.message}</div>
+                </div>
+                <div style="display:flex; gap:5px; margin-top:10px;">
+                    ${!alreadyRated ? 
+                        `<button class="btn-sub" style="flex:1; background:var(--accent); color:black;" 
+                                 onclick="openRateModal('${ds.id}', '${type}', '${targetUid}')">상대 평가하기</button>` : 
+                        `<span style="color:#666; font-size:12px; padding:8px;">평가 완료 (★ ${alreadyRated})</span>`
                     }
-                    list.appendChild(box);
-                });
-            });
+                    <button class="btn-sub" style="flex:1;" onclick="delMatch('${ds.id}')">내역삭제</button>
+                </div>`;
+        }
+        list.appendChild(box);
+    });
+});
+
             onSnapshot(query(collection(db, "matches"), where("fromUid", "==", user.uid)), (snap) => { mySentRequests = new Set(snap.docs.map(d => d.data().postId)); renderList(); });
         }
     });
 
     window.acceptMatch = async (id) => await updateDoc(doc(db, "matches", id), { status: 'accepted' });
     window.delMatch = async (id) => { if(confirm("내역을 삭제(거절)하시겠습니까?")) await deleteDoc(doc(db, "matches", id)); };
-    window.openRateModal = (id) => { rateTargetId = id; document.getElementById('rate-modal').style.display = 'flex'; };
+    window.openRateModal = (matchId, type, targetUid) => { 
+    rateTargetId = matchId; 
+    rateTargetInfo = { type, targetUid }; 
+    document.getElementById('rate-modal').style.display = 'flex'; 
+};
     document.getElementById('btn-confirm-rate').onclick = async () => {
-        const s = document.querySelectorAll('#rate-stars span.active').length;
-        await updateDoc(doc(db, "matches", rateTargetId), { rating: s }); closeModal();
-    };
+    const score = document.querySelectorAll('#rate-stars span.active').length;
+    if (score === 0) return alert("별점을 선택해주세요.");
+
+    try {
+        // 1. 매칭 기록에 내가 평가했음을 저장 (중복 방지)
+        const matchRef = doc(db, "matches", rateTargetId);
+        const updateData = {};
+        updateData[rateTargetInfo.type] = score; 
+        await updateDoc(matchRef, updateData);
+
+        // 2. 상대방(targetUid)의 유저 정보에 점수 합산
+        const userRef = doc(db, "users", rateTargetInfo.targetUid);
+        const userSnap = await getDoc(userRef);
+        
+        let newCount = 1;
+        let newTotal = score;
+
+        if (userSnap.exists()) {
+            const userData = userSnap.data();
+            newCount = (userData.rateCount || 0) + 1;
+            newTotal = (userData.rateTotal || 0) + score;
+        }
+
+        await setDoc(userRef, { 
+            rateCount: newCount, 
+            rateTotal: newTotal 
+        }, { merge: true });
+
+        alert("상대방 평가가 완료되었습니다!");
+        closeModal();
+    } catch (e) {
+        console.error(e);
+        alert("평가 중 오류 발생");
+    }
+};
     document.getElementById('btn-login').onclick = async () => {
         const e = document.getElementById('login-email').value, p = document.getElementById('login-password').value;
         try { await signInWithEmailAndPassword(auth, e, p); } catch { try { await createUserWithEmailAndPassword(auth, e, p); } catch { alert("계정 확인 필요"); } }
