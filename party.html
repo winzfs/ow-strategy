@@ -252,7 +252,7 @@
     };
 
     // 페이지 전환 함수
-    winw.showPage = async (id) => {
+    window.showPage = async (id) => {
         if (id === 'profile' && !auth.currentUser) {
             alert("로그인이 필요한 메뉴입니다.");
             return;
