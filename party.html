@@ -305,9 +305,9 @@ document.getElementById('btn-confirm-edit').onclick = async () => {
         document.getElementById('request-modal').style.display = 'flex'; 
     };
 
-        const renderList = () => {
-        const listDiv = document.getElementById('party-list'); 
-        listDiv.innerHTML = '';
+        window.renderList = () => {
+    const listDiv = document.getElementById('party-list'); 
+    listDiv.innerHTML = '';
         
         // 필터 값 가져오기
         const fPos = document.getElementById('filter-pos').value;
@@ -361,7 +361,7 @@ document.getElementById('btn-confirm-edit').onclick = async () => {
     };
 
 
-    onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => { currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); renderList(); });
+    onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => { currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); window.renderList(); });
 
     onAuthStateChanged(auth, async (user) => {
         document.getElementById('login-form').style.display = user ? 'none' : 'flex';
