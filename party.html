@@ -73,6 +73,16 @@
     <div id="page-profile" class="page">
         <div class="box">
             <h3>내 프로필</h3>
+
+            <div id="page-profile" class="page">
+    <div class="box">
+        <h3>내 프로필</h3>
+        <div id="avg-rating-area" style="text-align: center; margin-bottom: 20px; padding: 10px; background: #222; border-radius: 10px; display: none;">
+            <span style="color: #888; font-size: 12px; display: block; margin-bottom: 5px;">내 평균 매너 별점</span>
+            <div id="profile-avg-stars" style="color: var(--accent); font-size: 22px; font-weight: bold;"></div>
+        </div>
+        <input type="text" id="profile-btag" placeholder="배틀태그#1234">
+        
             <input type="text" id="profile-btag" placeholder="배틀태그#1234">
             <div class="pos-group"><label style="color:var(--tank); font-size:12px;">🛡️ 돌격</label><div style="display:flex; gap:5px; margin-top:5px;"><select id="tier-tank"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select><select id="num-tank"><option value="1">1</option><option value="5">5</option></select></div></div>
             <div class="pos-group"><label style="color:var(--dps); font-size:12px;">⚔️ 공격</label><div style="display:flex; gap:5px; margin-top:5px;"><select id="tier-dps"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select><select id="num-dps"><option value="1">1</option><option value="5">5</option></select></div></div>
@@ -89,7 +99,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, getDoc, setDoc, deleteDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, getDoc, setDoc, deleteDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = { apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", authDomain: "ow-party-97936.firebaseapp.com", projectId: "ow-party-97936", storageBucket: "ow-party-97936.firebasestorage.app", messagingSenderId: "15782204013", appId: "1:15782204013:web:5c74ef2e603c311fc82564" };
@@ -106,6 +116,7 @@
         if(id === 'noti') document.getElementById('menu-new-tag').style.display = 'none';
         
         if(id === 'profile' && auth.currentUser) {
+            updateAvgRating(auth.currentUser.uid);
             const u = await getDoc(doc(db, "users", auth.currentUser.uid));
             if(u.exists()) {
                 const d = u.data();
@@ -116,6 +127,36 @@
             }
         }
     };
+
+    // window.showPage 정의 바로 아래나 적당한 빈 공간에 추가
+const updateAvgRating = async (uid) => {
+    try {
+        const q = query(collection(db, "matches"), where("toUid", "==", uid), where("status", "==", "accepted"));
+        const snap = await getDocs(q);
+        
+        let total = 0;
+        let count = 0;
+        
+        snap.forEach(doc => {
+            const data = doc.data();
+            if (data.rating) {
+                total += data.rating;
+                count++;
+            }
+        });
+
+        const avgArea = document.getElementById('avg-rating-area');
+        const starDiv = document.getElementById('profile-avg-stars');
+
+        if (count > 0) {
+            const avg = (total / count).toFixed(1);
+            avgArea.style.display = 'block';
+            starDiv.innerHTML = `★ ${avg} <span style="font-size:12px; color:#666; font-weight:normal;">(${count}건의 평가)</span>`;
+        } else {
+            avgArea.style.display = 'none';
+        }
+    } catch (e) { console.error(e); }
+};
 
     window.closeModal = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
     window.openRequestModal = (uid, btag, postId, pos) => { 
