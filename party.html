@@ -444,9 +444,9 @@ onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap
             // 매칭 완료 상태
             const isOwner = user.uid === m.toUid;
             const targetBtag = isOwner ? m.fromBtag : m.toBtag;
-            const targetPos = isOwner ? m.fromPos : (currentPosts.find(p=>p.id===m.postId)?.pos || "모집직군");
-            const targetTier = isOwner ? `${m.fromTier} ${m.fromTierNum}` : (currentPosts.find(p=>p.id===m.postId)?.tier || "");
-            
+            const targetPos = isOwner ? m.fromPos : (m.toPos || "모집직군");
+            const targetTier = isOwner ? `${m.fromTier} ${m.fromTierNum}` : `${m.toTier || ""} ${m.toTierNum || ""}`;
+
             // 평가 여부 확인 (내 입장에서 상대방을 평가했는가)
             const myType = isOwner ? 'ratingToGuest' : 'ratingToOwner';
             const score = m[myType];
@@ -692,33 +692,49 @@ onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), async
     };
 
     document.getElementById('btn-confirm-send').onclick = async () => {
-    const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-    const u = userDoc.data();
-    
-    // 모집글의 현재 정보를 가져와서 매칭 문서에 박제 (글 삭제 대비)
-    const postSnap = await getDoc(doc(db, "parties", targetData.postId));
-    const postData = postSnap.data();
+    // 통합된 신청 확정 로직 (정보 박제 포함)
+document.getElementById('btn-confirm-send').onclick = async () => {
+    try {
+        const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+        const u = userDoc.data();
+        
+        // 모집글의 현재 정보를 가져와서 매칭 문서에 박제 (글 삭제 대비)
+        const postSnap = await getDoc(doc(db, "parties", targetData.postId));
+        if(!postSnap.exists()) {
+            alert("해당 모집글이 이미 삭제되었습니다.");
+            closeModal();
+            return;
+        }
+        const postData = postSnap.data();
 
-    await addDoc(collection(db, "matches"), { 
-        fromUid: auth.currentUser.uid, 
-        fromBtag: u.btag, 
-        fromTier: (u[targetData.pos]?.tier || "배치"), 
-        fromTierNum: (u[targetData.pos]?.num || "5"), 
-        fromPos: targetData.pos, 
+        await addDoc(collection(db, "matches"), { 
+            fromUid: auth.currentUser.uid, 
+            fromBtag: u.btag, 
+            fromTier: (u[targetData.pos]?.tier || "배치"), 
+            fromTierNum: (u[targetData.pos]?.num || "5"), 
+            fromPos: targetData.pos, 
+            
+            toUid: targetData.uid, 
+            toBtag: targetData.btag, 
+            toPos: postData.pos,      // 방장 포지션 저장
+            toTier: postData.tier,    // 방장 티어 저장
+            toTierNum: postData.tierNum,
+            
+            postId: targetData.postId, 
+            message: document.getElementById('request-msg').value, 
+            status: "pending", 
+            createdAt: Date.now() 
+        }); 
         
-        toUid: targetData.uid, 
-        toBtag: targetData.btag, 
-        toPos: postData.pos,      // 방장 포지션 저장
-        toTier: postData.tier,    // 방장 티어 저장
-        toTierNum: postData.tierNum,
-        
-        postId: targetData.postId, 
-        message: document.getElementById('request-msg').value, 
-        status: "pending", 
-        createdAt: Date.now() 
-    }); 
-    closeModal();
+        alert("신청을 보냈습니다!");
+        document.getElementById('request-msg').value = ""; // 입력창 초기화
+        closeModal();
+    } catch (e) {
+        console.error(e);
+        alert("신청 중 오류가 발생했습니다.");
+    }
 };
+
 
 
     document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
