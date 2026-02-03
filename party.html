@@ -318,73 +318,22 @@
 
     // 리스트 렌더링
 // 1. 리스트 렌더링 (평점 노출 버전만 남기기)
-window.renderList = async () => {
-    const listDiv = document.getElementById('party-list'); 
-    if(!listDiv) return;
-    
-    // 로딩 표시 (데이터가 많을 때 유용)
-    const fPos = document.getElementById('filter-pos').value;
-    const fTier = document.getElementById('filter-tier').value;
-    const isAdmin = auth.currentUser && auth.currentUser.email === ADMIN_EMAIL;
-
-    const filtered = currentPosts.filter(p => (fPos === 'all' || p.pos === fPos) && (fTier === 'all' || p.tier === fTier));
-    
-    if (filtered.length === 0) {
-        listDiv.innerHTML = `<div style="text-align:center; padding:40px; color:#666;">조건에 맞는 파티가 없습니다.</div>`;
-        return;
+document.getElementById('btn-confirm-edit').onclick = async () => {
+    if(!editPostId) return;
+    try {
+        await updateDoc(doc(db, "parties", editPostId), {
+            pos: document.getElementById('edit-post-pos').value,
+            tier: document.getElementById('edit-post-tier').value,
+            tierNum: document.getElementById('edit-post-tier-num').value,
+            desc: document.getElementById('edit-post-desc').value
+        });
+        alert("수정되었습니다.");
+        closeModal();
+    } catch (e) {
+        alert("수정 오류: " + e.message);
     }
-
-    const postElements = await Promise.all(filtered.map(async (p) => {
-        const isMine = auth.currentUser?.uid === p.uid;
-        const isSent = mySentRequests.has(p.id);
-        const currentCount = (p.members ? p.members.length : 0) + 1;
-        const maxCount = p.maxp || 5; 
-        const isFull = currentCount >= maxCount; 
-
-        // 유저 평점 실시간 호출
-        const userDoc = await getDoc(doc(db, "users", p.uid));
-        let ratingHtml = "";
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            if (userData.rateCount > 0) {
-                const avg = (userData.rateTotal / userData.rateCount).toFixed(1);
-                ratingHtml = `<span style="color:var(--accent); font-size:11px; margin-left:4px;">★${avg}</span>`;
-            }
-        }
-
-        let buttons = "";
-        if (isMine || isAdmin) {
-            buttons = `<button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button>
-                       <button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>`;
-        } else if (isFull) {
-            buttons = `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">모집 마감</button>`;
-        } else if (isSent) {
-            buttons = `<button class="btn-sub" style="background:#444; color:#aaa; cursor:default;">⌛ 승인 대기</button>`;
-        } else {
-            buttons = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`;
-        }
-
-        const div = document.createElement('div');
-        div.className = 'box';
-        div.innerHTML = `
-            <div style="display:flex; justify-content:space-between;">
-                <div>
-                    <b>${p.btag.split('#')[0]}#****</b>${ratingHtml}
-                    ${isAdmin ? `<small style="color:var(--accent); margin-left:5px;">(ADMIN)</small>` : ''} 
-                    <span style="font-size:11px; color:#666; margin-left:5px;">${timeSince(p.createdAt)}</span>
-                    <span style="margin-left:8px; font-size:12px; color:${isFull ? '#ff3c3c' : 'var(--sup)'};">● ${currentCount}/${maxCount}</span>
-                    <br>
-                    <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span> 
-                </div>
-                <div>${buttons}</div>
-            </div>
-            <p style="margin-top:10px; color:#bbb;">${p.desc}</p>`;
-        return div;
-    }));
-
-    listDiv.innerHTML = ''; // 렌더링 직전에 비우기
-    postElements.forEach(el => listDiv.appendChild(el));
 };
+
 
 // 2. 알림창 내 매칭 성공 섹션 에러 방지 (?. 추가)
 // const targetPos = isOwner ? m.fromPos : (currentPosts.find(p=>p.id===m.postId)?.pos || "모집직군"); 
@@ -394,83 +343,49 @@ window.renderList = async () => {
 
 };
 
-    // Firebase 이벤트 리스너
-    onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => { 
-        currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); 
-        window.renderList(); 
-    });
+// [통합] 파티 목록 및 상호 평가 실시간 리스너
+onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), async (snap) => {
+    // 1. 전역 변수 업데이트 및 목록 렌더링
+    currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); 
+    window.renderList(); 
 
-    onAuthStateChanged(auth, async (user) => {
-        const loginForm = document.getElementById('login-form');
-        const userInfo = document.getElementById('user-info');
-        if (user) {
-            loginForm.style.display = 'none'; userInfo.style.display = 'block';
-            const isAdmin = user.email === ADMIN_EMAIL;
-            
-            // 알림 배지
-            onSnapshot(isAdmin ? query(collection(db, "matches"), where("status", "==", "pending")) : query(collection(db, "matches"), where("toUid", "==", user.uid), where("status", "==", "pending")), (snap) => {
-                document.getElementById('menu-new-tag').style.display = (!snap.empty && !document.getElementById('page-noti').classList.contains('active')) ? 'inline-block' : 'none';
-            });
-
-            // 알림 리스트 (정보 강화 버전)
-onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-    const list = document.getElementById('noti-list'); 
-    if(!list) return;
-    list.innerHTML = '';
+    // 2. 상호 평가(알림창 하단) 리스트 생성
+    const evalList = document.getElementById('group-eval-list');
+    if(!evalList || !auth.currentUser) return;
     
-    snap.docs.forEach(ds => {
-        const m = ds.data();
-        const user = auth.currentUser;
-        const isAdmin = user.email === ADMIN_EMAIL;
-        if (!isAdmin && user.uid !== m.toUid && user.uid !== m.fromUid) return;
-        
-        const box = document.createElement('div'); 
-        box.className = 'box';
-        
-        if (m.status === 'pending') {
-            const sInfo = `<span class="info-label">${m.fromPos}</span><span class="info-label">${m.fromTier} ${m.fromTierNum}</span>`;
-            if (user.uid === m.toUid || isAdmin) {
-                box.innerHTML = `
-                    <div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div>
-                    <div style="margin:10px 0; font-size:13px;">신청자: ${sInfo}<br>메시지: ${m.message}</div>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn-main" style="margin-top:0; flex:2;" onclick="acceptMatch('${ds.id}')">수락</button>
-                        <button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button>
-                    </div>`;
-            } else {
-                box.innerHTML = `<div style="color:#666;">⌛ 승인 대기 중... (${m.toBtag.split('#')[0]})</div>`;
-            }
-        } else {
-            // 매칭 완료 상태
-            const isOwner = user.uid === m.toUid;
-            const targetBtag = isOwner ? m.fromBtag : m.toBtag;
-            const targetPos = isOwner ? m.fromPos : (m.toPos || "모집직군");
-            const targetTier = isOwner ? `${m.fromTier} ${m.fromTierNum}` : `${m.toTier || ""} ${m.toTierNum || ""}`;
+    evalList.innerHTML = ''; 
 
-            // 평가 여부 확인 (내 입장에서 상대방을 평가했는가)
-            const myType = isOwner ? 'ratingToGuest' : 'ratingToOwner';
-            const score = m[myType];
+    // 내가 참여 중인 파티만 필터링
+    const myParties = currentPosts.filter(p => 
+        p.uid === auth.currentUser.uid || (p.members && p.members.some(m => m.uid === auth.currentUser.uid))
+    );
 
-            box.innerHTML = `
-                <div style="color:var(--sup); font-weight:bold;">✅ 매칭 성공!</div>
-                <div style="background:#000; padding:12px; border-radius:8px; margin-top:10px; font-size:13px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <b>${targetBtag}</b>
-                        <span style="font-size:11px; color:var(--accent);">${targetPos} / ${targetTier}</span>
-                    </div>
-                    <div style="color:#aaa; border-top:1px solid #222; padding-top:5px; margin-top:5px;">"${m.message || '메시지 없음'}"</div>
+    myParties.forEach(p => {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'box';
+        groupDiv.style.border = "1px solid var(--accent)";
+        
+        // 나를 제외한 파티원 추출 (중복 제거)
+        let allParticipants = [{uid: p.uid, btag: p.btag, pos: p.pos}, ...(p.members || [])];
+        const uniqueOthers = Array.from(new Map(
+            allParticipants.filter(m => m.uid !== auth.currentUser.uid).map(item => [item.uid, item])
+        ).values());
+
+        if(uniqueOthers.length > 0) {
+            let membersHtml = uniqueOthers.map(m => `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:8px; background:#000; border-radius:5px;">
+                    <span style="font-size:12px;">${m.btag ? m.btag.split('#')[0] : '유저'}#**** (${m.pos || '미정'})</span>
+                    <button class="btn-sub" style="background:var(--accent); color:black; font-size:10px;" 
+                        onclick="openRateModal('${p.id}', 'group_rate', '${m.uid}')">평가하기</button>
                 </div>
-                <div style="display:flex; gap:5px; margin-top:10px;">
-                    ${score 
-                        ? `<div style="flex:2; text-align:center; padding:8px; color:#888; font-size:12px; border:1px solid #333; border-radius:8px;">평가 완료 (★${score})</div>`
-                        : `<button class="btn-main" style="margin-top:0; flex:2; font-size:12px;" onclick="openRateModal('${ds.id}', '${myType}', '${isOwner?m.fromUid:m.toUid}')">상대 평가하기</button>`
-                    }
-                    <button class="btn-sub" style="flex:1;" onclick="delMatch('${ds.id}')">삭제</button>
-                </div>`;
+            `).join('');
+
+            groupDiv.innerHTML = `<div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티원 상호 평가 (${p.pos} 파티)</div>${membersHtml}`;
+            evalList.appendChild(groupDiv);
         }
-        list.appendChild(box);
     });
 });
+
 
 
             onSnapshot(query(collection(db, "matches"), where("fromUid", "==", user.uid)), (snap) => { mySentRequests = new Set(snap.docs.map(d => d.data().postId)); window.renderList(); });
@@ -478,53 +393,6 @@ onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap
             loginForm.style.display = 'flex'; userInfo.style.display = 'none';
         }
     });
-
-
-  // 알림창 하단에 상호 평가 섹션 추가 로직 (중복 방지 버전)
-onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), async (snap) => {
-    const evalList = document.getElementById('group-eval-list');
-    if(!evalList || !auth.currentUser) return;
-    
-    // 현재 유저가 이미 누구를 평가했는지 정보를 가져오면 좋겠지만, 
-    // 우선 UI상에서 파티별로 중복 노출되는 것부터 막습니다.
-    evalList.innerHTML = ''; 
-
-    // 현재 유저가 참여 중인(방장 혹은 멤버) 파티만 필터링
-    const myParties = snap.docs.filter(docSnap => {
-        const p = docSnap.data();
-        return p.uid === auth.currentUser.uid || (p.members && p.members.some(m => m.uid === auth.currentUser.uid));
-    });
-
-    myParties.forEach(docSnap => {
-        const p = docSnap.data();
-        const groupDiv = document.createElement('div');
-        groupDiv.className = 'box';
-        groupDiv.style.border = "1px solid var(--accent)";
-        
-        // 나를 제외한 모든 파티원(방장 포함) 추출
-        let allParticipants = [{uid: p.uid, btag: p.btag, pos: p.pos}, ...(p.members || [])];
-        let others = allParticipants.filter(m => m.uid !== auth.currentUser.uid);
-
-        // [중복 제거] 동일 인물이 여러 번 보이지 않게 UID 기준으로 유니크하게 필터링
-        const uniqueOthers = Array.from(new Map(others.map(item => [item.uid, item])).values());
-
-        let membersHtml = uniqueOthers.map(m => `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:8px; background:#000; border-radius:5px;">
-                <span style="font-size:12px;">${m.btag.split('#')[0]}#**** (${m.pos || '역할미정'})</span>
-                <button class="btn-sub" style="background:var(--accent); color:black; font-size:10px;" 
-                    onclick="openRateModal('${docSnap.id}', 'group_rate', '${m.uid}')">평가하기</button>
-            </div>
-        `).join('');
-
-        if(uniqueOthers.length > 0) {
-            groupDiv.innerHTML = `
-                <div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티원 상호 평가 (${p.pos} 파티)</div>
-                ${membersHtml}
-            `;
-            evalList.appendChild(groupDiv);
-        }
-    });
-});
 
   
 
@@ -671,6 +539,22 @@ onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), async
         alert("모집글이 등록되었습니다!");
     } catch (e) {
         console.error("등록 오류:", e);
+    }
+};
+
+    document.getElementById('btn-confirm-edit').onclick = async () => {
+    if(!editPostId) return;
+    try {
+        await updateDoc(doc(db, "parties", editPostId), {
+            pos: document.getElementById('edit-post-pos').value,
+            tier: document.getElementById('edit-post-tier').value,
+            tierNum: document.getElementById('edit-post-tier-num').value,
+            desc: document.getElementById('edit-post-desc').value
+        });
+        alert("수정되었습니다.");
+        closeModal();
+    } catch (e) {
+        alert("수정 오류: " + e.message);
     }
 };
 
