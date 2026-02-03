@@ -72,6 +72,32 @@
     <button class="btn-main" id="btn-post">모집 시작</button>
 </div>
 
+<div class="box" style="background: #000; border-color: var(--accent);">
+    <div style="font-size: 12px; color: var(--accent); margin-bottom: 8px; font-weight: bold;">🔍 필터 검색</div>
+    <div style="display: flex; gap: 5px;">
+        <select id="filter-pos" onchange="renderList()">
+            <option value="all">모든 포지션</option>
+            <option value="tank">🛡️ 돌격</option>
+            <option value="dps">⚔️ 공격</option>
+            <option value="sup">💉 지원</option>
+        </select>
+        <select id="filter-tier" onchange="renderList()">
+            <option value="all">모든 티어</option>
+            <option value="UNRANKED">UNRANKED</option>
+            <option value="BRONZE">BRONZE</option>
+            <option value="SILVER">SILVER</option>
+            <option value="GOLD">GOLD</option>
+            <option value="PLATINUM">PLATINUM</option>
+            <option value="DIAMOND">DIAMOND</option>
+            <option value="MASTER">MASTER</option>
+            <option value="GRANDMASTER">GM</option>
+            <option value="CHAMPION">CHAMPION</option>
+        </select>
+    </div>
+</div>
+
+
+        
         <div id="party-list"></div>
     </div>
 
@@ -279,35 +305,61 @@ document.getElementById('btn-confirm-edit').onclick = async () => {
         document.getElementById('request-modal').style.display = 'flex'; 
     };
 
-    const renderList = () => {
-        const listDiv = document.getElementById('party-list'); listDiv.innerHTML = '';
-        currentPosts.forEach(p => {
+        const renderList = () => {
+        const listDiv = document.getElementById('party-list'); 
+        listDiv.innerHTML = '';
+        
+        // 필터 값 가져오기
+        const fPos = document.getElementById('filter-pos').value;
+        const fTier = document.getElementById('filter-tier').value;
+
+        // 필터링 적용
+        const filteredPosts = currentPosts.filter(p => {
+            const posMatch = (fPos === 'all' || p.pos === fPos);
+            const tierMatch = (fTier === 'all' || p.tier === fTier);
+            return posMatch && tierMatch;
+        });
+
+        if (filteredPosts.length === 0) {
+            listDiv.innerHTML = `<div style="text-align:center; padding:40px; color:#666;">조건에 맞는 파티가 없습니다.</div>`;
+            return;
+        }
+
+        filteredPosts.forEach(p => {
             const isMine = auth.currentUser?.uid === p.uid;
             const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
             const isSent = mySentRequests.has(p.id);
-            const div = document.createElement('div'); div.className = 'box';
-            // --- 여기서부터 버튼 로직 교체 ---
-        let buttons = "";
-        if (isMine) {
-            // 내가 쓴 글이면 [수정]과 [삭제] 버튼 표시
-            buttons = `
-                <button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button>
-                <button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>
-            `;
-        } else {
-            // 남이 쓴 글이면 [신청] 또는 [신청됨] 표시
-            buttons = isSent ? 
-                `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : 
-                `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`;
-        }
-        
-        if (isAdmin && !isMine) buttons += `<button class="btn-sub" style="background:#666; margin-left:5px;" onclick="delPost('${p.id}')">관리삭제</button>`;
-        // --- 여기까지 ---
+            const div = document.createElement('div'); 
+            div.className = 'box';
+
+            let buttons = "";
+            if (isMine) {
+                buttons = `
+                    <button class="btn-sub" style="background:#555; margin-right:5px;" onclick="openEditModal('${p.id}')">수정</button>
+                    <button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>
+                `;
+            } else {
+                buttons = isSent ? 
+                    `<button class="btn-sub" style="background:#222; color:#555; cursor:default;">신청됨</button>` : 
+                    `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`;
+            }
             
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><div><b>${p.btag.split('#')[0]}#****</b> <span style="font-size:12px; color:var(--accent);">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span></div><div>${buttons}</div></div><p style="margin-top:10px; font-size:14px; color:#bbb;">${p.desc}</p>`;
+            if (isAdmin && !isMine) buttons += `<button class="btn-sub" style="background:#666; margin-left:5px;" onclick="delPost('${p.id}')">관리삭제</button>`;
+            
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <b>${p.btag.split('#')[0]}#****</b> 
+                        <span style="font-size:12px; color:var(--accent);">[${p.pos.toUpperCase()} / ${p.tier} ${p.tierNum}]</span>
+                    </div>
+                    <div>${buttons}</div>
+                </div>
+                <p style="margin-top:10px; font-size:14px; color:#bbb;">${p.desc}</p>
+            `;
             listDiv.appendChild(div);
         });
     };
+
 
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => { currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); renderList(); });
 
