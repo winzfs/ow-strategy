@@ -81,10 +81,48 @@
 
             <input type="text" id="profile-btag" placeholder="배틀태그#1234">
             
-            <div class="pos-group"><label style="color:var(--tank); font-size:12px;">🛡️ 돌격</label><div style="display:flex; gap:5px; margin-top:5px;"><select id="tier-tank"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select><select id="num-tank"><option value="1">1</option><option value="5">5</option></select></div></div>
-            <div class="pos-group"><label style="color:var(--dps); font-size:12px;">⚔️ 공격</label><div style="display:flex; gap:5px; margin-top:5px;"><select id="tier-dps"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select><select id="num-dps"><option value="1">1</option><option value="5">5</option></select></div></div>
-            <div class="pos-group"><label style="color:var(--sup); font-size:12px;">💉 지원</label><div style="display:flex; gap:5px; margin-top:5px;"><select id="tier-sup"><option value="UNRANKED">UNRANKED</option><option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option></select><select id="num-sup"><option value="1">1</option><option value="5">5</option></select></div></div>
-            
+            <div class="pos-group">
+    <label style="color:var(--tank); font-size:12px;">🛡️ 돌격</label>
+    <div style="display:flex; gap:5px; margin-top:5px;">
+        <select id="tier-tank">
+            <option value="UNRANKED">UNRANKED</option><option value="BRONZE">BRONZE</option><option value="SILVER">SILVER</option>
+            <option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option>
+            <option value="MASTER">MASTER</option><option value="GRANDMASTER">GM</option><option value="CHAMPION">CHAMPION</option>
+        </select>
+        <select id="num-tank">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+        </select>
+    </div>
+</div>
+
+<div class="pos-group">
+    <label style="color:var(--dps); font-size:12px;">⚔️ 공격</label>
+    <div style="display:flex; gap:5px; margin-top:5px;">
+        <select id="tier-dps">
+            <option value="UNRANKED">UNRANKED</option><option value="BRONZE">BRONZE</option><option value="SILVER">SILVER</option>
+            <option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option>
+            <option value="MASTER">MASTER</option><option value="GRANDMASTER">GM</option><option value="CHAMPION">CHAMPION</option>
+        </select>
+        <select id="num-dps">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+        </select>
+    </div>
+</div>
+
+<div class="pos-group">
+    <label style="color:var(--sup); font-size:12px;">💉 지원</label>
+    <div style="display:flex; gap:5px; margin-top:5px;">
+        <select id="tier-sup">
+            <option value="UNRANKED">UNRANKED</option><option value="BRONZE">BRONZE</option><option value="SILVER">SILVER</option>
+            <option value="GOLD">GOLD</option><option value="PLATINUM">PLATINUM</option><option value="DIAMOND">DIAMOND</option>
+            <option value="MASTER">MASTER</option><option value="GRANDMASTER">GM</option><option value="CHAMPION">CHAMPION</option>
+        </select>
+        <select id="num-sup">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+        </select>
+    </div>
+</div>
+
             <button class="btn-main" id="btn-save-profile">정보 저장</button>
         </div>
     </div>
