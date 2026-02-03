@@ -381,32 +381,59 @@
                 document.getElementById('menu-new-tag').style.display = (!snap.empty && !document.getElementById('page-noti').classList.contains('active')) ? 'inline-block' : 'none';
             });
 
-            // 알림 리스트
-            onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-                const list = document.getElementById('noti-list'); 
-                if(!list) return;
-                list.innerHTML = '';
-                snap.docs.forEach(ds => {
-                    const m = ds.data();
-                    if (!isAdmin && user.uid !== m.toUid && user.uid !== m.fromUid) return;
-                    const box = document.createElement('div'); box.className = 'box';
-                    const sInfo = `<span class="info-label">${m.fromPos}</span><span class="info-label">${m.fromTier} ${m.fromTierNum}</span>`;
-                    
-                    if (m.status === 'pending') {
-                        if (user.uid === m.toUid || isAdmin) {
-                            box.innerHTML = `<div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div><div style="margin:10px 0; font-size:13px;">신청자: ${sInfo}<br>메시지: ${m.message}</div><div style="display:flex; gap:5px;"><button class="btn-main" style="margin-top:0; flex:2;" onclick="acceptMatch('${ds.id}')">수락</button><button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button></div>`;
-                        } else {
-                            box.innerHTML = `<div style="color:#666;">⌛ 대기 중... (${m.toBtag.split('#')[0]})</div>`;
-                        }
-                    } else {
-                        const isOwner = user.uid === m.toUid;
-                        const type = isOwner ? 'ratingToGuest' : 'ratingToOwner';
-                        const already = m[type];
-                        box.innerHTML = `<div style="color:var(--sup); font-weight:bold;">✅ 매칭 완료!</div><div style="background:#000; padding:10px; border-radius:8px; margin-top:10px;"><b>${isOwner ? m.fromBtag : m.toBtag}</b><br><small style="color:#bbb;">정보: ${sInfo}</small></div><div style="display:flex; gap:5px; margin-top:10px;">${!already ? `<button class="btn-sub" style="flex:1; background:var(--accent); color:black;" onclick="openRateModal('${ds.id}', '${type}', '${isOwner?m.fromUid:m.toUid}')">평가하기</button>` : `<span style="padding:8px; color:#666;">평가완료(★${already})</span>`}<button class="btn-sub" style="flex:1;" onclick="delMatch('${ds.id}')">삭제</button></div>`;
-                    }
-                    list.appendChild(box);
-                });
-            });
+            // 알림 리스트 (단순화 버전)
+onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
+    const list = document.getElementById('noti-list'); 
+    if(!list) return;
+    list.innerHTML = '';
+    
+    snap.docs.forEach(ds => {
+        const m = ds.data();
+        const user = auth.currentUser;
+        const isAdmin = user.email === ADMIN_EMAIL;
+        
+        // 본인 관련 알림이 아니면 패스
+        if (!isAdmin && user.uid !== m.toUid && user.uid !== m.fromUid) return;
+        
+        const box = document.createElement('div'); 
+        box.className = 'box';
+        const sInfo = `<span class="info-label">${m.fromPos}</span><span class="info-label">${m.fromTier} ${m.fromTierNum}</span>`;
+        
+        if (m.status === 'pending') {
+            // [대기 중] 수락/거절 단계
+            if (user.uid === m.toUid || isAdmin) {
+                box.innerHTML = `
+                    <div style="color:var(--accent); font-weight:bold;">📩 신청 도착!</div>
+                    <div style="margin:10px 0; font-size:13px;">신청자: ${sInfo}<br>메시지: ${m.message}</div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-main" style="margin-top:0; flex:2;" onclick="acceptMatch('${ds.id}')">수락</button>
+                        <button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button>
+                    </div>`;
+            } else {
+                box.innerHTML = `<div style="color:#666;">⌛ 승인 대기 중... (${m.toBtag.split('#')[0]})</div>`;
+            }
+        } else {
+            // [매칭 완료] 단순 정보 표시 (평가 버튼 제거)
+            const isOwner = user.uid === m.toUid;
+            const targetBtag = isOwner ? m.fromBtag : m.toBtag;
+            
+            box.innerHTML = `
+                <div style="color:var(--sup); font-weight:bold;">✅ 매칭 성공!</div>
+                <div style="background:#000; padding:10px; border-radius:8px; margin-top:10px; font-size:13px;">
+                    <b>상대: ${targetBtag}</b><br>
+                    <div style="margin-top:5px; color:#aaa;">"${m.message || '메시지 없음'}"</div>
+                </div>
+                <div style="display:flex; justify-content: flex-end; margin-top:10px;">
+                    <button class="btn-sub" style="font-size:11px; padding:5px 10px;" onclick="delMatch('${ds.id}')">알림 삭제</button>
+                </div>
+                <div style="font-size:10px; color:#555; margin-top:8px; text-align:center;">
+                    ※ 실제 평가는 하단 '상호 평가' 구역에서 가능합니다.
+                </div>`;
+        }
+        list.appendChild(box);
+    });
+});
+
 
             onSnapshot(query(collection(db, "matches"), where("fromUid", "==", user.uid)), (snap) => { mySentRequests = new Set(snap.docs.map(d => d.data().postId)); window.renderList(); });
         } else {
