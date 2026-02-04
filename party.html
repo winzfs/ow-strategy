@@ -131,13 +131,11 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { 
-    getAuth, 
-    onAuthStateChanged, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword, 
-    signOut, 
-    sendEmailVerification // 이 부분 추가
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, signOut, sendEmailVerification,
+    sendPasswordResetEmail // 이 부분 추가
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 
 
     const firebaseConfig = { apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", authDomain: "ow-party-97936.firebaseapp.com", projectId: "ow-party-97936", storageBucket: "ow-party-97936.firebasestorage.app", messagingSenderId: "15782204013", appId: "1:15782204013:web:5c74ef2e603c311fc82564" };
@@ -439,15 +437,43 @@ window.hideEvalBox = (postId) => {
 
 
 
+        // [수정된 로그인/가입 로직]
     document.getElementById('btn-login').onclick = async () => {
-        const e = document.getElementById('login-email').value; const p = document.getElementById('login-password').value;
-        try { await signInWithEmailAndPassword(auth, e, p); } catch { await createUserWithEmailAndPassword(auth, e, p); }
+        const e = document.getElementById('login-email').value; 
+        const p = document.getElementById('login-password').value;
+        
+        if(!e || !p) return alert("이메일과 비밀번호를 입력해주세요.");
+
+        try {
+            // 1. 로그인 시도
+            const userCredential = await signInWithEmailAndPassword(auth, e, p);
+            const user = userCredential.user;
+
+            // 2. 이메일 인증 여부 체크
+            if (!user.emailVerified) {
+                alert("이메일 인증이 필요합니다! 메일함을 확인해주세요. (인증 메일을 다시 보냈습니다)");
+                await sendEmailVerification(user); 
+                await signOut(auth); // 인증 전까지는 튕겨냄
+            } else {
+                alert("환영합니다!");
+            }
+        } catch (err) {
+            // 3. 계정이 없는 경우 신규 가입
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+                try {
+                    const newUser = await createUserWithEmailAndPassword(auth, e, p);
+                    await sendEmailVerification(newUser.user);
+                    alert("가입 성공! 이메일 인증 링크를 클릭한 후 다시 로그인해주세요.");
+                    await signOut(auth);
+                } catch (createErr) {
+                    alert("가입 중 오류: " + createErr.message);
+                }
+            } else {
+                alert("로그인 오류: " + err.message);
+            }
+        }
     };
 
-    document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
-
-    document.getElementById('btn-post').onclick = async () => {
-    if(!auth.currentUser) return alert("로그인 필요");
     
     // 현재 내 프로필에서 별점 정보 가져오기 (DOM에서 읽거나 DB에서 가져옴)
     const myUid = auth.currentUser.uid;
