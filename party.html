@@ -231,7 +231,21 @@
             const isFull = count >= p.maxp;
             const isMine = auth.currentUser?.uid === p.uid;
             // 관리자인지 확인하는 변수 추가
-const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+        const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+
+               // --- 추가된 부분: 작성자의 평점 데이터 가져오기 ---
+        const userSnap = await getDoc(doc(db, "users", p.uid));
+        let ratingHtml = "";
+        if (userSnap.exists()) {
+            const userData = userSnap.data();
+            if (userData.rateCount > 0) {
+                const avg = (userData.rateTotal / userData.rateCount).toFixed(1);
+                ratingHtml = `<span style="color:var(--accent); font-size:11px; margin-left:5px;">★${avg}</span>`;
+            } else {
+                ratingHtml = `<span style="color:#666; font-size:11px; margin-left:5px;">★-</span>`;
+            }
+        }
+        // ------------------------------------------
 
 let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
 
