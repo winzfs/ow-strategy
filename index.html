@@ -177,6 +177,7 @@
             </select>
             <select id="request-tier-num"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
         </div>
+        <input type="text" id="request-btag" placeholder="내 배틀태그#1234">
         <textarea id="request-msg" placeholder="상대에게 보낼 메시지" rows="3"></textarea>
         <button class="btn-main" id="btn-confirm-send">신청하기</button>
         <button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button>
@@ -468,22 +469,44 @@
         }
         if (uid === auth.currentUser.uid) return alert("자신의 파티에는 신청할 수 없습니다.");
         targetData = {uid, btag, postId}; 
+
+         const mySavedBtag = document.getElementById('profile-btag').value;
+        document.getElementById('request-btag').value = mySavedBtag || "";    
         document.getElementById('request-modal').style.display = 'flex';
     };
 
 
-    document.getElementById('btn-confirm-send').onclick = async () => {
+        document.getElementById('btn-confirm-send').onclick = async () => {
         if(!auth.currentUser || !targetData) return;
+
+        const reqBtag = document.getElementById('request-btag').value.trim();
+        if (!reqBtag || !reqBtag.includes('#')) {
+            alert("정확한 배틀태그(예: 닉네임#1234)를 입력해주세요!");
+            document.getElementById('request-btag').focus();
+            return;
+        }
+
         const parentPost = currentPosts.find(p => p.id === targetData.postId);
         await addDoc(collection(db, "matches"), {
-            fromUid: auth.currentUser.uid, fromBtag: document.getElementById('profile-btag').value || "익명#0000",
-            reqPos: document.getElementById('request-pos').value, reqTier: document.getElementById('request-tier').value,
-            reqTierNum: document.getElementById('request-tier-num').value, toUid: targetData.uid, toBtag: targetData.btag,
-            leaderPos: parentPost?.pos || "정보없음", leaderTier: parentPost?.tier || "", leaderTierNum: parentPost?.tierNum || "",
-            postId: targetData.postId, message: document.getElementById('request-msg').value, status: "pending", createdAt: Date.now()
+            fromUid: auth.currentUser.uid, 
+            fromBtag: reqBtag, // 수동 입력 또는 자동 채워진 배틀태그 저장
+            reqPos: document.getElementById('request-pos').value, 
+            reqTier: document.getElementById('request-tier').value,
+            reqTierNum: document.getElementById('request-tier-num').value, 
+            toUid: targetData.uid, 
+            toBtag: targetData.btag,
+            leaderPos: parentPost?.pos || "정보없음", 
+            leaderTier: parentPost?.tier || "", 
+            leaderTierNum: parentPost?.tierNum || "",
+            postId: targetData.postId, 
+            message: document.getElementById('request-msg').value, 
+            status: "pending", 
+            createdAt: Date.now()
         });
-        alert("신청완료"); closeModal();
+        alert("신청완료"); 
+        closeModal();
     };
+
 
     window.acceptMatch = async (id) => {
         const mRef = doc(db, "matches", id); const m = (await getDoc(mRef)).data();
