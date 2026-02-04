@@ -278,11 +278,24 @@
         list.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">알림이 없습니다.</div>';
     };
 
-    onAuthStateChanged(auth, (user) => {
-        if (user && user.emailVerified) {
+        // 1. 상태 감시 함수 수정 (테스트 계정은 인증 없이도 UI 통과)
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // 테스트 계정 여부 확인
+            const isTestAccount = CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === user.email.toLowerCase());
+            
+            // 일반 유저인데 인증 안 된 경우만 로그아웃 처리
+            if (!isTestAccount && !user.emailVerified) {
+                document.getElementById('login-form').style.display = 'flex';
+                document.getElementById('user-info').style.display = 'none';
+                return; 
+            }
+
+            // 로그인 성공 UI 처리
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('user-info').style.display = 'block';
             loadMyProfile(user.uid);
+
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
                 lastMatchSnap = snap;
                 const newSentSet = new Set();
@@ -304,52 +317,41 @@
         }
     });
 
-            document.getElementById('btn-login').onclick = async () => {
+    // 2. 로그인 버튼 클릭 로직 (가독성 개선 및 명확한 흐름)
+    document.getElementById('btn-login').onclick = async () => {
         const e = document.getElementById('login-email').value.trim(); 
         const p = document.getElementById('login-password').value.trim();
-        
         if(!e || !p) return alert("이메일과 비밀번호를 입력해주세요.");
 
-        // config.js에서 테스트 계정 여부 확인 (대소문자 구분 없이)
-        const isTestAccount = CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === e.toLowerCase());
-
+        const isTestAccount = (user?.email === ADMIN_EMAIL) || (CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === (user?.email || e).toLowerCase()));
         try {
-            // 1. 로그인 시도
             const userCredential = await signInWithEmailAndPassword(auth, e, p);
             const user = userCredential.user;
 
-            // 테스트 계정이 아니고 메일 인증도 안 된 경우
             if (!isTestAccount && !user.emailVerified) {
                 alert("이메일 인증이 필요합니다! 메일함을 확인해주세요.");
                 await sendEmailVerification(user); 
                 await signOut(auth);
             } else { 
-                alert(isTestAccount ? "테스트 계정으로 접속했습니다!" : "환영합니다!"); 
-                location.reload(); // 상태 반영을 위한 새로고침
+                alert(isTestAccount ? "테스트 계정 접속 성공!" : "환영합니다!");
+                // location.reload()를 하지 않아도 onAuthStateChanged가 감지하여 UI를 바꿉니다.
             }
         } catch (err) {
-            // 2. 계정이 없는 경우 자동 가입 진행
             if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
                 try {
                     const newUserCredential = await createUserWithEmailAndPassword(auth, e, p);
-                    const newUser = newUserCredential.user;
-                    
                     if (isTestAccount) {
-                        alert("테스트 계정이 생성되었습니다! 즉시 이용 가능합니다.");
-                        location.reload();
+                        alert("테스트 계정 가입 및 로그인 성공!");
                     } else {
-                        await sendEmailVerification(newUser);
+                        await sendEmailVerification(newUserCredential.user);
                         alert("가입 성공! 메일 인증 후 다시 로그인해주세요."); 
                         await signOut(auth);
                     }
-                } catch (ce) { 
-                    alert("가입/로그인 오류: " + ce.message); 
-                }
-            } else { 
-                alert("오류: " + err.message); 
-            }
+                } catch (ce) { alert("가입 오류: " + ce.message); }
+            } else { alert("로그인 오류: " + err.message); }
         }
     };
+
 
 
 
