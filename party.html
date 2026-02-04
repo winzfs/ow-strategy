@@ -225,64 +225,46 @@
     // 파티 리스트 렌더링
         // 파티 리스트 렌더링
     window.renderList = async () => {
-        const listDiv = document.getElementById('party-list');
-        listDiv.innerHTML = "";
-        
-        // 데이터 누락을 방지하기 위해 순차적으로 처리
-        for (const p of currentPosts.filter(x => !x.deleted)) {
-            const count = (p.members?.length || 0) + 1;
-            const isFull = count >= p.maxp;
-            const isMine = auth.currentUser?.uid === p.uid;
-            const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+    const listDiv = document.getElementById('party-list');
+    if(!listDiv) return;
+    
+    let html = "";
+    // 최적화: 루프 내 await를 최소화하기 위해 노력
+    for (const p of currentPosts.filter(x => !x.deleted)) {
+        const count = (p.members?.length || 0) + 1;
+        const isFull = count >= p.maxp;
+        const isMine = auth.currentUser?.uid === p.uid;
+        const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+        const isSent = mySentRequests.has(p.id); // 여기서 '신청됨' 여부 판단
 
-            // --- 작성자의 평점 데이터 가져오기 ---
-            let ratingHtml = "";
-            try {
-                const userSnap = await getDoc(doc(db, "users", p.uid));
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    if (userData.rateCount > 0) {
-                        const avg = (userData.rateTotal / userData.rateCount).toFixed(1);
-                        ratingHtml = `<span style="color:var(--accent); font-size:11px; margin-left:5px; font-weight:bold;">★${avg}</span>`;
-                    } else {
-                        ratingHtml = `<span style="color:#555; font-size:11px; margin-left:5px;">★-</span>`;
-                    }
-                }
-            } catch (e) {
-                console.log("평점 로드 실패:", e);
-            }
-            // ----------------------------------
+        let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
 
-            // renderList 함수 내 버튼 로직 부분 수정
-let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
-
-if (isMine || isAdmin) {
-    const btnText = isAdmin && !isMine ? "관리자 삭제" : "종료";
-    btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${btnText}</button>`;
-} else if (mySentRequests.has(p.id)) {
-    // 신청한 경우: 버튼 텍스트를 '신청됨'으로 변경하고 배경색을 다르게 설정
-    btn = `<button class="btn-sub" style="background:#555; color:#aaa; cursor:default;">신청됨</button>`;
-} else if (isFull) {
-    btn = `<button class="btn-sub" style="opacity:0.5;">마감</button>`;
-}
-
-
-            // innerHTML에 ${ratingHtml}이 들어갔는지 확인하세요!
-            listDiv.innerHTML += `
-                <div class="box">
-                    <div style="display:flex; justify-content:space-between;">
-                        <div>
-                            <b>${p.btag.split('#')[0]}#****</b>${ratingHtml} 
-                            <small style="color:#666; margin-left:5px;">${timeSince(p.createdAt)}</small>
-                            <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; margin-left:8px;">● ${count}/${p.maxp}</span><br>
-                            <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span>
-                        </div>
-                        <div>${btn}</div>
-                    </div>
-                    <p style="margin-top:10px; color:#bbb; font-size:13px;">${p.desc || ''}</p>
-                </div>`;
+        if (isMine || isAdmin) {
+            btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "관리자 삭제" : "종료"}</button>`;
+        } else if (isSent) {
+            // 이 부분이 작동하려면 mySentRequests Set이 정확히 업데이트되어야 함
+            btn = `<button class="btn-sub" style="background:#555; color:#aaa; cursor:default;">신청됨</button>`;
+        } else if (isFull) {
+            btn = `<button class="btn-sub" style="opacity:0.5;">마감</button>`;
         }
-    };
+
+        html += `
+            <div class="box">
+                <div style="display:flex; justify-content:space-between;">
+                    <div>
+                        <b>${p.btag.split('#')[0]}#****</b> 
+                        <small style="color:#666; margin-left:5px;">${timeSince(p.createdAt)}</small>
+                        <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; margin-left:8px;">● ${count}/${p.maxp}</span><br>
+                        <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span>
+                    </div>
+                    <div>${btn}</div>
+                </div>
+                <p style="margin-top:10px; color:#bbb; font-size:13px;">${p.desc || ''}</p>
+            </div>`;
+    }
+    listDiv.innerHTML = html;
+};
+
 
     const renderNotiUI = () => {
         const list = document.getElementById('noti-list');
@@ -332,36 +314,43 @@ if (isMine || isAdmin) {
 
     // 이벤트 리스너 및 초기화
         // 이벤트 리스너 및 초기화 (이 부분을 찾아서 교체하세요)
-    onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
         if (user) {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('user-info').style.display = 'block';
             loadMyProfile(user.uid);
 
-            // 매칭 정보 실시간 감시
+            // [수정된 부분] 매칭 정보 실시간 감시
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
                 lastMatchSnap = snap;
                 
-                // 내가 보낸 신청 목록 업데이트 (postId를 Set으로 저장)
-                mySentRequests = new Set(
-                    snap.docs
-                        .filter(d => d.data().fromUid === user.uid)
-                        .map(d => d.data().postId)
-                );
+                // 1. 내가 보낸 신청 목록을 postId 기반으로 재생성
+                // .filter()에서 데이터가 확실히 있는지 확인하는 로직 추가
+                const sentIds = snap.docs
+                    .filter(d => d.data().fromUid === user.uid)
+                    .map(d => d.data().postId);
+                
+                mySentRequests = new Set(sentIds);
 
+                // 2. 새로운 알림(NEW) 표시 처리
                 const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
-                document.getElementById('menu-new-tag').style.display = hasNew ? 'inline-block' : 'none';
+                const newTag = document.getElementById('menu-new-tag');
+                if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
 
-                // 중요: 매칭 데이터가 바뀔 때마다 리스트와 알림창을 모두 갱신
+                // 3. 화면 갱신 (리스트의 '신청됨' 버튼과 알림창 UI 업데이트)
+                console.log("매칭 데이터 갱신됨, 내 신청 개수:", mySentRequests.size);
                 renderList(); 
                 renderNotiUI();
             });
         } else {
             document.getElementById('login-form').style.display = 'flex';
             document.getElementById('user-info').style.display = 'none';
-            mySentRequests = new Set(); // 로그아웃 시 초기화
+            mySentRequests = new Set();
+            renderList(); // 로그아웃 시 버튼 상태 초기화
         }
     });
+
+
 
 
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
@@ -394,17 +383,32 @@ if (isMine || isAdmin) {
     };
 
     document.getElementById('btn-confirm-send').onclick = async () => {
-        const myBtag = document.getElementById('profile-btag').value || "익명#0000";
+    if(!auth.currentUser || !targetData) return;
+    
+    const myBtag = document.getElementById('profile-btag').value || "익명#0000";
+    
+    try {
         await addDoc(collection(db, "matches"), {
-            fromUid: auth.currentUser.uid, fromBtag: myBtag,
+            fromUid: auth.currentUser.uid, // 규칙 통과를 위해 필수
+            fromBtag: myBtag,
             reqPos: document.getElementById('request-pos').value,
             reqTier: document.getElementById('request-tier').value,
             reqTierNum: document.getElementById('request-tier-num').value,
-            toUid: targetData.uid, toBtag: targetData.btag, postId: targetData.postId,
-            message: document.getElementById('request-msg').value, status: "pending", createdAt: Date.now()
+            toUid: targetData.uid,         // 규칙 통과를 위해 필수
+            toBtag: targetData.btag,
+            postId: targetData.postId,     // 버튼 상태 변경을 위해 필수
+            message: document.getElementById('request-msg').value,
+            status: "pending",
+            createdAt: Date.now()
         });
-        alert("신청완료"); closeModal();
-    };
+        alert("신청완료"); 
+        closeModal();
+    } catch (e) {
+        console.error("신청 에러:", e);
+        alert("신청에 실패했습니다. (권한 오류 가능성)");
+    }
+};
+
 
     window.acceptMatch = async (id) => {
         const mRef = doc(db, "matches", id); const m = (await getDoc(mRef)).data();
