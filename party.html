@@ -229,46 +229,50 @@
     // 파티 리스트 렌더링
         // 파티 리스트 렌더링
         window.renderList = () => {
-        const listDiv = document.getElementById('party-list');
-        if (!listDiv) return;
+    const listDiv = document.getElementById('party-list');
+    if (!listDiv) return;
 
-        let html = "";
-        const activePosts = currentPosts.filter(x => !x.deleted);
+    let html = "";
+    const activePosts = currentPosts.filter(x => !x.deleted);
 
-        activePosts.forEach(p => {
-            const count = (p.members?.length || 0) + 1;
-            const isFull = count >= p.maxp;
-            const isMine = auth.currentUser?.uid === p.uid;
-            const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
-            const isSent = mySentRequests.has(p.id);
+    activePosts.forEach(p => {
+        const count = (p.members?.length || 0) + 1;
+        const isFull = count >= p.maxp;
+        const isMine = auth.currentUser?.uid === p.uid;
+        const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+        const isSent = mySentRequests.has(p.id);
 
-            let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
+        // 평점 표시 텍스트 (데이터가 없으면 '신규'로 표시)
+        const rateText = p.ownerRate ? `★ ${p.ownerRate}` : `★ 신규`;
 
-            if (isMine || isAdmin) {
-                btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "관리자 삭제" : "종료"}</button>`;
-            } else if (isSent) {
-                btn = `<button class="btn-sub" style="background:#444; color:#888; cursor:default;" disabled>신청됨</button>`;
-            } else if (isFull) {
-                btn = `<button class="btn-sub" style="opacity:0.5;" disabled>마감</button>`;
-            }
+        let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
 
-            html += `
-                <div class="box">
-                    <div style="display:flex; justify-content:space-between;">
-                        <div>
-                            <b>${p.btag ? p.btag.split('#')[0] : '익명'}#****</b> 
-                            <small style="color:#666; margin-left:5px;">${timeSince(p.createdAt)}</small>
-                            <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; margin-left:8px;">● ${count}/${p.maxp}</span><br>
-                            <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span>
-                        </div>
-                        <div>${btn}</div>
+        if (isMine || isAdmin) {
+            btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "관리자 삭제" : "종료"}</button>`;
+        } else if (isSent) {
+            btn = `<button class="btn-sub" style="background:#444; color:#888; cursor:default;" disabled>신청됨</button>`;
+        } else if (isFull) {
+            btn = `<button class="btn-sub" style="opacity:0.5;" disabled>마감</button>`;
+        }
+
+        html += `
+            <div class="box">
+                <div style="display:flex; justify-content:space-between;">
+                    <div>
+                        <b>${p.btag ? p.btag.split('#')[0] : '익명'}</b> 
+                        <span style="color:var(--accent); font-size:11px; margin-left:5px; font-weight:bold;">${rateText}</span>
+                        <small style="color:#666; margin-left:8px;">${timeSince(p.createdAt)}</small>
+                        <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; margin-left:8px;">● ${count}/${p.maxp}</span><br>
+                        <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span>
                     </div>
-                    <p style="margin-top:10px; color:#bbb; font-size:13px;">${p.desc || ''}</p>
-                </div>`;
-        });
+                    <div>${btn}</div>
+                </div>
+                <p style="margin-top:10px; color:#bbb; font-size:13px;">${p.desc || ''}</p>
+            </div>`;
+    });
 
-        listDiv.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">등록된 파티가 없습니다.</div>';
-    };
+    listDiv.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">등록된 파티가 없습니다.</div>';
+};
 
 
     const renderNotiUI = () => {
@@ -370,15 +374,34 @@
     document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
 
     document.getElementById('btn-post').onclick = async () => {
-        if(!auth.currentUser) return alert("로그인 필요");
-        await addDoc(collection(db, "parties"), {
-            btag: document.getElementById('post-btag').value, uid: auth.currentUser.uid,
-            pos: document.getElementById('post-main-pos').value, tier: document.getElementById('post-tier').value,
-            tierNum: document.getElementById('post-tier-num').value, maxp: parseInt(document.getElementById('post-maxp').value),
-            desc: document.getElementById('post-desc').value, createdAt: Date.now(), members: [], deleted: false
-        });
-        alert("모집 시작!");
-    };
+    if(!auth.currentUser) return alert("로그인 필요");
+    
+    // 현재 내 프로필에서 별점 정보 가져오기 (DOM에서 읽거나 DB에서 가져옴)
+    const myUid = auth.currentUser.uid;
+    const userSnap = await getDoc(doc(db, "users", myUid));
+    let ownerRate = "신규";
+    if (userSnap.exists()) {
+        const d = userSnap.data();
+        if (d.rateCount > 0) {
+            ownerRate = (d.rateTotal / d.rateCount).toFixed(1);
+        }
+    }
+
+    await addDoc(collection(db, "parties"), {
+        btag: document.getElementById('post-btag').value, 
+        uid: myUid,
+        ownerRate: ownerRate, // 작성자 평점 추가 저장
+        pos: document.getElementById('post-main-pos').value, 
+        tier: document.getElementById('post-tier').value,
+        tierNum: document.getElementById('post-tier-num').value, 
+        maxp: parseInt(document.getElementById('post-maxp').value),
+        desc: document.getElementById('post-desc').value, 
+        createdAt: Date.now(), 
+        members: [], 
+        deleted: false
+    });
+    alert("모집 시작!");
+};
 
     window.openRequestModal = (uid, btag, postId) => {
         if(uid === auth.currentUser.uid) return alert("자신의 파티에는 신청할 수 없습니다.");
