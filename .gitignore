@@ -1,0 +1,6 @@
+# 민감한 정보가 담긴 파일 제외
+config.js
+
+# 운영체제 임시 파일
+.DS_Store
+Thumbs.db
