@@ -177,9 +177,7 @@
     };
 
     // 상호평가 리스트 렌더링
-    // 상호평가 리스트 렌더링
-        // 상호평가 리스트 렌더링
-    window.renderEvalList = () => {
+        window.renderEvalList = () => {
         const list = document.getElementById('group-eval-list');
         if(!auth.currentUser) return;
         let html = "";
@@ -190,29 +188,15 @@
             
             if (isOwner || isMember) {
                 let targets = [];
-                
-                // 1. 내가 멤버라면? 방장을 평가 대상으로 추가
-                if(!isOwner) {
-                    targets.push({
-                        uid: p.uid, 
-                        btag: p.btag, 
-                        pos: p.pos, 
-                        tier: p.tier, 
-                        tierNum: p.tierNum
-                    });
-                }
-                
-                // 2. 나를 제외한 다른 멤버들을 평가 대상으로 추가
-                if(p.members) {
-                    p.members.forEach(m => { 
-                        if(m.uid !== auth.currentUser.uid) targets.push(m); 
-                    });
-                }
+                // 방장이 아니면 방장을 리스트에 추가
+                if(!isOwner) targets.push({uid: p.uid, btag: p.btag, pos: p.pos, tier: p.tier, tierNum: p.tierNum});
+                // 나를 제외한 나머지 멤버들 추가
+                if(p.members) p.members.forEach(m => { if(m.uid !== auth.currentUser.uid) targets.push(m); });
 
                 if(targets.length > 0) {
                     let mHtml = targets.map(t => {
                         const evalKey = `eval_${auth.currentUser.uid}_to_${t.uid}`;
-                        const savedScore = p.evals ? p.evals[evalKey] : null;
+                        const savedScore = (p.evals && p.evals[evalKey]) ? p.evals[evalKey] : null;
 
                         return `
                         <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#000; border-radius:8px; margin-top:5px; border:1px solid #333;">
@@ -223,17 +207,18 @@
                             <div>
                                 ${savedScore 
                                     ? `<span style="color:var(--accent); font-size:12px; font-weight:bold;">평가완료 (★${savedScore})</span>`
-                                    : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRateModal('${t.uid}', '${p.id}')">평가</button>`
+                                    : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="window.openRateModal('${t.uid}', '${p.id}')">평가</button>`
                                 }
                             </div>
                         </div>`;
                     }).join('');
-                    html += `<div class="box" style="border:1px solid var(--accent);"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">🤝 파티 멤버 평가 (${p.btag.split('#')[0]}의 파티)</div>${mHtml}</div>`;
+                    html += `<div class="box" style="border:1px solid var(--accent);"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">🤝 파티 멤버 평가</div>${mHtml}</div>`;
                 }
             }
         });
         list.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">참여 중인 파티가 없습니다.</div>';
     };
+
 
 
 
@@ -367,35 +352,51 @@
         await updateDoc(pRef, { members });
     };
 
-        window.openRateModal = (uid, postId) => {
-    rateTargetInfo = { uid, postId }; // 여기서 postId가 반드시 저장되어야 함
-    document.querySelectorAll('#rate-stars span').forEach(s => s.classList.remove('active'));
-    document.getElementById('rate-modal').style.display = 'flex';
-};
+            window.openRateModal = (uid, postId) => {
+        if(!uid || !postId) return alert("데이터 오류가 발생했습니다.");
+        rateTargetInfo = { uid, postId }; 
+        document.querySelectorAll('#rate-stars span').forEach(s => s.classList.remove('active'));
+        document.getElementById('rate-modal').style.display = 'flex';
+    };
+
 
 
 
         document.getElementById('btn-confirm-rate').onclick = async () => {
+            document.getElementById('btn-confirm-rate').onclick = async () => {
         const score = document.querySelectorAll('#rate-stars span.active').length;
         if(score === 0) return alert("별점을 선택해주세요.");
+        if(!rateTargetInfo) return alert("평가 대상 정보가 없습니다.");
         
         const { uid, postId } = rateTargetInfo;
         
-        // 1. 유저 전체 평점 데이터 업데이트
-        const uRef = doc(db, "users", uid);
-        const uSnap = await getDoc(uRef);
-        let count = 0, total = 0;
-        if(uSnap.exists()){ count = uSnap.data().rateCount || 0; total = uSnap.data().rateTotal || 0; }
-        await setDoc(uRef, { rateCount: count + 1, rateTotal: total + score }, { merge: true });
+        try {
+            // 1. 상대방 유저 점수 업데이트
+            const uRef = doc(db, "users", uid);
+            const uSnap = await getDoc(uRef);
+            let count = 0, total = 0;
+            if(uSnap.exists()){
+                const d = uSnap.data();
+                count = d.rateCount || 0;
+                total = d.rateTotal || 0;
+            }
+            // 유저 문서가 없을 수도 있으므로 setDoc merge 사용
+            await setDoc(uRef, { rateCount: count + 1, rateTotal: total + score }, { merge: true });
 
-        // 2. 해당 파티 글에 내 평가 기록 남기기 (중복 표시 방지용)
-        const pRef = doc(db, "parties", postId);
-        const evalKey = `eval_${auth.currentUser.uid}_to_${uid}`;
-        await setDoc(pRef, { 
-            evals: { [evalKey]: score } 
-        }, { merge: true });
+            // 2. 해당 파티 글에 내 평가 기록 남기기
+            const pRef = doc(db, "parties", postId);
+            const evalKey = `eval_${auth.currentUser.uid}_to_${uid}`;
+            await setDoc(pRef, { 
+                evals: { [evalKey]: score } 
+            }, { merge: true });
 
-        alert("평가가 반영되었습니다!"); closeModal();
+            alert("평가가 완료되었습니다!");
+            closeModal();
+            rateTargetInfo = null; // 초기화
+        } catch (err) {
+            console.error(err);
+            alert("저장 중 오류가 발생했습니다: " + err.message);
+        }
     };
 
 
