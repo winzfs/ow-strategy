@@ -279,23 +279,24 @@
     };
 
         // 1. 상태 감시 함수 수정 (테스트 계정은 인증 없이도 UI 통과)
-    onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // 테스트 계정 여부 확인
-            const isTestAccount = CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === user.email.toLowerCase());
+            // [수정됨] 관리자 이메일(ADMIN_EMAIL) 이거나, 테스트 계정 목록에 있는 경우 '특수 계정'으로 간주
+            const isSpecialAccount = (user.email === ADMIN_EMAIL) || (CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === user.email.toLowerCase()));
             
-            // 일반 유저인데 인증 안 된 경우만 로그아웃 처리
-            if (!isTestAccount && !user.emailVerified) {
+            // 특수 계정이 아닌데, 이메일 인증도 안 되어 있으면 로그아웃 처리
+            if (!isSpecialAccount && !user.emailVerified) {
                 document.getElementById('login-form').style.display = 'flex';
                 document.getElementById('user-info').style.display = 'none';
                 return; 
             }
 
-            // 로그인 성공 UI 처리
+            // 통과! (로그인 UI 숨김, 정보 표시)
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('user-info').style.display = 'block';
             loadMyProfile(user.uid);
 
+            // ... (이후 onSnapshot 코드는 그대로 두시면 됩니다)
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
                 lastMatchSnap = snap;
                 const newSentSet = new Set();
@@ -310,6 +311,7 @@
                 currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderList(); renderEvalList();
             });
+
         } else {
             document.getElementById('login-form').style.display = 'flex';
             document.getElementById('user-info').style.display = 'none';
@@ -317,31 +319,36 @@
         }
     });
 
+
     // 2. 로그인 버튼 클릭 로직 (가독성 개선 및 명확한 흐름)
-    document.getElementById('btn-login').onclick = async () => {
+        document.getElementById('btn-login').onclick = async () => {
         const e = document.getElementById('login-email').value.trim(); 
         const p = document.getElementById('login-password').value.trim();
         if(!e || !p) return alert("이메일과 비밀번호를 입력해주세요.");
 
-        const isTestAccount = (user?.email === ADMIN_EMAIL) || (CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === (user?.email || e).toLowerCase()));
+        // [수정됨] 여기서 'user' 변수 대신 입력값 'e'를 사용해야 에러가 안 납니다!
+        const isSpecialAccount = (e === ADMIN_EMAIL) || (CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === e.toLowerCase()));
+
         try {
             const userCredential = await signInWithEmailAndPassword(auth, e, p);
             const user = userCredential.user;
 
-            if (!isTestAccount && !user.emailVerified) {
+            // 특수 계정이 아니고 인증도 안 됐으면 쫓아내기
+            if (!isSpecialAccount && !user.emailVerified) {
                 alert("이메일 인증이 필요합니다! 메일함을 확인해주세요.");
                 await sendEmailVerification(user); 
                 await signOut(auth);
             } else { 
-                alert(isTestAccount ? "테스트 계정 접속 성공!" : "환영합니다!");
-                // location.reload()를 하지 않아도 onAuthStateChanged가 감지하여 UI를 바꿉니다.
+                alert(isSpecialAccount ? "관리자/테스트 계정 접속 성공!" : "환영합니다!");
             }
         } catch (err) {
             if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
                 try {
                     const newUserCredential = await createUserWithEmailAndPassword(auth, e, p);
-                    if (isTestAccount) {
-                        alert("테스트 계정 가입 및 로그인 성공!");
+                    
+                    if (isSpecialAccount) {
+                        alert("관리자/테스트 계정 가입 및 로그인 성공!");
+                        location.reload();
                     } else {
                         await sendEmailVerification(newUserCredential.user);
                         alert("가입 성공! 메일 인증 후 다시 로그인해주세요."); 
