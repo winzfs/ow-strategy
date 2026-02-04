@@ -227,46 +227,47 @@
 
     // 파티 리스트 렌더링
         // 파티 리스트 렌더링
-    window.renderList = async () => {
-    const listDiv = document.getElementById('party-list');
-    if(!listDiv) return;
-    
-    let html = "";
-    // 최적화: 루프 내 await를 최소화하기 위해 노력
-    for (const p of currentPosts.filter(x => !x.deleted)) {
-        const count = (p.members?.length || 0) + 1;
-        const isFull = count >= p.maxp;
-        const isMine = auth.currentUser?.uid === p.uid;
-        const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
-        const isSent = mySentRequests.has(p.id); // 여기서 '신청됨' 여부 판단
+        window.renderList = () => {
+        const listDiv = document.getElementById('party-list');
+        if (!listDiv) return;
 
-        let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
+        let html = "";
+        const activePosts = currentPosts.filter(x => !x.deleted);
 
-        if (isMine || isAdmin) {
-            btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "관리자 삭제" : "종료"}</button>`;
-        } else if (isSent) {
-            // 이 부분이 작동하려면 mySentRequests Set이 정확히 업데이트되어야 함
-            btn = `<button class="btn-sub" style="background:#555; color:#aaa; cursor:default;">신청됨</button>`;
-        } else if (isFull) {
-            btn = `<button class="btn-sub" style="opacity:0.5;">마감</button>`;
-        }
+        activePosts.forEach(p => {
+            const count = (p.members?.length || 0) + 1;
+            const isFull = count >= p.maxp;
+            const isMine = auth.currentUser?.uid === p.uid;
+            const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+            const isSent = mySentRequests.has(p.id);
 
-        html += `
-            <div class="box">
-                <div style="display:flex; justify-content:space-between;">
-                    <div>
-                        <b>${p.btag.split('#')[0]}#****</b> 
-                        <small style="color:#666; margin-left:5px;">${timeSince(p.createdAt)}</small>
-                        <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; margin-left:8px;">● ${count}/${p.maxp}</span><br>
-                        <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span>
+            let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
+
+            if (isMine || isAdmin) {
+                btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "관리자 삭제" : "종료"}</button>`;
+            } else if (isSent) {
+                btn = `<button class="btn-sub" style="background:#444; color:#888; cursor:default;" disabled>신청됨</button>`;
+            } else if (isFull) {
+                btn = `<button class="btn-sub" style="opacity:0.5;" disabled>마감</button>`;
+            }
+
+            html += `
+                <div class="box">
+                    <div style="display:flex; justify-content:space-between;">
+                        <div>
+                            <b>${p.btag ? p.btag.split('#')[0] : '익명'}#****</b> 
+                            <small style="color:#666; margin-left:5px;">${timeSince(p.createdAt)}</small>
+                            <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; margin-left:8px;">● ${count}/${p.maxp}</span><br>
+                            <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span>
+                        </div>
+                        <div>${btn}</div>
                     </div>
-                    <div>${btn}</div>
-                </div>
-                <p style="margin-top:10px; color:#bbb; font-size:13px;">${p.desc || ''}</p>
-            </div>`;
-    }
-    listDiv.innerHTML = html;
-};
+                    <p style="margin-top:10px; color:#bbb; font-size:13px;">${p.desc || ''}</p>
+                </div>`;
+        });
+
+        listDiv.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">등록된 파티가 없습니다.</div>';
+    };
 
 
     const renderNotiUI = () => {
@@ -317,39 +318,34 @@
 
     // 이벤트 리스너 및 초기화
             // [수정] onAuthStateChanged 내부의 리스너 부분
-        onAuthStateChanged(auth, (user) => {
+            onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('user-info').style.display = 'block';
             loadMyProfile(user.uid);
 
-            // [통합 리스너] 매칭 데이터 감시
+            // 1. 매칭 데이터 감시
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-                lastMatchSnap = snap; // 알림창용 데이터 저장
-                
-                // 내 신청 목록 갱신
+                lastMatchSnap = snap;
                 const newSentSet = new Set();
                 snap.docs.forEach(doc => {
                     const data = doc.data();
-                    if (data.fromUid === user.uid) {
-                        newSentSet.add(data.postId);
-                    }
+                    if (data.fromUid === user.uid) newSentSet.add(data.postId);
                 });
                 mySentRequests = newSentSet;
 
-                // 알림 NEW 태그
                 const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
                 const newTag = document.getElementById('menu-new-tag');
                 if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
 
-                // 데이터가 올 때마다 UI 전체 갱신
-                renderList(); 
-                renderNotiUI();
+                renderList(); // 매칭 상태가 바뀌면 리스트(버튼) 갱신
+                renderNotiUI(); // 알림창 갱신
             });
 
-            // [통합 리스너] 파티 데이터 감시
+            // 2. 파티 데이터 감시 (여기가 리스트 출력의 핵심)
             onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
                 currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                console.log("파티 데이터 수신됨:", currentPosts.length); // 데이터 확인용
                 renderList(); 
                 renderEvalList();
             });
@@ -362,6 +358,7 @@
             renderList();
         }
     });
+
 
 
     document.getElementById('btn-login').onclick = async () => {
