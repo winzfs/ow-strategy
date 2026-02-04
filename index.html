@@ -333,33 +333,58 @@
     };
 
     window.renderList = () => {
-        const listDiv = document.getElementById('party-list');
-        if (!listDiv) return;
-        let html = "";
-        currentPosts.filter(x => !x.deleted).forEach(p => {
-            const count = (p.members?.length || 0) + 1;
-            const isFull = count >= p.maxp;
-            const isMine = auth.currentUser?.uid === p.uid;
-            const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
-            const isSent = mySentRequests.has(p.id);
-            const rateText = p.ownerRate ? `★ ${p.ownerRate}` : `★ 신규`;
-            let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
-            if (isMine || isAdmin) btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "관리자 삭제" : "종료"}</button>`;
-            else if (isSent) btn = `<button class="btn-sub" style="background:#444; color:#888; cursor:default;" disabled>신청됨</button>`;
-            else if (isFull) btn = `<button class="btn-sub" style="opacity:0.5;" disabled>마감</button>`;
-          
-          const posImg = `<img src="${ICON_URLS[p.pos]}" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;">`;
-        const tierImg = `<img src="${ICON_URLS[p.tier]}" style="width:24px; height:24px; vertical-align:middle; margin-right:2px;">`;
-             
-             html += `<div class="box"><div style="display:flex; justify-content:space-between;"><div><b>${p.btag ? p.btag.split('#')[0] : '익명'}</b> 
-                <span style="color:var(--accent); font-size:11px; margin-left:5px; font-weight:bold;">${rateText}</span>
-                <small style="color:#666; margin-left:8px;">${timeSince(p.createdAt)}</small>
-                <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; margin-left:8px;">● ${count}/${p.maxp}</span><br>
-                <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span></div><div>${btn}</div></div>
-                <p style="margin-top:10px; color:#bbb; font-size:13px;">${p.desc || ''}</p></div>`;
-        });
-        listDiv.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">등록된 파티가 없습니다.</div>';
-    };
+    const listDiv = document.getElementById('party-list');
+    if (!listDiv) return;
+    let html = "";
+    currentPosts.filter(x => !x.deleted).forEach(p => {
+        const count = (p.members?.length || 0) + 1;
+        const isFull = count >= p.maxp;
+        const isMine = auth.currentUser?.uid === p.uid;
+        const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+        const isSent = mySentRequests.has(p.id);
+        const rateText = p.ownerRate ? `★ ${p.ownerRate}` : `★ 신규`;
+        
+        let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
+        if (isMine || isAdmin) btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "관리자 삭제" : "종료"}</button>`;
+        else if (isSent) btn = `<button class="btn-sub" style="background:#444; color:#888; cursor:default;" disabled>신청됨</button>`;
+        else if (isFull) btn = `<button class="btn-sub" style="opacity:0.5;" disabled>마감</button>`;
+
+        // 아이콘 이미지 태그 생성 (경로는 사용자가 설정한 ICON_URLS 사용)
+        const posImg = `<img src="${ICON_URLS[p.pos]}" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;">`;
+        const tierImg = `<img src="${ICON_URLS[p.tier]}" style="width:22px; height:22px; vertical-align:middle; margin-right:4px;">`;
+
+        html += `
+        <div class="box">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <div style="display:flex; align-items:center; margin-bottom:6px;">
+                        <b style="font-size:15px;">${p.btag ? p.btag.split('#')[0] : '익명'}</b> 
+                        <span style="color:var(--accent); font-size:11px; margin-left:6px; font-weight:bold;">${rateText}</span>
+                        <small style="color:#666; margin-left:8px;">${timeSince(p.createdAt)}</small>
+                    </div>
+                    
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+                        <span style="display:inline-flex; align-items:center; background:#000; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:bold; color:white; border:1px solid #333;">
+                            ${posImg}${p.pos}
+                        </span>
+                        
+                        <span style="display:inline-flex; align-items:center; font-size:13px; font-weight:900; color:var(--accent);">
+                            ${tierImg} ${p.tier} ${p.tier !== '배치' ? p.tierNum : ''}
+                        </span>
+
+                        <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; font-size:12px; font-weight:bold; margin-left:5px;">
+                            ● ${count}/${p.maxp}
+                        </span>
+                    </div>
+                </div>
+                <div>${btn}</div>
+            </div>
+            <p style="margin-top:10px; color:#bbb; font-size:13px; line-height:1.4;">${p.desc || '모집 내용이 없습니다.'}</p>
+        </div>`;
+    });
+    listDiv.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">등록된 파티가 없습니다.</div>';
+};
+
 
     const renderNotiUI = () => {
         const list = document.getElementById('noti-list');
