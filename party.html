@@ -285,8 +285,8 @@ if (isMine || isAdmin) {
     };
 
     const renderNotiUI = () => {
-    if(!lastMatchSnap || !auth.currentUser) return;
-    const list = document.getElementById('noti-list');
+        const list = document.getElementById('noti-list');
+        if(!list || !lastMatchSnap || !auth.currentUser) return; // 요소가 없으면 중단
     let html = "";
     
     lastMatchSnap.docs.forEach(ds => {
@@ -331,23 +331,38 @@ if (isMine || isAdmin) {
 
 
     // 이벤트 리스너 및 초기화
+        // 이벤트 리스너 및 초기화 (이 부분을 찾아서 교체하세요)
     onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('user-info').style.display = 'block';
             loadMyProfile(user.uid);
+
+            // 매칭 정보 실시간 감시
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
                 lastMatchSnap = snap;
-                mySentRequests = new Set(snap.docs.filter(d => d.data().fromUid === user.uid).map(d => d.data().postId));
+                
+                // 내가 보낸 신청 목록 업데이트 (postId를 Set으로 저장)
+                mySentRequests = new Set(
+                    snap.docs
+                        .filter(d => d.data().fromUid === user.uid)
+                        .map(d => d.data().postId)
+                );
+
                 const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
                 document.getElementById('menu-new-tag').style.display = hasNew ? 'inline-block' : 'none';
-                renderList(); if(document.getElementById('page-noti').classList.contains('active')) renderNotiUI();
+
+                // 중요: 매칭 데이터가 바뀔 때마다 리스트와 알림창을 모두 갱신
+                renderList(); 
+                renderNotiUI();
             });
         } else {
             document.getElementById('login-form').style.display = 'flex';
             document.getElementById('user-info').style.display = 'none';
+            mySentRequests = new Set(); // 로그아웃 시 초기화
         }
     });
+
 
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
         currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
