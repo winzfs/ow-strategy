@@ -177,22 +177,39 @@
     };
 
     // 상호평가 리스트 렌더링
-        // 상호평가 리스트 렌더링
+    // 상호평가 리스트 렌더링
     window.renderEvalList = () => {
         const list = document.getElementById('group-eval-list');
         if(!auth.currentUser) return;
         let html = "";
+        
         currentPosts.forEach(p => {
             const isOwner = p.uid === auth.currentUser.uid;
             const isMember = p.members?.some(m => m.uid === auth.currentUser.uid);
+            
             if (isOwner || isMember) {
                 let targets = [];
-                if(!isOwner) targets.push({uid: p.uid, btag: p.btag, pos: p.pos, tier: p.tier, tierNum: p.tierNum});
-                if(p.members) p.members.forEach(m => { if(m.uid !== auth.currentUser.uid) targets.push(m); });
+                
+                // 1. 내가 멤버라면? 방장을 평가 대상으로 추가
+                if(!isOwner) {
+                    targets.push({
+                        uid: p.uid, 
+                        btag: p.btag, 
+                        pos: p.pos, 
+                        tier: p.tier, 
+                        tierNum: p.tierNum
+                    });
+                }
+                
+                // 2. 내가 방장이든 멤버든, 나를 제외한 다른 멤버들을 평가 대상으로 추가
+                if(p.members) {
+                    p.members.forEach(m => { 
+                        if(m.uid !== auth.currentUser.uid) targets.push(m); 
+                    });
+                }
 
                 if(targets.length > 0) {
                     let mHtml = targets.map(t => {
-                        // 현재 내가 이 사람을 평가했는지 확인
                         const evalKey = `eval_${auth.currentUser.uid}_to_${t.uid}`;
                         const savedScore = p.evals ? p.evals[evalKey] : null;
 
@@ -208,12 +225,13 @@
                             }
                         </div>`;
                     }).join('');
-                    html += `<div class="box" style="border:1px solid var(--accent);"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">🤝 파티 멤버 평가</div>${mHtml}</div>`;
+                    html += `<div class="box" style="border:1px solid var(--accent);"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">🤝 파티 멤버 평가 (${p.btag.split('#')[0]}의 파티)</div>${mHtml}</div>`;
                 }
             }
         });
         list.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">참여 중인 파티가 없습니다.</div>';
     };
+
 
 
     // 파티 리스트 렌더링
