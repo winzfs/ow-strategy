@@ -133,6 +133,7 @@
     const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
     const ADMIN_EMAIL = CONFIG.ADMIN_EMAIL;
     let currentPosts = [];
+    let hiddenEvals = new Set();
     let lastMatchSnap = null; // 이 변수가 선언되어 있어야 알림창이 작동합니다.
     let mySentRequests = new Set(); 
     let targetData = null; 
@@ -182,46 +183,65 @@
 
     // 상호평가 리스트 렌더링
         window.renderEvalList = () => {
-        const list = document.getElementById('group-eval-list');
-        if(!auth.currentUser) return;
-        let html = "";
+    const list = document.getElementById('group-eval-list');
+    if(!auth.currentUser) return;
+    let html = "";
+    
+    currentPosts.forEach(p => {
+        // [수정] 닫기 버튼을 눌렀거나, 이미 삭제된 파티는 제외
+        if (hiddenEvals.has(p.id) || p.deleted) return;
+
+        const isOwner = p.uid === auth.currentUser.uid;
+        const isMember = p.members?.some(m => m.uid === auth.currentUser.uid);
         
-        currentPosts.forEach(p => {
-            const isOwner = p.uid === auth.currentUser.uid;
-            const isMember = p.members?.some(m => m.uid === auth.currentUser.uid);
-            
-            if (isOwner || isMember) {
-                let targets = [];
-                // 방장이 아니면 방장을 리스트에 추가
-                if(!isOwner) targets.push({uid: p.uid, btag: p.btag, pos: p.pos, tier: p.tier, tierNum: p.tierNum});
-                // 나를 제외한 나머지 멤버들 추가
-                if(p.members) p.members.forEach(m => { if(m.uid !== auth.currentUser.uid) targets.push(m); });
+        if (isOwner || isMember) {
+            let targets = [];
+            if(!isOwner) targets.push({uid: p.uid, btag: p.btag, pos: p.pos, tier: p.tier, tierNum: p.tierNum});
+            if(p.members) p.members.forEach(m => { if(m.uid !== auth.currentUser.uid) targets.push(m); });
 
-                if(targets.length > 0) {
-                    let mHtml = targets.map(t => {
-                        const evalKey = `eval_${auth.currentUser.uid}_to_${t.uid}`;
-                        const savedScore = (p.evals && p.evals[evalKey]) ? p.evals[evalKey] : null;
+            if(targets.length > 0) {
+                let mHtml = targets.map(t => {
+                    const evalKey = `eval_${auth.currentUser.uid}_to_${t.uid}`;
+                    const savedScore = (p.evals && p.evals[evalKey]) ? p.evals[evalKey] : null;
 
-                        return `
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#000; border-radius:8px; margin-top:5px; border:1px solid #333;">
-                            <div style="font-size:12px;">
-                                ${getPosBadge(t.pos)} <b>${t.btag.split('#')[0]}</b>
-                                <div style="font-size:10px; color:#888;">${t.tier} ${t.tierNum || ''}</div>
-                            </div>
-                            <div>
-                                ${savedScore 
-                                    ? `<span style="color:var(--accent); font-size:12px; font-weight:bold;">평가완료 (★${savedScore})</span>`
-                                    : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="window.openRateModal('${t.uid}', '${p.id}')">평가</button>`
-                                }
-                            </div>
-                        </div>`;
-                    }).join('');
-                    html += `<div class="box" style="border:1px solid var(--accent);"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">🤝 파티 멤버 평가</div>${mHtml}</div>`;
-                }
+                    return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#000; border-radius:8px; margin-top:5px; border:1px solid #333;">
+                        <div style="font-size:12px;">
+                            ${getPosBadge(t.pos)} <b>${t.btag.split('#')[0]}</b>
+                            <div style="font-size:10px; color:#888;">${t.tier} ${t.tierNum || ''}</div>
+                        </div>
+                        <div>
+                            ${savedScore 
+                                ? `<span style="color:var(--accent); font-size:12px; font-weight:bold;">평가완료 (★${savedScore})</span>`
+                                : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="window.openRateModal('${t.uid}', '${p.id}')">평가</button>`
+                            }
+                        </div>
+                    </div>`;
+                }).join('');
+
+                // 상단에 닫기(X) 버튼이 포함된 헤더 추가
+                html += `
+                <div class="box" id="eval-box-${p.id}" style="border:1px solid var(--accent); position:relative;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티 멤버 평가</div>
+                        <button onclick="window.hideEvalBox('${p.id}')" style="background:none; border:none; color:#666; cursor:pointer; font-size:16px;">&times;</button>
+                    </div>
+                    ${mHtml}
+                </div>`;
             }
-        });
-        list.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">참여 중인 파티가 없습니다.</div>';
-    };
+        }
+    });
+    list.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">참여 중인 파티가 없습니다.</div>';
+};
+
+// [추가] 평가창 숨기기 함수
+window.hideEvalBox = (postId) => {
+    if(confirm("이 파티의 평가창을 닫으시겠습니까? (다시 열려면 페이지를 새로고침해야 합니다)")) {
+        hiddenEvals.add(postId);
+        renderEvalList();
+    }
+};
+
 
 
 
