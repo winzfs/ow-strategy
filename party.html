@@ -297,8 +297,8 @@ window.hideEvalBox = (postId) => {
 
 
     const renderNotiUI = () => {
-        const list = document.getElementById('noti-list');
-        if(!list || !lastMatchSnap || !auth.currentUser) return; // 요소가 없으면 중단
+    const list = document.getElementById('noti-list');
+    if(!list || !lastMatchSnap || !auth.currentUser) return; 
     let html = "";
     
     lastMatchSnap.docs.forEach(ds => {
@@ -308,38 +308,58 @@ window.hideEvalBox = (postId) => {
             
             if(m.status === 'pending') {
                 if(isToMe) {
-                    // 나에게 온 신청
+                    // [나에게 온 신청]
                     html += `<div class="box" style="border-left:5px solid var(--accent);">
+                        <div style="font-size:11px; color:var(--accent); margin-bottom:5px; font-weight:bold;">내 파티에 신청함</div>
                         <b>${m.fromBtag}</b> 신청 도착!<br>
                         <div style="margin:5px 0;">${getPosBadge(m.reqPos)} <span style="font-size:11px; color:#888;">${m.reqTier} ${m.reqTierNum}</span></div>
-                        <small>${m.message}</small>
+                        <small style="display:block; margin-bottom:8px; color:#ccc;">"${m.message || '메시지 없음'}"</small>
                         <div style="display:flex; gap:5px; margin-top:10px;">
                             <button class="btn-main" style="margin:0; flex:1;" onclick="acceptMatch('${ds.id}')">수락</button>
                             <button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button>
                         </div>
                     </div>`;
                 } else {
-                    // 내가 보낸 신청 (수정된 부분)
+                    // [내가 보낸 신청] - 파티장(상대방) 본인의 정보 표시
                     html += `<div class="box" style="border-left:5px solid #555;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span>⌛ <b>${m.toBtag.split('#')[0]}</b>님에게 신청함</span>
-                            <button class="btn-sub" style="font-size:10px; padding:4px 8px;" onclick="delMatch('${ds.id}')">취소</button>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                            <div>
+                                <div style="font-size:11px; color:#888; margin-bottom:3px;">신청 대상 파티장 정보</div>
+                                <b>${m.toBtag.split('#')[0]}</b> 님 
+                                <div style="margin-top:4px;">
+                                    ${getPosBadge(m.leaderPos || '정보없음')} 
+                                    <span style="font-size:12px; color:#ccc;">${m.leaderTier || ''} ${m.leaderTierNum || ''}</span>
+                                </div>
+                            </div>
+                            <button class="btn-sub" style="font-size:10px; padding:4px 8px; background:#444;" onclick="delMatch('${ds.id}')">취소</button>
                         </div>
-                        <div style="font-size:11px; color:#888; margin-top:5px;">상대방의 수락을 기다리는 중입니다.</div>
+                        
+                        <div style="background:#000; padding:10px; border-radius:8px; border:1px solid #333;">
+                            <div style="font-size:10px; color:#666; margin-bottom:5px;">내 신청 조건</div>
+                            ${getPosBadge(m.reqPos)} 
+                            <span style="font-size:11px; color:var(--accent); font-weight:bold;">${m.reqTier} ${m.reqTierNum}</span>
+                            <div style="font-size:11px; color:#777; margin-top:5px; border-top:1px solid #222; padding-top:5px;">
+                                "${m.message || '메시지 없음'}"
+                            </div>
+                        </div>
+                        <div style="font-size:10px; color:var(--accent); margin-top:8px; text-align:right;">⌛ 수락 대기 중</div>
                     </div>`;
                 }
             } else {
                 // 매칭 성공 알림
                 html += `<div class="box" style="border-left:5px solid var(--sup);">
-                    ✅ <b>${isToMe ? m.fromBtag : m.toBtag}</b>님과 매칭 성공!<br>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>✅ <b>${isToMe ? m.fromBtag.split('#')[0] : m.toBtag.split('#')[0]}</b>님과 매칭 성공!</span>
+                        <button class="btn-sub" style="font-size:10px; padding:4px 8px;" onclick="delMatch('${ds.id}')">확인</button>
+                    </div>
                     <small style="color:#888;">${isToMe ? '파티원이 추가되었습니다.' : '파티에 참여되었습니다.'}</small>
-                    <button class="btn-sub" style="float:right; margin-top:-20px;" onclick="delMatch('${ds.id}')">확인</button>
                 </div>`;
             }
         }
     });
     list.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">알림이 없습니다.</div>';
 };
+
 
 
     // 이벤트 리스너 및 초기화
@@ -433,18 +453,26 @@ window.hideEvalBox = (postId) => {
     document.getElementById('btn-confirm-send').onclick = async () => {
     if(!auth.currentUser || !targetData) return;
     
+    // 현재 리스트에서 해당 파티의 원본 데이터를 찾아옵니다.
+    const parentPost = currentPosts.find(p => p.id === targetData.postId);
     const myBtag = document.getElementById('profile-btag').value || "익명#0000";
     
     try {
         await addDoc(collection(db, "matches"), {
-            fromUid: auth.currentUser.uid, // 규칙 통과를 위해 필수
+            fromUid: auth.currentUser.uid, 
             fromBtag: myBtag,
             reqPos: document.getElementById('request-pos').value,
             reqTier: document.getElementById('request-tier').value,
             reqTierNum: document.getElementById('request-tier-num').value,
-            toUid: targetData.uid,         // 규칙 통과를 위해 필수
+            
+            toUid: targetData.uid,         
             toBtag: targetData.btag,
-            postId: targetData.postId,     // 버튼 상태 변경을 위해 필수
+            // [추가] 파티장 본인의 포지션과 티어 정보 저장
+            leaderPos: parentPost ? parentPost.pos : "정보 없음",
+            leaderTier: parentPost ? parentPost.tier : "",
+            leaderTierNum: parentPost ? parentPost.tierNum : "",
+            
+            postId: targetData.postId,     
             message: document.getElementById('request-msg').value,
             status: "pending",
             createdAt: Date.now()
@@ -453,9 +481,10 @@ window.hideEvalBox = (postId) => {
         closeModal();
     } catch (e) {
         console.error("신청 에러:", e);
-        alert("신청에 실패했습니다. (권한 오류 가능성)");
+        alert("신청에 실패했습니다.");
     }
 };
+
 
 
     window.acceptMatch = async (id) => {
