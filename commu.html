@@ -41,7 +41,14 @@
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = { /* 본인의 Config 복사 */ };
+    const firebaseConfig = { 
+    apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", 
+    authDomain: "ow-party-97936.firebaseapp.com", 
+    projectId: "ow-party-97936", 
+    storageBucket: "ow-party-97936.firebasestorage.app", 
+    messagingSenderId: "15782204013", 
+    appId: "1:15782204013:web:5c74ef2e603c311fc82564" 
+};
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
