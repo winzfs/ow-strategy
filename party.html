@@ -242,15 +242,15 @@
         evalList.innerHTML = html;
     });
 
-    // 인증 및 알림 리스너
+    // 인증 및 알림 리스너 (이 블록 전체를 교체하세요)
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('user-info').style.display = 'block';
             
-            // 신청 알림 리스너 (멤버 알림 포함)
-                        // 알림창 UI를 그리는 함수를 전역으로 선언
             let lastMatchSnap = null;
+            
+            // 실시간 알림창 데이터 관리 함수 (전역)
             window.refreshNotiUI = () => {
                 if(!lastMatchSnap || !auth.currentUser) return;
                 const list = document.getElementById('noti-list');
@@ -266,7 +266,7 @@
                             if(isToMe || isAdmin) {
                                 notiHtml += `<div class="box" style="border-left:5px solid var(--accent);">📩 <b>${m.fromBtag}</b> 신청 도착!<br><small>${m.message}</small><div style="display:flex; gap:5px; margin-top:10px;"><button class="btn-main" style="margin:0; flex:1;" onclick="acceptMatch('${ds.id}')">수락</button><button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button></div></div>`;
                             } else {
-                                notiHtml += `<div class="box">⌛ <b>${m.toBtag ? m.toBtag.split('#')[0] : '방장'}</b>님에게 보낸 신청 대기 중...</div>`;
+                                notiHtml += `<div class="box">⌛ <b>${m.toBtag ? m.toBtag.split('#')[0] : '방장'}</b>님 신청 대기 중...</div>`;
                             }
                         } else {
                             notiHtml += `<div class="box" style="border-left:5px solid var(--sup);">✅ <b>${isToMe ? m.fromBtag : (m.toBtag || '방장')}</b>님과 매칭 성공!<button class="btn-sub" style="float:right; padding:4px 8px;" onclick="delMatch('${ds.id}')">삭제</button></div>`;
@@ -276,17 +276,23 @@
                 list.innerHTML = notiHtml || '<div style="text-align:center; color:#444; padding:20px;">알림이 없습니다.</div>';
             };
 
-            // 실시간 리스너: 데이터가 바뀌면 저장하고 UI 업데이트 호출
+            // 신청/매칭 실시간 리스너
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-                lastMatchSnap = snap; // 최신 데이터를 변수에 보관
-                window.refreshNotiUI(); // 화면 갱신
+                lastMatchSnap = snap; 
+                window.refreshNotiUI(); 
                 
-                const hasNew = snap.docs.some(d => d.data().toUid === auth.currentUser.uid && d.data().status === 'pending');
+                const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
                 document.getElementById('menu-new-tag').style.display = hasNew ? 'inline-block' : 'none';
 
-                mySentRequests = new Set(snap.docs.filter(d => d.data().fromUid === auth.currentUser.uid).map(d => d.data().postId));
+                mySentRequests = new Set(snap.docs.filter(d => d.data().fromUid === user.uid).map(d => d.data().postId));
                 window.renderList();
             });
+        } else {
+            document.getElementById('login-form').style.display = 'flex';
+            document.getElementById('user-info').style.display = 'none';
+        }
+    });
+
 
             
                 // NEW 태그 로직
