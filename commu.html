@@ -54,14 +54,15 @@
         messagingSenderId: "15782204013", 
         appId: "1:15782204013:web:5c74ef2e603c311fc82564" 
     };
+    
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
     const ADMIN_EMAILS = ["jazzhjm@gmail.com", "jazzhjm@gmaol.com"];
     let myBtag = "익명";
+    let unsubscribe = null;
 
-    // 시간 계산 함수
     const timeSince = (date) => {
         const seconds = Math.floor((Date.now() - date) / 1000);
         if (seconds < 60) return "방금 전";
@@ -72,29 +73,60 @@
         return Math.floor(hours / 24) + "일 전";
     };
 
+    // 로그인 상태 감시 및 초기화
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // 유저 정보에서 배틀태그 가져오기
             const userSnap = await getDoc(doc(db, "users", user.uid));
             if (userSnap.exists()) {
                 myBtag = userSnap.data().btag || "익명";
             }
+            startListing(); // 로그인 성공 시에만 목록 로드
         } else {
-            alert("로그인이 필요합니다.");
-            location.href = "party.html"; // 메인 페이지(파티찾기) 파일명에 맞춰 수정하세요
+            alert("로그인이 필요한 서비스입니다.");
+            location.href = "index.html"; // 로그인 안 됐으면 메인으로 튕겨내기
         }
     });
 
-    // 로그아웃 버튼 기능
+    // 실시간 게시글 목록 불러오기 함수
+    function startListing() {
+        if (unsubscribe) unsubscribe();
+        
+        const q = query(collection(db, "community"), orderBy("createdAt", "desc"));
+        unsubscribe = onSnapshot(q, (snap) => {
+            const list = document.getElementById('comm-list');
+            const currentUser = auth.currentUser;
+            if (!currentUser) return;
+
+            const isAdmin = ADMIN_EMAILS.includes(currentUser.email);
+
+            list.innerHTML = snap.docs.map(docSnap => {
+                const d = docSnap.data();
+                const isMine = currentUser.uid === d.uid;
+                
+                return `
+                    <div class="box">
+                        <div class="post-info">
+                            <span><span class="author-name">${d.author || '익명'}</span> • ${timeSince(d.createdAt)}</span>
+                            ${(isMine || isAdmin) ? `<button onclick="window.delCommPost('${docSnap.id}')" style="background:none; border:none; color:#ff3c3c; cursor:pointer; font-size:11px;">삭제</button>` : ''}
+                        </div>
+                        <h4 style="margin:5px 0 10px 0;">${d.title}</h4>
+                        <p style="font-size:14px; color:#ccc; line-height:1.5; white-space:pre-wrap;">${d.content}</p>
+                    </div>`;
+            }).join('');
+        });
+    }
+
+    // 로그아웃
     document.getElementById('btn-logout').onclick = () => {
         signOut(auth).then(() => {
-            location.href = "party.html";
+            location.href = "index.html";
         });
     };
 
-    // 글쓰기 로직
+    // 글 등록 로직
     document.getElementById('btn-comm-post').onclick = async () => {
-        if (!auth.currentUser) return alert("로그인 정보가 없습니다.");
+        const user = auth.currentUser;
+        if (!user) return alert("로그인 정보가 없습니다.");
         
         const title = document.getElementById('comm-title').value.trim();
         const content = document.getElementById('comm-content').value.trim();
@@ -103,8 +135,8 @@
 
         try {
             await addDoc(collection(db, "community"), {
-                uid: auth.currentUser.uid,
-                author: myBtag.split('#')[0], // 배틀태그 앞부분만 표시
+                uid: user.uid,
+                author: myBtag.split('#')[0],
                 title: title,
                 content: content,
                 createdAt: Date.now()
@@ -117,31 +149,14 @@
         }
     };
 
-    // 실시간 목록 렌더링
-    onSnapshot(query(collection(db, "community"), orderBy("createdAt", "desc")), (snap) => {
-        const list = document.getElementById('comm-list');
-        const isAdmin = auth.currentUser && ADMIN_EMAILS.includes(auth.currentUser.email);
-
-        list.innerHTML = snap.docs.map(docSnap => {
-            const d = docSnap.data();
-            const isMine = auth.currentUser && auth.currentUser.uid === d.uid;
-            
-            return `
-                <div class="box">
-                    <div class="post-info">
-                        <span><span class="author-name">${d.author || '익명'}</span> • ${timeSince(d.createdAt)}</span>
-                        ${(isMine || isAdmin) ? `<button onclick="window.delCommPost('${docSnap.id}')" style="background:none; border:none; color:#ff3c3c; cursor:pointer; font-size:11px;">삭제</button>` : ''}
-                    </div>
-                    <h4 style="margin:5px 0 10px 0;">${d.title}</h4>
-                    <p style="font-size:14px; color:#ccc; line-height:1.5; white-space:pre-wrap;">${d.content}</p>
-                </div>`;
-        }).join('');
-    });
-
-    // 삭제 함수
+    // 전역 삭제 함수
     window.delCommPost = async (id) => {
         if(confirm("정말 삭제하시겠습니까?")) {
-            await deleteDoc(doc(db, "community", id));
+            try {
+                await deleteDoc(doc(db, "community", id));
+            } catch (e) {
+                alert("삭제 실패: 권한이 없습니다.");
+            }
         }
     };
 </script>
