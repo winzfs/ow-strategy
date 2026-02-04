@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://ow-party-97936.web.app/</loc> <lastmod>2026-02-05</lastmod>
+    <loc>https://owhub.vercel.app/</loc>
+    <lastmod>2026-02-05</lastmod>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://owhub.vercel.app/commu.html</loc>
+    <lastmod>2026-02-05</lastmod>
+    <priority>0.8</priority>
   </url>
 </urlset>
