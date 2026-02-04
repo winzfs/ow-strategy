@@ -440,28 +440,27 @@ window.hideEvalBox = (postId) => {
 
 
         // [수정된 로그인/가입 로직]
-        document.getElementById('btn-login').onclick = async () => {
+            // 1. 로그인/가입 로직 (중괄호 오류 수정 및 최신 에러코드 대응)
+    document.getElementById('btn-login').onclick = async () => {
         const e = document.getElementById('login-email').value; 
         const p = document.getElementById('login-password').value;
         
         if(!e || !p) return alert("이메일과 비밀번호를 입력해주세요.");
 
         try {
-            // 1. 로그인 시도
             const userCredential = await signInWithEmailAndPassword(auth, e, p);
             const user = userCredential.user;
 
-            // 2. 이메일 인증 체크
             if (!user.emailVerified) {
                 alert("이메일 인증이 필요합니다! 메일함(또는 스팸함)을 확인해주세요.");
-                await sendEmailVerification(user); // 인증 메일 재발송
-                await signOut(auth); // 인증 전까지는 튕겨냄
+                await sendEmailVerification(user); 
+                await signOut(auth); 
             } else {
                 alert("환영합니다!");
             }
         } catch (err) {
-            // 3. 계정이 없거나 처음 가입하는 경우
-            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+            // 최신 Firebase 에러 코드들 통합 대응
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
                 try {
                     const newUser = await createUserWithEmailAndPassword(auth, e, p);
                     await sendEmailVerification(newUser.user);
@@ -474,7 +473,40 @@ window.hideEvalBox = (postId) => {
                 alert("로그인 오류: " + err.message);
             }
         }
+    }; // <--- 여기서 함수가 정확히 닫혀야 합니다.
+
+    document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
+
+    // 2. 파티 모집 로직 (기존 기능 누락 없이 복구)
+    document.getElementById('btn-post').onclick = async () => {
+        if(!auth.currentUser) return alert("로그인 필요");
+        
+        const myUid = auth.currentUser.uid;
+        const userSnap = await getDoc(doc(db, "users", myUid));
+        let ownerRate = "신규";
+        if (userSnap.exists()) {
+            const d = userSnap.data();
+            if (d.rateCount > 0) {
+                ownerRate = (d.rateTotal / d.rateCount).toFixed(1);
+            }
+        }
+
+        await addDoc(collection(db, "parties"), {
+            btag: document.getElementById('post-btag').value, 
+            uid: myUid,
+            ownerRate: ownerRate, 
+            pos: document.getElementById('post-main-pos').value, 
+            tier: document.getElementById('post-tier').value,
+            tierNum: document.getElementById('post-tier-num').value, 
+            maxp: parseInt(document.getElementById('post-maxp').value),
+            desc: document.getElementById('post-desc').value, 
+            createdAt: Date.now(), 
+            members: [], 
+            deleted: false
+        });
+        alert("모집 시작!");
     };
+
 
 
     
