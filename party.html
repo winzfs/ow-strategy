@@ -132,8 +132,11 @@
     const firebaseConfig = { apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", authDomain: "ow-party-97936.firebaseapp.com", projectId: "ow-party-97936", storageBucket: "ow-party-97936.firebasestorage.app", messagingSenderId: "15782204013", appId: "1:15782204013:web:5c74ef2e603c311fc82564" };
     const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
     const ADMIN_EMAIL = CONFIG.ADMIN_EMAIL;
-    let currentPosts = []; let mySentRequests = new Set(); let targetData = null; let rateTargetInfo = null;
-
+    let lastMatchSnap = null; // 이 변수가 선언되어 있어야 알림창이 작동합니다.
+    let mySentRequests = new Set(); 
+    let targetData = null; 
+    let rateTargetInfo = null;
+   
     const timeSince = (date) => {
         const seconds = Math.floor((Date.now() - date) / 1000);
         if (seconds < 60) return "방금 전";
@@ -314,17 +317,17 @@
 
     // 이벤트 리스너 및 초기화
             // [수정] onAuthStateChanged 내부의 리스너 부분
-    onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('user-info').style.display = 'block';
             loadMyProfile(user.uid);
 
-            // 매칭 감시 리스너
+            // [통합 리스너] 매칭 데이터 감시
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-                lastMatchSnap = snap;
+                lastMatchSnap = snap; // 알림창용 데이터 저장
                 
-                // 1. 내 신청 목록 업데이트 (postId를 담은 새로운 Set 생성)
+                // 내 신청 목록 갱신
                 const newSentSet = new Set();
                 snap.docs.forEach(doc => {
                     const data = doc.data();
@@ -332,33 +335,34 @@
                         newSentSet.add(data.postId);
                     }
                 });
-                mySentRequests = newSentSet; // 전역 변수에 할당
+                mySentRequests = newSentSet;
 
-                // 2. 알림창 NEW 태그 업데이트
+                // 알림 NEW 태그
                 const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
                 const newTag = document.getElementById('menu-new-tag');
                 if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
 
-                // 3. UI 갱신 (반드시 Set이 업데이트 된 후 실행)
-                console.log("실시간 데이터 수신: 신청한 파티 ID들:", Array.from(mySentRequests));
+                // 데이터가 올 때마다 UI 전체 갱신
                 renderList(); 
                 renderNotiUI();
             });
+
+            // [통합 리스너] 파티 데이터 감시
+            onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
+                currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderList(); 
+                renderEvalList();
+            });
+
         } else {
             document.getElementById('login-form').style.display = 'flex';
             document.getElementById('user-info').style.display = 'none';
             mySentRequests = new Set();
+            currentPosts = [];
             renderList();
         }
     });
 
-
-
-
-    onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
-        currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        renderList(); renderEvalList();
-    });
 
     document.getElementById('btn-login').onclick = async () => {
         const e = document.getElementById('login-email').value; const p = document.getElementById('login-password').value;
