@@ -343,30 +343,77 @@
                 });
 
                 // 3. 나 말고 다른 사람이 있다면 UI 생성
-                if (uniqueOthers.length > 0) {
-                    const groupDiv = document.createElement('div');
-                    groupDiv.className = 'box';
-                    groupDiv.style.border = "1px solid var(--accent)";
-                    groupDiv.style.marginBottom = "15px";
-                    
-                    let membersHtml = uniqueOthers.map(m => `
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:10px; background:#000; border-radius:8px; border:1px solid #222;">
-                            <span style="font-size:12px; font-weight:bold;">
-                                ${m.btag.split('#')[0]}#**** <small style="color:var(--accent); margin-left:5px;">(${m.pos})</small>
+    // 파티 목록 및 상호 평가 리스너 (최종 수정본)
+    onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
+        // 1. 파티 목록 렌더링
+        currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); 
+        window.renderList(); 
+
+        // 2. 상호 평가 구역 설정
+        const evalList = document.getElementById('group-eval-list');
+        if(!evalList) return;
+        if(!auth.currentUser) {
+            evalList.innerHTML = '';
+            return;
+        }
+
+        const myUid = auth.currentUser.uid;
+        let finalHtml = ""; // HTML을 한 번에 모아서 넣기 위함
+
+        currentPosts.forEach(p => {
+            const isOwner = p.uid === myUid;
+            const isMember = p.members && Array.isArray(p.members) && p.members.some(m => m.uid === myUid);
+
+            // 내가 이 파티의 일원인 경우에만
+            if (isOwner || isMember) {
+                let others = [];
+
+                // 내가 멤버라면 -> 방장을 추가
+                if (!isOwner) {
+                    others.push({
+                        uid: p.uid,
+                        btag: p.btag || "방장#0000",
+                        pos: "방장"
+                    });
+                }
+
+                // 나를 제외한 모든 멤버들을 추가
+                if (p.members && Array.isArray(p.members)) {
+                    p.members.forEach(m => {
+                        if (m.uid !== myUid) {
+                            others.push({
+                                uid: m.uid,
+                                btag: m.btag || "팀원#0000",
+                                pos: m.pos || "팀원"
+                            });
+                        }
+                    });
+                }
+
+                // 표시할 상대가 있다면 박스 생성
+                if (others.length > 0) {
+                    let membersHtml = others.map(m => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:10px; background:#000; border-radius:8px; border:1px solid #333;">
+                            <span style="font-size:12px;">
+                                <b style="color:white;">${m.btag.split('#')[0]}</b> 
+                                <small style="color:#888; margin-left:4px;">(${m.pos})</small>
                             </span>
-                            <button class="btn-sub" style="background:var(--accent); color:black; font-size:11px; font-weight:bold;" 
-                                onclick="openRateModal('${p.id}', 'group_rate', '${m.uid}')">평가하기</button>
+                            <button class="btn-sub" style="background:var(--accent); color:black; font-weight:bold; font-size:11px;" 
+                                onclick="openRateModal('${p.id}', 'group_rate', '${m.uid}')">평가</button>
                         </div>
                     `).join('');
 
-                    groupDiv.innerHTML = `
-                        <div style="font-size:11px; color:var(--accent); font-weight:bold; letter-spacing:1px;">🤝 상호 평가 (${p.pos} 파티)</div>
-                        ${membersHtml}
+                    finalHtml += `
+                        <div class="box" style="border: 1px solid var(--accent); margin-bottom:15px; background:#111;">
+                            <div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">🤝 파티원 상호 평가</div>
+                            ${membersHtml}
+                        </div>
                     `;
-                    evalList.appendChild(groupDiv);
                 }
             }
         });
+
+        evalList.innerHTML = finalHtml || '<div style="color:#444; font-size:12px; text-align:center; padding:20px;">참여 중인 파티원이 없습니다.</div>';
     });
 
 
