@@ -5,35 +5,148 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Overwatch Hub - Community</title>
     <style>
-        /* (기존 style 코드들...) */
         :root { --accent: #ff9c00; --bg-dark: #111; }
-        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; }
-        nav { background: #000; padding: 12px 20px; display: flex; justify-content: space-between; border-bottom: 1px solid #333; }
-        .nav-tabs { display: flex; gap: 20px; }
+        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
+        nav { background: #000; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
+        .nav-tabs { display: flex; gap: 20px; align-items: center; }
+        .nav-tabs a, .nav-tabs div { cursor: pointer; font-weight: 600; font-size: 14px; text-decoration: none; }
         .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
-        .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
-        .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; }
+        .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; position: relative; }
+        .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
         input, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+        .post-info { font-size: 12px; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .author-name { color: var(--accent); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <nav>
     <div class="nav-tabs">
-        <a href="party.html" style="text-decoration:none; color:#888; font-weight:600; font-size:14px;">파티찾기</a>
-        <div style="color:var(--accent); border-bottom: 2px solid var(--accent);">커뮤니티</div>
+        <a href="party.html" style="color:#888;">파티찾기</a>
+        <div style="color:var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px;">커뮤니티</div>
+    </div>
+    <div id="auth-ui">
+        <button id="btn-logout" class="btn-sub">로그아웃</button>
     </div>
 </nav>
 
 <div class="container">
     <div class="box">
-        <h4 style="margin:0; color:var(--accent);">💬 자유게시판</h4>
+        <h4 style="margin:0 0 10px 0; color:var(--accent);">💬 자유게시판</h4>
         <input type="text" id="comm-title" placeholder="제목">
-        <textarea id="comm-content" placeholder="내용을 입력하세요" rows="4"></textarea>
+        <textarea id="comm-content" placeholder="내용을 입력하세요 (비속어 사용 시 제재될 수 있습니다)" rows="4"></textarea>
         <button class="btn-main" id="btn-comm-post">글 등록</button>
     </div>
     <div id="comm-list"></div>
 </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", 
+        authDomain: "ow-party-97936.firebaseapp.com", 
+        projectId: "ow-party-97936", 
+        storageBucket: "ow-party-97936.firebasestorage.app", 
+        messagingSenderId: "15782204013", 
+        appId: "1:15782204013:web:5c74ef2e603c311fc82564" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const ADMIN_EMAILS = ["jazzhjm@gmail.com", "jazzhjm@gmaol.com"];
+    let myBtag = "익명";
+
+    // 시간 계산 함수
+    const timeSince = (date) => {
+        const seconds = Math.floor((Date.now() - date) / 1000);
+        if (seconds < 60) return "방금 전";
+        const mins = Math.floor(seconds / 60);
+        if (mins < 60) return mins + "분 전";
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return hours + "시간 전";
+        return Math.floor(hours / 24) + "일 전";
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // 유저 정보에서 배틀태그 가져오기
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            if (userSnap.exists()) {
+                myBtag = userSnap.data().btag || "익명";
+            }
+        } else {
+            alert("로그인이 필요합니다.");
+            location.href = "party.html"; // 메인 페이지(파티찾기) 파일명에 맞춰 수정하세요
+        }
+    });
+
+    // 로그아웃 버튼 기능
+    document.getElementById('btn-logout').onclick = () => {
+        signOut(auth).then(() => {
+            location.href = "party.html";
+        });
+    };
+
+    // 글쓰기 로직
+    document.getElementById('btn-comm-post').onclick = async () => {
+        if (!auth.currentUser) return alert("로그인 정보가 없습니다.");
+        
+        const title = document.getElementById('comm-title').value.trim();
+        const content = document.getElementById('comm-content').value.trim();
+        
+        if(!title || !content) return alert("제목과 내용을 모두 입력하세요.");
+
+        try {
+            await addDoc(collection(db, "community"), {
+                uid: auth.currentUser.uid,
+                author: myBtag.split('#')[0], // 배틀태그 앞부분만 표시
+                title: title,
+                content: content,
+                createdAt: Date.now()
+            });
+            document.getElementById('comm-title').value = "";
+            document.getElementById('comm-content').value = "";
+            alert("글이 등록되었습니다.");
+        } catch (e) {
+            alert("등록 실패: 권한이 없습니다.");
+        }
+    };
+
+    // 실시간 목록 렌더링
+    onSnapshot(query(collection(db, "community"), orderBy("createdAt", "desc")), (snap) => {
+        const list = document.getElementById('comm-list');
+        const isAdmin = auth.currentUser && ADMIN_EMAILS.includes(auth.currentUser.email);
+
+        list.innerHTML = snap.docs.map(docSnap => {
+            const d = docSnap.data();
+            const isMine = auth.currentUser && auth.currentUser.uid === d.uid;
+            
+            return `
+                <div class="box">
+                    <div class="post-info">
+                        <span><span class="author-name">${d.author || '익명'}</span> • ${timeSince(d.createdAt)}</span>
+                        ${(isMine || isAdmin) ? `<button onclick="window.delCommPost('${docSnap.id}')" style="background:none; border:none; color:#ff3c3c; cursor:pointer; font-size:11px;">삭제</button>` : ''}
+                    </div>
+                    <h4 style="margin:5px 0 10px 0;">${d.title}</h4>
+                    <p style="font-size:14px; color:#ccc; line-height:1.5; white-space:pre-wrap;">${d.content}</p>
+                </div>`;
+        }).join('');
+    });
+
+    // 삭제 함수
+    window.delCommPost = async (id) => {
+        if(confirm("정말 삭제하시겠습니까?")) {
+            await deleteDoc(doc(db, "community", id));
+        }
+    };
+</script>
+</body>
+</html>
 
 <script type="module">
     // Firebase 설정은 index.html과 동일하게 복사해서 넣으세요
