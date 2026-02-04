@@ -344,24 +344,20 @@
     };
 
         // 1. 상태 감시 함수 수정 (테스트 계정은 인증 없이도 UI 통과)
-        onAuthStateChanged(auth, async (user) => {
+            onAuthStateChanged(auth, async (user) => {
+        const loginForm = document.getElementById('login-form');
+        const userInfo = document.getElementById('user-info');
+
         if (user) {
-            // [수정됨] 관리자 이메일(ADMIN_EMAIL) 이거나, 테스트 계정 목록에 있는 경우 '특수 계정'으로 간주
             const isSpecialAccount = (user.email === ADMIN_EMAIL) || (CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === user.email.toLowerCase()));
-            
-            // 특수 계정이 아닌데, 이메일 인증도 안 되어 있으면 로그아웃 처리
             if (!isSpecialAccount && !user.emailVerified) {
-                document.getElementById('login-form').style.display = 'flex';
-                document.getElementById('user-info').style.display = 'none';
+                loginForm.style.display = 'flex'; userInfo.style.display = 'none';
                 return; 
             }
-
-            // 통과! (로그인 UI 숨김, 정보 표시)
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('user-info').style.display = 'block';
+            loginForm.style.display = 'none'; userInfo.style.display = 'block';
             loadMyProfile(user.uid);
 
-            // ... (이후 onSnapshot 코드는 그대로 두시면 됩니다)
+            // 실시간 알림 구독 (로그인 시에만)
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
                 lastMatchSnap = snap;
                 const newSentSet = new Set();
@@ -372,17 +368,19 @@
                 if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
                 renderList(); renderNotiUI(); 
             });
-            onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
-                currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderList(); renderEvalList();
-            });
-
         } else {
-            document.getElementById('login-form').style.display = 'flex';
-            document.getElementById('user-info').style.display = 'none';
-            mySentRequests = new Set(); currentPosts = []; renderList();
+            // 비로그인 상태 UI
+            loginForm.style.display = 'flex'; userInfo.style.display = 'none';
+            mySentRequests = new Set(); lastMatchSnap = null;
         }
+
+        // [중요] 로그인 여부와 관계없이 파티 목록은 항상 구독 (이 위치로 이동)
+        onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
+            currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
+            renderList(); renderEvalList();
+        });
     });
+
 
 
     // 2. 로그인 버튼 클릭 로직 (가독성 개선 및 명확한 흐름)
@@ -445,10 +443,16 @@
         alert("모집 시작!");
     };
 
-    window.openRequestModal = (uid, btag, postId) => {
-        if(uid === auth.currentUser?.uid) return alert("자신의 파티에는 신청할 수 없습니다.");
-        targetData = {uid, btag, postId}; document.getElementById('request-modal').style.display = 'flex';
+        window.openRequestModal = (uid, btag, postId) => {
+        if (!auth.currentUser) {
+            alert("로그인이 필요한 서비스입니다.");
+            return;
+        }
+        if (uid === auth.currentUser.uid) return alert("자신의 파티에는 신청할 수 없습니다.");
+        targetData = {uid, btag, postId}; 
+        document.getElementById('request-modal').style.display = 'flex';
     };
+
 
     document.getElementById('btn-confirm-send').onclick = async () => {
         if(!auth.currentUser || !targetData) return;
