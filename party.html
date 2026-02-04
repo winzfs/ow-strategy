@@ -292,7 +292,8 @@
     };
 
     // 파티 목록 및 상호 평가 리스너
-    onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), async (snap) => {
+        // 파티 목록 및 상호 평가 리스너 (강력한 버전)
+    onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
         currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()})); 
         window.renderList(); 
 
@@ -302,44 +303,72 @@
 
         const myUid = auth.currentUser.uid;
 
-        // 내가 참여 중인(방장이거나 멤버인) 모든 파티를 찾음
-        const myParties = currentPosts.filter(p => 
-            p.uid === myUid || 
-            (p.members && p.members.some(m => m.uid === myUid))
-        );
+        // 1. 내가 관련된 파티를 하나씩 루프 돌림
+        currentPosts.forEach(p => {
+            const isOwner = p.uid === myUid;
+            const isMember = p.members && p.members.some(m => m.uid === myUid);
 
-        myParties.forEach(p => {
-            // 1. 방장과 모든 멤버를 하나의 리스트로 통합
-            let allParticipants = [];
-            allParticipants.push({ uid: p.uid, btag: p.btag, pos: '방장' }); // 방장 추가
-            if (p.members) allParticipants = [...allParticipants, ...p.members]; // 멤버들 추가
-
-            // 2. '나'를 제외한 다른 모든 사람들을 추출 (중복 제거 포함)
-            const others = allParticipants.filter((m, index, self) => 
-                m.uid !== myUid && 
-                self.findIndex(t => t.uid === m.uid) === index
-            );
-
-            // 3. 다른 사람이 한 명이라도 있다면 UI 생성
-            if(others.length > 0) {
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'box';
-                groupDiv.style.border = "1px solid var(--accent)";
+            // 내가 이 파티의 일원(방장 혹은 멤버)일 때만 진행
+            if (isOwner || isMember) {
+                let allParticipants = [];
                 
-                // 타겟 이름들 생성 (B가 보면 A와 C가 나옴)
-                let membersHtml = others.map(m => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:8px; background:#000; border-radius:5px;">
-                        <span style="font-size:12px;">${m.btag ? m.btag.split('#')[0] : '유저'}#**** <small style="color:#888;">(${m.pos})</small></span>
-                        <button class="btn-sub" style="background:var(--accent); color:black; font-size:10px;" 
-                            onclick="openRateModal('${p.id}', 'group_rate', '${m.uid}')">평가하기</button>
-                    </div>
-                `).join('');
+                // 방장 추가 (방장의 btag가 없을 경우 대비)
+                allParticipants.push({ 
+                    uid: p.uid, 
+                    btag: p.btag || "알수없음#0000", 
+                    pos: '방장' 
+                });
 
-                groupDiv.innerHTML = `<div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티원 상호 평가 (${p.pos} 파티)</div>${membersHtml}`;
-                evalList.appendChild(groupDiv);
+                // 멤버들 추가
+                if (p.members && Array.isArray(p.members)) {
+                    p.members.forEach(m => {
+                        allParticipants.push({
+                            uid: m.uid,
+                            btag: m.btag || "유저#0000",
+                            pos: m.pos || "멤버"
+                        });
+                    });
+                }
+
+                // 2. 중복 제거 및 '나' 제외
+                const uniqueOthers = [];
+                const seenUids = new Set();
+                seenUids.add(myUid); // 나 자신은 미리 차단
+
+                allParticipants.forEach(person => {
+                    if (!seenUids.has(person.uid)) {
+                        seenUids.add(person.uid);
+                        uniqueOthers.push(person);
+                    }
+                });
+
+                // 3. 나 말고 다른 사람이 있다면 UI 생성
+                if (uniqueOthers.length > 0) {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'box';
+                    groupDiv.style.border = "1px solid var(--accent)";
+                    groupDiv.style.marginBottom = "15px";
+                    
+                    let membersHtml = uniqueOthers.map(m => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:10px; background:#000; border-radius:8px; border:1px solid #222;">
+                            <span style="font-size:12px; font-weight:bold;">
+                                ${m.btag.split('#')[0]}#**** <small style="color:var(--accent); margin-left:5px;">(${m.pos})</small>
+                            </span>
+                            <button class="btn-sub" style="background:var(--accent); color:black; font-size:11px; font-weight:bold;" 
+                                onclick="openRateModal('${p.id}', 'group_rate', '${m.uid}')">평가하기</button>
+                        </div>
+                    `).join('');
+
+                    groupDiv.innerHTML = `
+                        <div style="font-size:11px; color:var(--accent); font-weight:bold; letter-spacing:1px;">🤝 상호 평가 (${p.pos} 파티)</div>
+                        ${membersHtml}
+                    `;
+                    evalList.appendChild(groupDiv);
+                }
             }
         });
     });
+
 
 
 
