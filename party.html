@@ -304,41 +304,53 @@
         }
     });
 
-        document.getElementById('btn-login').onclick = async () => {
-        const e = document.getElementById('login-email').value; 
-        const p = document.getElementById('login-password').value;
+            document.getElementById('btn-login').onclick = async () => {
+        const e = document.getElementById('login-email').value.trim(); 
+        const p = document.getElementById('login-password').value.trim();
         
         if(!e || !p) return alert("이메일과 비밀번호를 입력해주세요.");
 
+        // config.js에서 테스트 계정 여부 확인 (대소문자 구분 없이)
+        const isTestAccount = CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === e.toLowerCase());
+
         try {
+            // 1. 로그인 시도
             const userCredential = await signInWithEmailAndPassword(auth, e, p);
             const user = userCredential.user;
 
-            // [추가된 로직] config.js의 테스트 계정 리스트에 포함되어 있는지 확인
-            const isTestAccount = CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email === user.email);
-
-            // 테스트 계정이 아니고, 메일 인증도 안 된 경우에만 차단
+            // 테스트 계정이 아니고 메일 인증도 안 된 경우
             if (!isTestAccount && !user.emailVerified) {
                 alert("이메일 인증이 필요합니다! 메일함을 확인해주세요.");
                 await sendEmailVerification(user); 
                 await signOut(auth);
             } else { 
                 alert(isTestAccount ? "테스트 계정으로 접속했습니다!" : "환영합니다!"); 
+                location.reload(); // 상태 반영을 위한 새로고침
             }
         } catch (err) {
-            // 가입 로직 (기존과 동일)
+            // 2. 계정이 없는 경우 자동 가입 진행
             if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
                 try {
-                    const newUser = await createUserWithEmailAndPassword(auth, e, p);
-                    await sendEmailVerification(newUser.user);
-                    alert("가입 성공! 메일 인증 후 다시 로그인해주세요."); 
-                    await signOut(auth);
-                } catch (ce) { alert("가입 오류: " + ce.message); }
+                    const newUserCredential = await createUserWithEmailAndPassword(auth, e, p);
+                    const newUser = newUserCredential.user;
+                    
+                    if (isTestAccount) {
+                        alert("테스트 계정이 생성되었습니다! 즉시 이용 가능합니다.");
+                        location.reload();
+                    } else {
+                        await sendEmailVerification(newUser);
+                        alert("가입 성공! 메일 인증 후 다시 로그인해주세요."); 
+                        await signOut(auth);
+                    }
+                } catch (ce) { 
+                    alert("가입/로그인 오류: " + ce.message); 
+                }
             } else { 
-                alert("로그인 오류: " + err.message); 
+                alert("오류: " + err.message); 
             }
         }
     };
+
 
 
     document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
