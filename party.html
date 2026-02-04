@@ -168,23 +168,7 @@
         }
     };
 
-    // 파티 리스트 렌더링
-    window.renderList = async () => {
-        const listDiv = document.getElementById('party-list');
-        const fPos = document.getElementById('filter-pos').value;
-        const fTier = document.getElementById('filter-tier').value;
-        const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
-
-        const filtered = currentPosts.filter(p => (fPos === 'all' || p.pos === fPos) && (fTier === 'all' || p.tier === fTier));
-        
-        listDiv.innerHTML = "";
-        for (const p of filtered) {
-            const isMine = auth.currentUser?.uid === p.uid;
-            const count = (p.members?.length || 0) + 1;
-            const isFull = count >= (p.maxp || 5);
-            const isSent = mySentRequests.has(p.id);
-
-          // 상호평가 리스트를 수동으로 그리는 함수
+         // 상호평가 리스트를 수동으로 그리는 함수
 window.renderEvalList = () => {
     const evalList = document.getElementById('group-eval-list');
     if(!evalList || !auth.currentUser) return;
@@ -211,6 +195,24 @@ window.renderEvalList = () => {
     });
     evalList.innerHTML = html;
 };
+    
+    // 파티 리스트 렌더링
+    window.renderList = async () => {
+        const listDiv = document.getElementById('party-list');
+        const fPos = document.getElementById('filter-pos').value;
+        const fTier = document.getElementById('filter-tier').value;
+        const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+
+        const filtered = currentPosts.filter(p => (fPos === 'all' || p.pos === fPos) && (fTier === 'all' || p.tier === fTier));
+        
+        listDiv.innerHTML = "";
+        for (const p of filtered) {
+            const isMine = auth.currentUser?.uid === p.uid;
+            const count = (p.members?.length || 0) + 1;
+            const isFull = count >= (p.maxp || 5);
+            const isSent = mySentRequests.has(p.id);
+
+ 
   
 
             // 유저 평점 가져오기
@@ -246,34 +248,7 @@ onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap
     currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
     window.renderList();
     window.renderEvalList(); // 데이터를 새로 받을 때마다 평가 리스트도 갱신
-});
 
-
-        const evalList = document.getElementById('group-eval-list');
-        if(!evalList || !auth.currentUser) return;
-        const myUid = auth.currentUser.uid;
-        let html = "";
-
-        currentPosts.forEach(p => {
-            const isOwner = p.uid === myUid;
-            const isMember = p.members?.some(m => m.uid === myUid);
-            if (isOwner || isMember) {
-                let targets = [];
-                if(!isOwner) targets.push({uid: p.uid, btag: p.btag, pos: "방장"});
-                if(p.members) p.members.forEach(m => { if(m.uid !== myUid) targets.push({...m, pos: "팀원"}); });
-
-                if(targets.length > 0) {
-                    let mHtml = targets.map(t => `
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#000; border-radius:8px; margin-top:5px; border:1px solid #333;">
-                            <span style="font-size:12px;"><b>${t.btag.split('#')[0]}</b> <small style="color:#888;">(${t.pos})</small></span>
-                            <button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRateModal('${p.id}', 'group', '${t.uid}')">평가</button>
-                        </div>`).join('');
-                    html += `<div class="box" style="border:1px solid var(--accent);"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">🤝 파티원 상호 평가 (${p.pos})</div>${mHtml}</div>`;
-                }
-            }
-        });
-        evalList.innerHTML = html;
-    });
 
     // 인증 및 알림 리스너 (이 블록 전체를 교체하세요)
     onAuthStateChanged(auth, async (user) => {
