@@ -230,11 +230,20 @@
             const count = (p.members?.length || 0) + 1;
             const isFull = count >= p.maxp;
             const isMine = auth.currentUser?.uid === p.uid;
-            
-            let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
-            if(isMine) btn = `<button class="btn-danger" onclick="delPost('${p.id}')">종료</button>`;
-            else if(isFull) btn = `<button class="btn-sub" style="opacity:0.5;">마감</button>`;
-            else if(mySentRequests.has(p.id)) btn = `<button class="btn-sub" style="opacity:0.5;">대기</button>`;
+            // 관리자인지 확인하는 변수 추가
+const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+
+let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
+
+// 내 글이거나 관리자일 경우 버튼을 '종료'로 변경
+if(isMine || isAdmin) {
+    const btnText = isAdmin && !isMine ? "관리자 삭제" : "종료";
+    btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${btnText}</button>`;
+} else if(isFull) {
+    btn = `<button class="btn-sub" style="opacity:0.5;">마감</button>`;
+} else if(mySentRequests.has(p.id)) {
+    btn = `<button class="btn-sub" style="opacity:0.5;">대기</button>`;
+}
 
             listDiv.innerHTML += `
                 <div class="box">
