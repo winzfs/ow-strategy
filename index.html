@@ -228,6 +228,24 @@
     let targetData = null; 
     let rateTargetInfo = null;
 
+     const ICON_URLS = {
+    // 포지션 아이콘 경로
+    '탱커': './img/tank.png',
+    '딜러': './img/dps.png',
+    '지원': './img/sup.png',
+    
+    // 티어 아이콘 경로
+    '배치': './img/u.png',
+    '브론즈': './img/b.webp',
+    '실버': './img/s.webp',
+    '골드': './img/g.webp',
+    '플래티넘': './img/p.webp',
+    '다이아몬드': './img/d.webp',
+    '마스터': './img/m.webp',
+    '그랜드마스터': './img/gm.webp',
+    '챔피언': './img/c.webp'
+};
+
     const timeSince = (date) => {
         const seconds = Math.floor((Date.now() - date) / 1000);
         if (seconds < 60) return "방금 전";
@@ -329,7 +347,11 @@
             if (isMine || isAdmin) btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "관리자 삭제" : "종료"}</button>`;
             else if (isSent) btn = `<button class="btn-sub" style="background:#444; color:#888; cursor:default;" disabled>신청됨</button>`;
             else if (isFull) btn = `<button class="btn-sub" style="opacity:0.5;" disabled>마감</button>`;
-            html += `<div class="box"><div style="display:flex; justify-content:space-between;"><div><b>${p.btag ? p.btag.split('#')[0] : '익명'}</b> 
+          
+          const posImg = `<img src="${ICON_URLS[p.pos]}" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;">`;
+        const tierImg = `<img src="${ICON_URLS[p.tier]}" style="width:24px; height:24px; vertical-align:middle; margin-right:2px;">`;
+             
+             html += `<div class="box"><div style="display:flex; justify-content:space-between;"><div><b>${p.btag ? p.btag.split('#')[0] : '익명'}</b> 
                 <span style="color:var(--accent); font-size:11px; margin-left:5px; font-weight:bold;">${rateText}</span>
                 <small style="color:#666; margin-left:8px;">${timeSince(p.createdAt)}</small>
                 <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; margin-left:8px;">● ${count}/${p.maxp}</span><br>
