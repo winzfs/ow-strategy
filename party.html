@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - Full Version</title>
+    <title>Overwatch Hub - Full Optimized</title>
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
@@ -25,6 +25,10 @@
         .stars { color: #444; font-size: 24px; cursor: pointer; text-align: center; margin: 10px 0; }
         .stars span.active { color: var(--accent); }
         .pos-group { border: 1px solid #333; padding: 12px; border-radius: 10px; margin-bottom: 10px; background: #1e1e1e; }
+        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-right: 4px; font-weight: bold; }
+        .badge-tank { background: var(--tank); color: white; }
+        .badge-dps { background: var(--dps); color: white; }
+        .badge-sup { background: var(--sup); color: black; }
     </style>
 </head>
 <body>
@@ -110,8 +114,31 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="request-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;"><h3>파티 신청</h3><textarea id="request-msg" placeholder="상대에게 보낼 메시지" rows="4"></textarea><button class="btn-main" id="btn-confirm-send">신청하기</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
-<div class="modal-overlay" id="rate-modal"><div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px; text-align:center;"><h3>팀원 평가</h3><div class="stars" id="rate-stars"><span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span></div><button class="btn-main" id="btn-confirm-rate">평가 완료</button><button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button></div></div>
+<div class="modal-overlay" id="request-modal">
+    <div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;">
+        <h3>파티 신청</h3>
+        <label style="font-size:11px; color:#888;">내 플레이 포지션</label>
+        <select id="request-pos"><option value="탱커">🛡️ 탱커</option><option value="딜러">⚔️ 딜러</option><option value="지원">💉 지원</option></select>
+        <label style="font-size:11px; color:#888;">내 티어</label>
+        <select id="request-tier">
+            <option value="배치">배치</option><option value="브론즈">브론즈</option><option value="실버">실버</option><option value="골드">골드</option>
+            <option value="플래티넘">플래티넘</option><option value="다이아몬드">다이아몬드</option><option value="마스터">마스터</option><option value="그랜드마스터">그랜드마스터</option>
+        </select>
+        <textarea id="request-msg" placeholder="상대에게 보낼 메시지" rows="3"></textarea>
+        <button class="btn-main" id="btn-confirm-send">신청하기</button>
+        <button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="rate-modal">
+    <div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px; text-align:center;">
+        <h3>팀원 평가</h3>
+        <div class="stars" id="rate-stars"><span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span></div>
+        <button class="btn-main" id="btn-confirm-rate">평가 완료</button>
+        <button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button>
+    </div>
+</div>
+
 <div class="modal-overlay" id="edit-modal">
     <div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;">
         <h3>수정</h3>
@@ -141,6 +168,13 @@
         return Math.floor(mins / 60) + "시간 전";
     };
 
+    const getPosBadge = (pos) => {
+        if(pos === '탱커') return '<span class="badge badge-tank">🛡️ 탱커</span>';
+        if(pos === '딜러') return '<span class="badge badge-dps">⚔️ 딜러</span>';
+        if(pos === '지원') return '<span class="badge badge-sup">💉 지원</span>';
+        return `<span class="badge" style="background:#555;">${pos}</span>`;
+    };
+
     window.closeModal = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
 
     window.showPage = (id) => {
@@ -164,7 +198,6 @@
         }
     };
 
-    // 상호평가 리스트 (삭제된 포스트도 데이터가 있으면 표시)
     window.renderEvalList = () => {
         const evalList = document.getElementById('group-eval-list');
         if(!evalList || !auth.currentUser) return;
@@ -176,18 +209,21 @@
             const isMember = p.members?.some(m => m.uid === myUid);
             if (isOwner || isMember) {
                 let targets = [];
-                if(!isOwner) targets.push({uid: p.uid, btag: p.btag, pos: "방장"});
-                if(p.members) p.members.forEach(m => { if(m.uid !== myUid) targets.push({...m, pos: m.pos || "팀원"}); });
+                if(!isOwner) targets.push({uid: p.uid, btag: p.btag, pos: p.pos, tier: p.tier});
+                if(p.members) p.members.forEach(m => { if(m.uid !== myUid) targets.push(m); });
 
                 if(targets.length > 0) {
                     let mHtml = targets.map(t => `
                         <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#000; border-radius:8px; margin-top:5px; border:1px solid #333;">
-                            <span style="font-size:12px;"><b>${t.btag.split('#')[0]}</b> <small style="color:#888;">(${t.pos})</small></span>
+                            <div style="font-size:12px;">
+                                ${getPosBadge(t.pos)} <b>${t.btag.split('#')[0]}</b>
+                                <div style="font-size:10px; color:#888; margin-top:2px;">${t.tier || ''}</div>
+                            </div>
                             <button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRateModal('${p.id}', 'group', '${t.uid}')">평가</button>
                         </div>`).join('');
                     const boxStyle = p.deleted ? "border:1px solid #444; opacity:0.8;" : "border:1px solid var(--accent);";
                     const title = p.deleted ? "🏁 종료된 파티 상호 평가" : "🤝 파티원 상호 평가";
-                    html += `<div class="box" style="${boxStyle}"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">${title} (${p.pos})</div>${mHtml}</div>`;
+                    html += `<div class="box" style="${boxStyle}"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">${title}</div>${mHtml}</div>`;
                 }
             }
         });
@@ -200,7 +236,6 @@
         const fTier = document.getElementById('filter-tier').value;
         const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
 
-        // deleted: true 인 포스트는 목록에서 숨김
         const filtered = currentPosts.filter(p => !p.deleted && (fPos === 'all' || p.pos === fPos) && (fTier === 'all' || p.tier === fTier));
         
         listDiv.innerHTML = "";
@@ -218,7 +253,7 @@
             if(isMine || isAdmin) btn = `<button class="btn-sub" onclick="openEditModal('${p.id}')">수정</button> <button class="btn-danger" onclick="delPost('${p.id}')">삭제</button>`;
             else if(isFull) btn = `<button class="btn-sub" style="opacity:0.5; cursor:default;">마감</button>`;
             else if(isSent) btn = `<button class="btn-sub" style="opacity:0.5; cursor:default;">대기중</button>`;
-            else btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}','${p.pos}')">신청</button>`;
+            else btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
 
             const box = document.createElement('div');
             box.className = 'box';
@@ -237,14 +272,12 @@
         }
     };
 
-    // 파티 데이터 실시간 리스너
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
         currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
         window.renderList();
         window.renderEvalList(); 
     });
 
-    // 인증 리스너 및 알림 제어
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             document.getElementById('login-form').style.display = 'none';
@@ -264,7 +297,16 @@
                         const isToMe = m.toUid === myUid;
                         if(m.status === 'pending') {
                             if(isToMe || isAdmin) {
-                                notiHtml += `<div class="box" style="border-left:5px solid var(--accent);">📩 <b>${m.fromBtag}</b> 신청 도착!<br><small>${m.message}</small><div style="display:flex; gap:5px; margin-top:10px;"><button class="btn-main" style="margin:0; flex:1;" onclick="acceptMatch('${ds.id}')">수락</button><button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button></div></div>`;
+                                notiHtml += `
+                                    <div class="box" style="border-left:5px solid var(--accent);">
+                                        <b>${m.fromBtag}</b> 신청 도착!<br>
+                                        <div style="margin:5px 0;">${getPosBadge(m.reqPos)} <span style="font-size:11px; color:#888;">티어: ${m.reqTier}</span></div>
+                                        <small>${m.message}</small>
+                                        <div style="display:flex; gap:5px; margin-top:10px;">
+                                            <button class="btn-main" style="margin:0; flex:1;" onclick="acceptMatch('${ds.id}')">수락</button>
+                                            <button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button>
+                                        </div>
+                                    </div>`;
                             } else {
                                 notiHtml += `<div class="box">⌛ <b>${m.toBtag ? m.toBtag.split('#')[0] : '방장'}</b>님 신청 대기 중...</div>`;
                             }
@@ -290,7 +332,6 @@
         }
     });
 
-    // 버튼 동작들
     document.getElementById('btn-login').onclick = async () => {
         const email = document.getElementById('login-email').value.trim();
         const pw = document.getElementById('login-password').value;
@@ -316,15 +357,17 @@
         document.getElementById('post-desc').value = ""; alert("등록완료");
     };
 
-    window.openRequestModal = (uid, btag, postId, pos) => {
-        targetData = {uid, btag, postId, pos};
+    window.openRequestModal = (uid, btag, postId) => {
+        targetData = {uid, btag, postId};
         document.getElementById('request-modal').style.display = 'flex';
     };
 
     document.getElementById('btn-confirm-send').onclick = async () => {
         const u = await getDoc(doc(db, "users", auth.currentUser.uid));
         await addDoc(collection(db, "matches"), {
-            fromUid: auth.currentUser.uid, fromBtag: u.data()?.btag || "익명#0000", fromPos: targetData.pos,
+            fromUid: auth.currentUser.uid, fromBtag: u.data()?.btag || "익명#0000",
+            reqPos: document.getElementById('request-pos').value,
+            reqTier: document.getElementById('request-tier').value,
             toUid: targetData.uid, toBtag: targetData.btag, postId: targetData.postId,
             message: document.getElementById('request-msg').value, status: "pending", createdAt: Date.now()
         });
@@ -338,7 +381,7 @@
         const pRef = doc(db, "parties", m.postId);
         const p = (await getDoc(pRef)).data();
         const members = p.members || [];
-        members.push({uid: m.fromUid, btag: m.fromBtag, pos: m.fromPos});
+        members.push({uid: m.fromUid, btag: m.fromBtag, pos: m.reqPos, tier: m.reqTier});
         await updateDoc(pRef, { members });
         alert("수락됨!");
     };
@@ -373,7 +416,6 @@
         closeModal();
     };
 
-    // [중요 수정] 실제 삭제 대신 deleted 필드만 업데이트하여 상호평가 데이터 유지
     window.delPost = async (id) => { 
         if(confirm("모집을 종료하시겠습니까? 종료 후에도 팀원 평가 내역은 유지됩니다.")) {
             await updateDoc(doc(db, "parties", id), { deleted: true }); 
