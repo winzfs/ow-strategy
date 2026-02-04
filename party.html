@@ -177,6 +177,7 @@
     };
 
     // 상호평가 리스트 렌더링
+        // 상호평가 리스트 렌더링
     window.renderEvalList = () => {
         const list = document.getElementById('group-eval-list');
         if(!auth.currentUser) return;
@@ -190,20 +191,30 @@
                 if(p.members) p.members.forEach(m => { if(m.uid !== auth.currentUser.uid) targets.push(m); });
 
                 if(targets.length > 0) {
-                    let mHtml = targets.map(t => `
+                    let mHtml = targets.map(t => {
+                        // 현재 내가 이 사람을 평가했는지 확인
+                        const evalKey = `eval_${auth.currentUser.uid}_to_${t.uid}`;
+                        const savedScore = p.evals ? p.evals[evalKey] : null;
+
+                        return `
                         <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#000; border-radius:8px; margin-top:5px; border:1px solid #333;">
                             <div style="font-size:12px;">
                                 ${getPosBadge(t.pos)} <b>${t.btag.split('#')[0]}</b>
                                 <div style="font-size:10px; color:#888;">${t.tier} ${t.tierNum || ''}</div>
                             </div>
-                            <button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRateModal('${t.uid}')">평가</button>
-                        </div>`).join('');
+                            ${savedScore 
+                                ? `<span style="color:var(--accent); font-size:12px; font-weight:bold;">평가완료 (★${savedScore})</span>`
+                                : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRateModal('${t.uid}', '${p.id}')">평가</button>`
+                            }
+                        </div>`;
+                    }).join('');
                     html += `<div class="box" style="border:1px solid var(--accent);"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">🤝 파티 멤버 평가</div>${mHtml}</div>`;
                 }
             }
         });
         list.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">참여 중인 파티가 없습니다.</div>';
     };
+
 
     // 파티 리스트 렌더링
     window.renderList = async () => {
@@ -335,22 +346,36 @@
         await updateDoc(pRef, { members });
     };
 
-    window.openRateModal = (uid) => {
-        rateTargetInfo = {uid};
+        window.openRateModal = (uid, postId) => {
+        rateTargetInfo = {uid, postId}; // postId 추가 저장
         document.querySelectorAll('#rate-stars span').forEach(s => s.classList.remove('active'));
         document.getElementById('rate-modal').style.display = 'flex';
     };
 
-    document.getElementById('btn-confirm-rate').onclick = async () => {
+
+        document.getElementById('btn-confirm-rate').onclick = async () => {
         const score = document.querySelectorAll('#rate-stars span.active').length;
         if(score === 0) return alert("별점을 선택해주세요.");
-        const uRef = doc(db, "users", rateTargetInfo.uid);
+        
+        const { uid, postId } = rateTargetInfo;
+        
+        // 1. 유저 전체 평점 데이터 업데이트
+        const uRef = doc(db, "users", uid);
         const uSnap = await getDoc(uRef);
         let count = 0, total = 0;
         if(uSnap.exists()){ count = uSnap.data().rateCount || 0; total = uSnap.data().rateTotal || 0; }
         await setDoc(uRef, { rateCount: count + 1, rateTotal: total + score }, { merge: true });
-        alert("평가 완료!"); closeModal();
+
+        // 2. 해당 파티 글에 내 평가 기록 남기기 (중복 표시 방지용)
+        const pRef = doc(db, "parties", postId);
+        const evalKey = `eval_${auth.currentUser.uid}_to_${uid}`;
+        await setDoc(pRef, { 
+            evals: { [evalKey]: score } 
+        }, { merge: true });
+
+        alert("평가가 반영되었습니다!"); closeModal();
     };
+
 
     document.getElementById('btn-save-profile').onclick = async () => {
         const uid = auth.currentUser.uid;
