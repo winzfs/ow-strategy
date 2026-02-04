@@ -313,32 +313,34 @@
 
 
     // 이벤트 리스너 및 초기화
-        // 이벤트 리스너 및 초기화 (이 부분을 찾아서 교체하세요)
-        onAuthStateChanged(auth, async (user) => {
+            // [수정] onAuthStateChanged 내부의 리스너 부분
+    onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('user-info').style.display = 'block';
             loadMyProfile(user.uid);
 
-            // [수정된 부분] 매칭 정보 실시간 감시
+            // 매칭 감시 리스너
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
                 lastMatchSnap = snap;
                 
-                // 1. 내가 보낸 신청 목록을 postId 기반으로 재생성
-                // .filter()에서 데이터가 확실히 있는지 확인하는 로직 추가
-                const sentIds = snap.docs
-                    .filter(d => d.data().fromUid === user.uid)
-                    .map(d => d.data().postId);
-                
-                mySentRequests = new Set(sentIds);
+                // 1. 내 신청 목록 업데이트 (postId를 담은 새로운 Set 생성)
+                const newSentSet = new Set();
+                snap.docs.forEach(doc => {
+                    const data = doc.data();
+                    if (data.fromUid === user.uid) {
+                        newSentSet.add(data.postId);
+                    }
+                });
+                mySentRequests = newSentSet; // 전역 변수에 할당
 
-                // 2. 새로운 알림(NEW) 표시 처리
+                // 2. 알림창 NEW 태그 업데이트
                 const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
                 const newTag = document.getElementById('menu-new-tag');
                 if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
 
-                // 3. 화면 갱신 (리스트의 '신청됨' 버튼과 알림창 UI 업데이트)
-                console.log("매칭 데이터 갱신됨, 내 신청 개수:", mySentRequests.size);
+                // 3. UI 갱신 (반드시 Set이 업데이트 된 후 실행)
+                console.log("실시간 데이터 수신: 신청한 파티 ID들:", Array.from(mySentRequests));
                 renderList(); 
                 renderNotiUI();
             });
@@ -346,7 +348,7 @@
             document.getElementById('login-form').style.display = 'flex';
             document.getElementById('user-info').style.display = 'none';
             mySentRequests = new Set();
-            renderList(); // 로그아웃 시 버튼 상태 초기화
+            renderList();
         }
     });
 
