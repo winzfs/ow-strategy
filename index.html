@@ -430,18 +430,36 @@
 
     document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
 
-    document.getElementById('btn-post').onclick = async () => {
-        if(!auth.currentUser) return alert("로그인 필요");
+        document.getElementById('btn-post').onclick = async () => {
+        if(!auth.currentUser) return alert("로그인이 필요한 서비스입니다.");
+
+        // [추가] 배틀태그 입력 여부 확인
+        const btagInput = document.getElementById('post-btag').value.trim();
+        if (!btagInput || !btagInput.includes('#')) {
+            alert("정확한 배틀태그(예: 닉네임#1234)를 입력해주세요!");
+            document.getElementById('post-btag').focus();
+            return;
+        }
+
         const userSnap = await getDoc(doc(db, "users", auth.currentUser.uid));
         let ownerRate = (userSnap.exists() && userSnap.data().rateCount > 0) ? (userSnap.data().rateTotal / userSnap.data().rateCount).toFixed(1) : "신규";
+        
         await addDoc(collection(db, "parties"), {
-            btag: document.getElementById('post-btag').value, uid: auth.currentUser.uid, ownerRate: ownerRate,
-            pos: document.getElementById('post-main-pos').value, tier: document.getElementById('post-tier').value,
-            tierNum: document.getElementById('post-tier-num').value, maxp: parseInt(document.getElementById('post-maxp').value),
-            desc: document.getElementById('post-desc').value, createdAt: Date.now(), members: [], deleted: false
+            btag: btagInput, // 입력받은 배틀태그 저장
+            uid: auth.currentUser.uid, 
+            ownerRate: ownerRate,
+            pos: document.getElementById('post-main-pos').value, 
+            tier: document.getElementById('post-tier').value,
+            tierNum: document.getElementById('post-tier-num').value, 
+            maxp: parseInt(document.getElementById('post-maxp').value),
+            desc: document.getElementById('post-desc').value, 
+            createdAt: Date.now(), 
+            members: [], 
+            deleted: false
         });
         alert("모집 시작!");
     };
+
 
         window.openRequestModal = (uid, btag, postId) => {
         if (!auth.currentUser) {
