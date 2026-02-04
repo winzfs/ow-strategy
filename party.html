@@ -178,6 +178,7 @@
 
     // 상호평가 리스트 렌더링
     // 상호평가 리스트 렌더링
+        // 상호평가 리스트 렌더링
     window.renderEvalList = () => {
         const list = document.getElementById('group-eval-list');
         if(!auth.currentUser) return;
@@ -201,7 +202,7 @@
                     });
                 }
                 
-                // 2. 내가 방장이든 멤버든, 나를 제외한 다른 멤버들을 평가 대상으로 추가
+                // 2. 나를 제외한 다른 멤버들을 평가 대상으로 추가
                 if(p.members) {
                     p.members.forEach(m => { 
                         if(m.uid !== auth.currentUser.uid) targets.push(m); 
@@ -219,11 +220,12 @@
                                 ${getPosBadge(t.pos)} <b>${t.btag.split('#')[0]}</b>
                                 <div style="font-size:10px; color:#888;">${t.tier} ${t.tierNum || ''}</div>
                             </div>
-${savedScore 
-    ? `<span style="color:var(--accent); font-size:12px; font-weight:bold;">평가완료 (★${savedScore})</span>`
-    : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRateModal('${t.uid}', '${p.id}')">평가</button>`
-}
-
+                            <div>
+                                ${savedScore 
+                                    ? `<span style="color:var(--accent); font-size:12px; font-weight:bold;">평가완료 (★${savedScore})</span>`
+                                    : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRateModal('${t.uid}', '${p.id}')">평가</button>`
+                                }
+                            </div>
                         </div>`;
                     }).join('');
                     html += `<div class="box" style="border:1px solid var(--accent);"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">🤝 파티 멤버 평가 (${p.btag.split('#')[0]}의 파티)</div>${mHtml}</div>`;
