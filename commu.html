@@ -27,8 +27,7 @@
         <div style="color:var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px;">커뮤니티</div>
     </div>
     <div id="auth-ui">
-        <button id="btn-logout" class="btn-sub">로그아웃</button>
-    </div>
+        </div>
 </nav>
 
 <div class="container">
@@ -73,21 +72,27 @@
         return Math.floor(hours / 24) + "일 전";
     };
 
-    // 로그인 상태 감시 및 초기화
+    // 로그인 상태 감시
     onAuthStateChanged(auth, async (user) => {
+        const authUI = document.getElementById('auth-ui');
         if (user) {
             const userSnap = await getDoc(doc(db, "users", user.uid));
             if (userSnap.exists()) {
                 myBtag = userSnap.data().btag || "익명";
             }
-            startListing(); // 로그인 성공 시에만 목록 로드
+            authUI.innerHTML = `<button id="btn-logout" class="btn-sub">로그아웃</button>`;
+            document.getElementById('btn-logout').onclick = () => {
+                signOut(auth).then(() => location.reload());
+            };
         } else {
-            alert("로그인이 필요한 서비스입니다.");
-            location.href = "index.html"; // 로그인 안 됐으면 메인으로 튕겨내기
+            myBtag = "익명";
+            authUI.innerHTML = `<button onclick="location.href='index.html'" class="btn-sub">로그인</button>`;
         }
+        // 로그인 여부와 관계없이 목록은 항상 불러옴
+        startListing();
     });
 
-    // 실시간 게시글 목록 불러오기 함수
+    // 실시간 목록 렌더링
     function startListing() {
         if (unsubscribe) unsubscribe();
         
@@ -95,13 +100,11 @@
         unsubscribe = onSnapshot(q, (snap) => {
             const list = document.getElementById('comm-list');
             const currentUser = auth.currentUser;
-            if (!currentUser) return;
-
-            const isAdmin = ADMIN_EMAILS.includes(currentUser.email);
+            const isAdmin = currentUser && ADMIN_EMAILS.includes(currentUser.email);
 
             list.innerHTML = snap.docs.map(docSnap => {
                 const d = docSnap.data();
-                const isMine = currentUser.uid === d.uid;
+                const isMine = currentUser && currentUser.uid === d.uid;
                 
                 return `
                     <div class="box">
@@ -116,17 +119,14 @@
         });
     }
 
-    // 로그아웃
-    document.getElementById('btn-logout').onclick = () => {
-        signOut(auth).then(() => {
-            location.href = "index.html";
-        });
-    };
-
     // 글 등록 로직
     document.getElementById('btn-comm-post').onclick = async () => {
         const user = auth.currentUser;
-        if (!user) return alert("로그인 정보가 없습니다.");
+        if (!user) {
+            alert("로그인이 필요한 서비스입니다.");
+            location.href = "index.html";
+            return;
+        }
         
         const title = document.getElementById('comm-title').value.trim();
         const content = document.getElementById('comm-content').value.trim();
@@ -149,13 +149,13 @@
         }
     };
 
-    // 전역 삭제 함수
+    // 삭제 함수
     window.delCommPost = async (id) => {
         if(confirm("정말 삭제하시겠습니까?")) {
             try {
                 await deleteDoc(doc(db, "community", id));
             } catch (e) {
-                alert("삭제 실패: 권한이 없습니다.");
+                alert("삭제 권한이 없습니다.");
             }
         }
     };
