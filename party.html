@@ -364,40 +364,46 @@
 
 
         document.getElementById('btn-confirm-rate').onclick = async () => {
-        const score = document.querySelectorAll('#rate-stars span.active').length;
-        if(score === 0) return alert("별점을 선택해주세요.");
-        if(!rateTargetInfo) return alert("평가 대상 정보가 없습니다.");
+    const score = document.querySelectorAll('#rate-stars span.active').length;
+    if(score === 0) return alert("별점을 선택해주세요.");
+    if(!rateTargetInfo) return alert("평가 대상 정보가 없습니다.");
+    
+    const { uid, postId } = rateTargetInfo;
+    
+    try {
+        const uRef = doc(db, "users", uid);
+        const uSnap = await getDoc(uRef);
         
-        const { uid, postId } = rateTargetInfo;
-        
-        try {
-            // 1. 상대방 유저 점수 업데이트
-            const uRef = doc(db, "users", uid);
-            const uSnap = await getDoc(uRef);
-            let count = 0, total = 0;
-            if(uSnap.exists()){
-                const d = uSnap.data();
-                count = d.rateCount || 0;
-                total = d.rateTotal || 0;
-            }
-            // 유저 문서가 없을 수도 있으므로 setDoc merge 사용
-            await setDoc(uRef, { rateCount: count + 1, rateTotal: total + score }, { merge: true });
-
-            // 2. 해당 파티 글에 내 평가 기록 남기기
-            const pRef = doc(db, "parties", postId);
-            const evalKey = `eval_${auth.currentUser.uid}_to_${uid}`;
-            await setDoc(pRef, { 
-                evals: { [evalKey]: score } 
-            }, { merge: true });
-
-            alert("평가가 완료되었습니다!");
-            closeModal();
-            rateTargetInfo = null; // 초기화
-        } catch (err) {
-            console.error(err);
-            alert("저장 중 오류가 발생했습니다: " + err.message);
+        let count = 0, total = 0;
+        if(uSnap.exists()){
+            const d = uSnap.data();
+            count = d.rateCount || 0;
+            total = d.rateTotal || 0;
         }
-    };
+
+        // 상대방 유저 점수 업데이트 (문서가 없어도 생성하도록 setDoc merge 사용)
+        await setDoc(uRef, { 
+            rateCount: count + 1, 
+            rateTotal: total + score 
+        }, { merge: true });
+
+        // 파티 글에 내 평가 기록 추가 (해당 파티 글의 ID가 정확해야 함)
+        const pRef = doc(db, "parties", postId);
+        const evalKey = `eval_${auth.currentUser.uid}_to_${uid}`;
+        
+        await setDoc(pRef, { 
+            evals: { [evalKey]: score } 
+        }, { merge: true });
+
+        alert("평가가 완료되었습니다!");
+        closeModal();
+        rateTargetInfo = null;
+    } catch (err) {
+        console.error("평가 오류 상세:", err);
+        alert("권한 오류가 발생했습니다. Firebase 규칙을 확인해주세요.");
+    }
+};
+
 
 
     document.getElementById('btn-save-profile').onclick = async () => {
