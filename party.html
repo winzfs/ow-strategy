@@ -219,7 +219,6 @@
                                 ${getPosBadge(t.pos)} <b>${t.btag.split('#')[0]}</b>
                                 <div style="font-size:10px; color:#888;">${t.tier} ${t.tierNum || ''}</div>
                             </div>
-                            // 이 부분을 찾아서 아래 내용으로 교체하세요
 ${savedScore 
     ? `<span style="color:var(--accent); font-size:12px; font-weight:bold;">평가완료 (★${savedScore})</span>`
     : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRateModal('${t.uid}', '${p.id}')">평가</button>`
