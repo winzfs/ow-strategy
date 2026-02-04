@@ -45,6 +45,8 @@
             <input type="email" id="login-email" placeholder="이메일" style="width:110px; font-size:11px;">
             <input type="password" id="login-password" placeholder="비번" style="width:70px; font-size:11px;">
             <button id="btn-login" class="btn-sub">접속</button>
+            <button onclick="forgotPassword()" style="background:none; border:none; color:#666; font-size:11px; cursor:pointer;">비밀번호 찾기</button>
+
         </div>
         <div id="user-info" style="display:none;"><button id="btn-logout" class="btn-sub">로그아웃</button></div>
     </div>
@@ -152,6 +154,19 @@
         return `<span class="badge" style="background:${colors[pos] || '#555'}; color:${pos==='지원'?'black':'white'}">${pos}</span>`;
     };
 
+
+    window.forgotPassword = async () => {
+    const email = document.getElementById('login-email').value;
+    if(!email) return alert("이메일을 먼저 입력해주세요.");
+    try {
+        await sendPasswordResetEmail(auth, email);
+        alert("비밀번호 재설정 메일을 보냈습니다.");
+    } catch (e) { alert("오류: " + e.message); }
+};
+
+
+
+    
     window.closeModal = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
 
     window.showPage = (id) => {
@@ -371,39 +386,53 @@ window.hideEvalBox = (postId) => {
             loadMyProfile(user.uid);
 
             // 1. 매칭 데이터 감시
-            onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-                lastMatchSnap = snap;
-                const newSentSet = new Set();
-                snap.docs.forEach(doc => {
-                    const data = doc.data();
-                    if (data.fromUid === user.uid) newSentSet.add(data.postId);
-                });
-                mySentRequests = newSentSet;
+            onAuthStateChanged(auth, (user) => {
+    // [수정] user가 있고, 이메일 인증까지 완료된 경우에만 진입
+    if (user && user.emailVerified) {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('user-info').style.display = 'block';
+        loadMyProfile(user.uid);
 
-                const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
-                const newTag = document.getElementById('menu-new-tag');
-                if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
-
-                renderList(); // 매칭 상태가 바뀌면 리스트(버튼) 갱신
-                renderNotiUI(); // 알림창 갱신
+        // 1. 매칭 데이터 감시
+        onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
+            lastMatchSnap = snap;
+            const newSentSet = new Set();
+            snap.docs.forEach(doc => {
+                const data = doc.data();
+                if (data.fromUid === user.uid) newSentSet.add(data.postId);
             });
+            mySentRequests = newSentSet;
 
-            // 2. 파티 데이터 감시 (여기가 리스트 출력의 핵심)
-            onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
-                currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                console.log("파티 데이터 수신됨:", currentPosts.length); // 데이터 확인용
-                renderList(); 
-                renderEvalList();
-            });
+            const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
+            const newTag = document.getElementById('menu-new-tag');
+            if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
 
-        } else {
-            document.getElementById('login-form').style.display = 'flex';
-            document.getElementById('user-info').style.display = 'none';
-            mySentRequests = new Set();
-            currentPosts = [];
-            renderList();
+            renderList(); 
+            renderNotiUI(); 
+        });
+
+        // 2. 파티 데이터 감시
+        onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
+            currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
+            renderList(); 
+            renderEvalList();
+        });
+
+    } else {
+        // 로그아웃 상태이거나 메일 인증 전
+        document.getElementById('login-form').style.display = 'flex';
+        document.getElementById('user-info').style.display = 'none';
+        mySentRequests = new Set();
+        currentPosts = [];
+        renderList();
+        
+        // 인증 안 된 유저가 로그인 시도 시 알림 (선택 사항)
+        if (user && !user.emailVerified) {
+            console.log("이메일 인증 대기 중...");
         }
-    });
+    }
+});
+
 
 
 
