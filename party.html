@@ -166,8 +166,10 @@
     if(!email) return alert("이메일을 먼저 입력해주세요.");
     try {
         await sendPasswordResetEmail(auth, email);
-        alert("비밀번호 재설정 메일을 보냈습니다.");
-    } catch (e) { alert("오류: " + e.message); }
+        alert("비밀번호 재설정 메일을 보냈습니다. 메일함을 확인해주세요.");
+    } catch (e) { 
+        alert("오류: " + e.message); 
+    }
 };
 
 
@@ -438,7 +440,7 @@ window.hideEvalBox = (postId) => {
 
 
         // [수정된 로그인/가입 로직]
-    document.getElementById('btn-login').onclick = async () => {
+        document.getElementById('btn-login').onclick = async () => {
         const e = document.getElementById('login-email').value; 
         const p = document.getElementById('login-password').value;
         
@@ -449,21 +451,21 @@ window.hideEvalBox = (postId) => {
             const userCredential = await signInWithEmailAndPassword(auth, e, p);
             const user = userCredential.user;
 
-            // 2. 이메일 인증 여부 체크
+            // 2. 이메일 인증 체크
             if (!user.emailVerified) {
-                alert("이메일 인증이 필요합니다! 메일함을 확인해주세요. (인증 메일을 다시 보냈습니다)");
-                await sendEmailVerification(user); 
+                alert("이메일 인증이 필요합니다! 메일함(또는 스팸함)을 확인해주세요.");
+                await sendEmailVerification(user); // 인증 메일 재발송
                 await signOut(auth); // 인증 전까지는 튕겨냄
             } else {
                 alert("환영합니다!");
             }
         } catch (err) {
-            // 3. 계정이 없는 경우 신규 가입
+            // 3. 계정이 없거나 처음 가입하는 경우
             if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
                 try {
                     const newUser = await createUserWithEmailAndPassword(auth, e, p);
                     await sendEmailVerification(newUser.user);
-                    alert("가입 성공! 이메일 인증 링크를 클릭한 후 다시 로그인해주세요.");
+                    alert("가입 성공! 메일로 인증 링크를 보냈으니 클릭 후 다시 로그인해주세요.");
                     await signOut(auth);
                 } catch (createErr) {
                     alert("가입 중 오류: " + createErr.message);
@@ -473,6 +475,7 @@ window.hideEvalBox = (postId) => {
             }
         }
     };
+
 
     
     // 현재 내 프로필에서 별점 정보 가져오기 (DOM에서 읽거나 DB에서 가져옴)
