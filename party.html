@@ -24,7 +24,6 @@
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
         .stars { color: #444; font-size: 24px; cursor: pointer; text-align: center; margin: 10px 0; }
         .stars span.active { color: var(--accent); }
-        .info-label { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #333; border: 1px solid #444; margin-right: 4px; color: #eee; }
         .pos-group { border: 1px solid #333; padding: 12px; border-radius: 10px; margin-bottom: 10px; background: #1e1e1e; }
     </style>
 </head>
@@ -134,7 +133,6 @@
 
     let currentPosts = []; let mySentRequests = new Set(); let targetData = null; let rateTargetId = null; let rateTargetInfo = null; let editPostId = null;
 
-    // 공통 유틸리티
     const timeSince = (date) => {
         const seconds = Math.floor((Date.now() - date) / 1000);
         if (seconds < 60) return "방금 전";
@@ -145,13 +143,11 @@
 
     window.closeModal = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
 
-    // 페이지 전환
     window.showPage = (id) => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-tabs div').forEach(t => t.classList.remove('active'));
         document.getElementById('page-' + id).classList.add('active');
         document.getElementById('tab-' + id).classList.add('active');
-        
         if(id === 'noti') {
             document.getElementById('menu-new-tag').style.display = 'none';
             if(typeof window.refreshNotiUI === 'function') window.refreshNotiUI(); 
@@ -160,7 +156,6 @@
         if(id === 'profile' && auth.currentUser) updateAvgRating(auth.currentUser.uid);
     };
 
-    // 내 평점 업데이트
     const updateAvgRating = async (uid) => {
         const u = await getDoc(doc(db, "users", uid));
         if (u.exists() && u.data().rateCount > 0) {
@@ -169,7 +164,7 @@
         }
     };
 
-    // 상호평가 렌더링 함수
+    // 상호평가 리스트 (삭제된 포스트도 데이터가 있으면 표시)
     window.renderEvalList = () => {
         const evalList = document.getElementById('group-eval-list');
         if(!evalList || !auth.currentUser) return;
@@ -190,21 +185,23 @@
                             <span style="font-size:12px;"><b>${t.btag.split('#')[0]}</b> <small style="color:#888;">(${t.pos})</small></span>
                             <button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRateModal('${p.id}', 'group', '${t.uid}')">평가</button>
                         </div>`).join('');
-                    html += `<div class="box" style="border:1px solid var(--accent);"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">🤝 파티원 상호 평가 (${p.pos})</div>${mHtml}</div>`;
+                    const boxStyle = p.deleted ? "border:1px solid #444; opacity:0.8;" : "border:1px solid var(--accent);";
+                    const title = p.deleted ? "🏁 종료된 파티 상호 평가" : "🤝 파티원 상호 평가";
+                    html += `<div class="box" style="${boxStyle}"><div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px;">${title} (${p.pos})</div>${mHtml}</div>`;
                 }
             }
         });
-        evalList.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">참여 중인 파티가 없습니다.</div>';
+        evalList.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">평가 내역이 없습니다.</div>';
     };
     
-    // 파티 리스트 렌더링
     window.renderList = async () => {
         const listDiv = document.getElementById('party-list');
         const fPos = document.getElementById('filter-pos').value;
         const fTier = document.getElementById('filter-tier').value;
         const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
 
-        const filtered = currentPosts.filter(p => (fPos === 'all' || p.pos === fPos) && (fTier === 'all' || p.tier === fTier));
+        // deleted: true 인 포스트는 목록에서 숨김
+        const filtered = currentPosts.filter(p => !p.deleted && (fPos === 'all' || p.pos === fPos) && (fTier === 'all' || p.tier === fTier));
         
         listDiv.innerHTML = "";
         for (const p of filtered) {
@@ -240,19 +237,18 @@
         }
     };
 
-    // 파티 데이터 실시간 감시
+    // 파티 데이터 실시간 리스너
     onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
         currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
         window.renderList();
         window.renderEvalList(); 
     });
 
-    // 인증 및 알림 리스너
+    // 인증 리스너 및 알림 제어
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('user-info').style.display = 'block';
-            
             let lastMatchSnap = null;
             
             window.refreshNotiUI = () => {
@@ -294,17 +290,13 @@
         }
     });
 
-    // 버튼 액션
+    // 버튼 동작들
     document.getElementById('btn-login').onclick = async () => {
         const email = document.getElementById('login-email').value.trim();
         const pw = document.getElementById('login-password').value;
-        if(!email || !pw) return alert("이메일과 비번을 입력하세요.");
-        try { 
-            await signInWithEmailAndPassword(auth, email, pw); 
-        } catch(e) {
-            if(confirm("계정이 없습니다. 새로 가입하시겠습니까?")) {
-                try { await createUserWithEmailAndPassword(auth, email, pw); } catch(err) { alert("가입 실패: " + err.message); }
-            }
+        if(!email || !pw) return alert("입력 정보 부족");
+        try { await signInWithEmailAndPassword(auth, email, pw); } catch(e) {
+            if(confirm("가입하시겠습니까?")) await createUserWithEmailAndPassword(auth, email, pw);
         }
     };
 
@@ -312,16 +304,16 @@
 
     document.getElementById('btn-post').onclick = async () => {
         if(!auth.currentUser) return alert("로그인 필요");
-        const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-        const btag = document.getElementById('post-btag').value.trim() || userDoc.data()?.btag;
-        if(!btag) return alert("배틀태그를 입력하거나 프로필에 저장하세요.");
+        const u = await getDoc(doc(db, "users", auth.currentUser.uid));
+        const btag = document.getElementById('post-btag').value.trim() || u.data()?.btag;
+        if(!btag) return alert("배틀태그가 필요합니다.");
         await addDoc(collection(db, "parties"), {
             btag, uid: auth.currentUser.uid, pos: document.getElementById('post-main-pos').value,
             tier: document.getElementById('post-tier').value, tierNum: document.getElementById('post-tier-num').value,
             maxp: parseInt(document.getElementById('post-maxp').value), desc: document.getElementById('post-desc').value,
-            createdAt: Date.now(), members: []
+            createdAt: Date.now(), members: [], deleted: false
         });
-        document.getElementById('post-desc').value = ""; alert("모집 시작!");
+        document.getElementById('post-desc').value = ""; alert("등록완료");
     };
 
     window.openRequestModal = (uid, btag, postId, pos) => {
@@ -381,7 +373,12 @@
         closeModal();
     };
 
-    window.delPost = async (id) => { if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "parties", id)); };
+    // [중요 수정] 실제 삭제 대신 deleted 필드만 업데이트하여 상호평가 데이터 유지
+    window.delPost = async (id) => { 
+        if(confirm("모집을 종료하시겠습니까? 종료 후에도 팀원 평가 내역은 유지됩니다.")) {
+            await updateDoc(doc(db, "parties", id), { deleted: true }); 
+        }
+    };
     window.delMatch = async (id) => { await deleteDoc(doc(db, "matches", id)); };
 
     document.getElementById('btn-save-profile').onclick = async () => {
