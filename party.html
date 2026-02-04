@@ -397,24 +397,51 @@
     window.delPost = async (id) => { if(confirm("삭제?")) await deleteDoc(doc(db, "parties", id)); };
 
     document.getElementById('btn-confirm-rate').onclick = async () => {
-        const score = document.querySelectorAll('#rate-stars span.active').length;
-        if (score === 0) return alert("별점을 선택해주세요.");
-        try {
-            if (rateTargetInfo.type !== 'group_rate') {
-                const mRef = doc(db, "matches", rateTargetId);
-                const up = {}; up[rateTargetInfo.type] = score;
-                await updateDoc(mRef, up);
-            }
-            const uRef = doc(doc(db, "users", rateTargetInfo.targetUid));
-            const uSnap = await getDoc(uRef);
-            let nC = 1, nT = score;
-            if (uSnap.exists()) { 
-                const d = uSnap.data(); nC = (d.rateCount || 0) + 1; nT = (d.rateTotal || 0) + score; 
-            }
-            await setDoc(uRef, { rateCount: nC, rateTotal: nT }, { merge: true });
-            alert("평가 완료!"); closeModal();
-        } catch (e) { console.error(e); alert("오류 발생"); }
-    };
+    // 1. 선택된 별점 개수 가져오기
+    const score = document.querySelectorAll('#rate-stars span.active').length;
+    if (score === 0) return alert("별점을 선택해주세요.");
+
+    try {
+        // 2. 매칭(1:1 신청) 문서 업데이트 (일반 매칭 평가인 경우만)
+        if (rateTargetInfo.type !== 'group_rate') {
+            const mRef = doc(db, "matches", rateTargetId);
+            const up = {}; 
+            up[rateTargetInfo.type] = score; // ratingToGuest 또는 ratingToOwner 필드에 저장
+            await updateDoc(mRef, up);
+        }
+
+        // 3. 상대방 유저 문서(users 컬렉션)의 통합 평점 업데이트
+        const uRef = doc(db, "users", rateTargetInfo.targetUid);
+        const uSnap = await getDoc(uRef);
+        
+        let currentCount = 0;
+        let currentTotal = 0;
+
+        if (uSnap.exists()) {
+            const d = uSnap.data();
+            // 반드시 Number로 변환하여 숫자로 연산되도록 함 (문자열 결합 방지)
+            currentCount = Number(d.rateCount) || 0;
+            currentTotal = Number(d.rateTotal) || 0;
+        }
+
+        // 4. 합산된 값 저장
+        await setDoc(uRef, { 
+            rateCount: currentCount + 1, 
+            rateTotal: currentTotal + score 
+        }, { merge: true });
+
+        alert("평가가 완료되었습니다!");
+        closeModal();
+        
+        // 내 정보 페이지나 리스트를 갱신하고 싶다면 여기에 추가
+        // if(auth.currentUser) updateAvgRating(auth.currentUser.uid);
+
+    } catch (e) { 
+        console.error("평가 저장 중 상세 오류:", e); 
+        alert("평가 처리 중 오류가 발생했습니다. (콘솔 확인)"); 
+    }
+};
+
 
     document.getElementById('btn-login').onclick = async () => {
         const email = document.getElementById('login-email').value.trim();
