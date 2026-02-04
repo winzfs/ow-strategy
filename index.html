@@ -44,10 +44,37 @@
     <style>
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
-        nav { background: #000; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
-        .nav-tabs { display: flex; gap: 20px; }
-        .nav-tabs div { cursor: pointer; font-weight: 600; font-size: 14px; color: #888; transition: 0.2s; position: relative; }
-        .nav-tabs div.active { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
+        nav { 
+    background: #000; 
+    padding: 10px 15px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom: 1px solid #333; 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+    height: 50px; /* 높이 고정 */
+}
+.nav-tabs { 
+    display: flex; 
+    gap: 12px; /* 간격 살짝 축소 */
+    flex-shrink: 0; /* 메뉴가 압축되지 않도록 고정 */
+}
+#auth-ui { 
+    flex-grow: 1; 
+    display: flex; 
+    justify-content: flex-end; 
+    margin-left: 10px;
+    overflow: hidden; /* 넘치는 부분 방지 */
+}
+/* 입력창 스타일 미세 조정 */
+#login-form input { 
+    height: 30px !important; 
+    padding: 5px !important; 
+    margin: 0 !important; 
+}
+
         .menu-new { display: none; background: #ff3c3c; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 5px; font-weight: 900; animation: blink 1.2s infinite; vertical-align: middle; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
@@ -76,19 +103,18 @@
     <div class="nav-tabs">
         <div onclick="showPage('list')" id="tab-list" class="active">파티찾기</div>
         <div onclick="showPage('profile')" id="tab-profile">내 정보</div>
-        <div onclick="showPage('noti')" id="tab-noti">알림창<span id="menu-new-tag" class="menu-new">NEW</span></div>
-        <a href="commu.html" style="text-decoration:none; color:#888; font-weight:600; font-size:14px;">커뮤니티</a>
+        <div onclick="showPage('noti')" id="tab-noti">알림<span id="menu-new-tag" class="menu-new">N</span></div>
+        <a href="commu.html" style="text-decoration:none; color:#888; font-weight:600; font-size:13px; line-height:20px;">커뮤니티</a>
     </div>
     <div id="auth-ui">
-        <div id="login-form" style="display:flex; gap:5px;">
-            <div style="display: flex; flex-direction: column; gap: 2px;">
-                <input type="email" id="login-email" placeholder="이메일" style="width:110px; font-size:11px; margin-bottom: 0;">
-                <button onclick="forgotPassword()" style="background:none; border:none; color:#666; font-size:9px; cursor:pointer; text-align: left;">비밀번호 찾기</button>
-            </div>
-            <input type="password" id="login-password" placeholder="비번" style="width:70px; font-size:11px; margin-bottom: 0; height: 35px;">
-            <button id="btn-login" class="btn-sub" style="height: 35px;">접속/가입</button>
+        <div id="login-form" style="display:flex; gap:4px; align-items: center;">
+            <input type="email" id="login-email" placeholder="이메일" style="width:70px; font-size:10px;">
+            <input type="password" id="login-password" placeholder="비번" style="width:50px; font-size:10px;">
+            <button id="btn-login" class="btn-sub" style="height: 30px; padding: 0 8px; font-size: 10px; flex-shrink:0;">접속</button>
         </div>
-        <div id="user-info" style="display:none;"><button id="btn-logout" class="btn-sub">로그아웃</button></div>
+        <div id="user-info" style="display:none;">
+            <button id="btn-logout" class="btn-sub" style="height: 30px; padding: 0 10px;">로그아웃</button>
+        </div>
     </div>
 </nav>
 
