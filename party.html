@@ -223,47 +223,53 @@
 
 
     // 파티 리스트 렌더링
+        // 파티 리스트 렌더링
     window.renderList = async () => {
         const listDiv = document.getElementById('party-list');
         listDiv.innerHTML = "";
+        
+        // 데이터 누락을 방지하기 위해 순차적으로 처리
         for (const p of currentPosts.filter(x => !x.deleted)) {
             const count = (p.members?.length || 0) + 1;
             const isFull = count >= p.maxp;
             const isMine = auth.currentUser?.uid === p.uid;
-            // 관리자인지 확인하는 변수 추가
-        const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+            const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
 
-               // --- 추가된 부분: 작성자의 평점 데이터 가져오기 ---
-        const userSnap = await getDoc(doc(db, "users", p.uid));
-        let ratingHtml = "";
-        if (userSnap.exists()) {
-            const userData = userSnap.data();
-            if (userData.rateCount > 0) {
-                const avg = (userData.rateTotal / userData.rateCount).toFixed(1);
-                ratingHtml = `<span style="color:var(--accent); font-size:11px; margin-left:5px;">★${avg}</span>`;
-            } else {
-                ratingHtml = `<span style="color:#666; font-size:11px; margin-left:5px;">★-</span>`;
+            // --- 작성자의 평점 데이터 가져오기 ---
+            let ratingHtml = "";
+            try {
+                const userSnap = await getDoc(doc(db, "users", p.uid));
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    if (userData.rateCount > 0) {
+                        const avg = (userData.rateTotal / userData.rateCount).toFixed(1);
+                        ratingHtml = `<span style="color:var(--accent); font-size:11px; margin-left:5px; font-weight:bold;">★${avg}</span>`;
+                    } else {
+                        ratingHtml = `<span style="color:#555; font-size:11px; margin-left:5px;">★-</span>`;
+                    }
+                }
+            } catch (e) {
+                console.log("평점 로드 실패:", e);
             }
-        }
-        // ------------------------------------------
+            // ----------------------------------
 
-let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
+            let btn = `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
 
-// 내 글이거나 관리자일 경우 버튼을 '종료'로 변경
-if(isMine || isAdmin) {
-    const btnText = isAdmin && !isMine ? "관리자 삭제" : "종료";
-    btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${btnText}</button>`;
-} else if(isFull) {
-    btn = `<button class="btn-sub" style="opacity:0.5;">마감</button>`;
-} else if(mySentRequests.has(p.id)) {
-    btn = `<button class="btn-sub" style="opacity:0.5;">대기</button>`;
-}
+            if(isMine || isAdmin) {
+                const btnText = isAdmin && !isMine ? "관리자 삭제" : "종료";
+                btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${btnText}</button>`;
+            } else if(isFull) {
+                btn = `<button class="btn-sub" style="opacity:0.5;">마감</button>`;
+            } else if(mySentRequests.has(p.id)) {
+                btn = `<button class="btn-sub" style="opacity:0.5;">대기</button>`;
+            }
 
+            // innerHTML에 ${ratingHtml}이 들어갔는지 확인하세요!
             listDiv.innerHTML += `
                 <div class="box">
                     <div style="display:flex; justify-content:space-between;">
                         <div>
-                            <b>${p.btag.split('#')[0]}#****</b> 
+                            <b>${p.btag.split('#')[0]}#****</b>${ratingHtml} 
                             <small style="color:#666; margin-left:5px;">${timeSince(p.createdAt)}</small>
                             <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; margin-left:8px;">● ${count}/${p.maxp}</span><br>
                             <span style="color:var(--accent); font-weight:bold;">[${p.pos} / ${p.tier} ${p.tierNum}]</span>
