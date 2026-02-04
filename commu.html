@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overwatch Hub - Community</title>
+    <style>
+        /* (기존 style 코드들...) */
+        :root { --accent: #ff9c00; --bg-dark: #111; }
+        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; }
+        nav { background: #000; padding: 12px 20px; display: flex; justify-content: space-between; border-bottom: 1px solid #333; }
+        .nav-tabs { display: flex; gap: 20px; }
+        .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
+        .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
+        .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; }
+        input, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-tabs">
+        <a href="index.html" style="text-decoration:none; color:#888; font-weight:600; font-size:14px;">파티찾기</a>
+        <div style="color:var(--accent); border-bottom: 2px solid var(--accent);">커뮤니티</div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="box">
+        <h4 style="margin:0; color:var(--accent);">💬 자유게시판</h4>
+        <input type="text" id="comm-title" placeholder="제목">
+        <textarea id="comm-content" placeholder="내용을 입력하세요" rows="4"></textarea>
+        <button class="btn-main" id="btn-comm-post">글 등록</button>
+    </div>
+    <div id="comm-list"></div>
+</div>
+
+<script type="module">
+    // Firebase 설정은 index.html과 동일하게 복사해서 넣으세요
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = { /* 본인의 Config 복사 */ };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        if(!user) {
+            alert("게시판은 로그인 후 이용 가능합니다. 메인 페이지로 이동합니다.");
+            location.href = "index.html";
+        }
+    });
+
+    // 글쓰기 로직
+    document.getElementById('btn-comm-post').onclick = async () => {
+        const title = document.getElementById('comm-title').value;
+        const content = document.getElementById('comm-content').value;
+        if(!title || !content) return alert("내용을 입력하세요.");
+
+        await addDoc(collection(db, "community"), {
+            uid: currentUser.uid,
+            title: title,
+            content: content,
+            createdAt: Date.now()
+        });
+        document.getElementById('comm-title').value = "";
+        document.getElementById('comm-content').value = "";
+    };
+
+    // 실시간 목록 렌더링
+    onSnapshot(query(collection(db, "community"), orderBy("createdAt", "desc")), (snap) => {
+        const list = document.getElementById('comm-list');
+        list.innerHTML = snap.docs.map(docSnap => {
+            const d = docSnap.data();
+            return `
+                <div class="box">
+                    <h4>${d.title}</h4>
+                    <p style="font-size:14px; color:#ccc;">${d.content}</p>
+                </div>`;
+        }).join('');
+    });
+</script>
+</body>
+</html>
