@@ -294,17 +294,6 @@
     });
 
 
-            
-                // NEW 태그 로직
-                const hasNew = snap.docs.some(d => d.data().toUid === myUid && d.data().status === 'pending');
-                document.getElementById('menu-new-tag').style.display = hasNew ? 'inline-block' : 'none';
-
-                mySentRequests = new Set(snap.docs.filter(d => d.data().fromUid === myUid).map(d => d.data().postId));
-                window.renderList();
-            });
-        }
-    });
-
     // 버튼 액션들
     document.getElementById('btn-login').onclick = async () => {
         const email = document.getElementById('login-email').value.trim();
