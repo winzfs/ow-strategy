@@ -2,89 +2,144 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Overwatch 2 Tier Maker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OW2 Ultimate Tier Maker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
-        :root { --bg: #121212; --panel: #1e1e1e; }
-        body { background-color: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
-        
-        /* 티어 컨테이너 */
-        .tier-container { width: 90%; max-width: 800px; border: 2px solid #333; margin-bottom: 20px; }
-        .tier-row { display: flex; min-height: 80px; border-bottom: 1px solid #333; background: var(--panel); }
-        .tier-label { width: 100px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; color: #000; }
-        .tier-dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 10px; gap: 10px; }
+        :root {
+            --ow-orange: #f99e1a;
+            --ow-white: #f0edff;
+            --bg-dark: #121417;
+            --panel-bg: #1e2126;
+        }
 
-        /* 티어별 색상 */
-        .s-tier { background: #ff7f7f; } .a-tier { background: #ffbf7f; }
-        .b-tier { background: #ffff7f; } .c-tier { background: #7fff7f; }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--ow-white);
+            font-family: 'BigNoodleTitling', 'Segoe UI', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            margin: 0; padding: env(safe-area-inset-top) 10px;
+        }
+
+        h1 { color: var(--ow-orange); text-transform: uppercase; letter-spacing: 2px; margin: 20px 0; }
+
+        /* 티어 컨테이너 */
+        .tier-list { width: 100%; max-width: 900px; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .tier-row { display: flex; background: var(--panel-bg); border-bottom: 1px solid #121417; min-height: 90px; }
+        
+        .tier-label {
+            width: 80px; min-width: 80px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; font-weight: bold; color: #000;
+        }
+
+        /* 등급별 색상 */
+        .s { background: #ff7f7f; } .a { background: #ffbf7f; }
+        .b { background: #ffff7f; } .c { background: #7fff7f; }
+        .f { background: #7fbfff; }
+
+        .dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 10px; gap: 8px; min-height: 70px; }
 
         /* 영웅 아이콘 스타일 */
-        .hero-chip { width: 60px; height: 60px; background: #444; border: 2px solid #aaa; border-radius: 4px; 
-                     cursor: grab; display: flex; align-items: center; justify-content: center; font-size: 10px; text-align: center; }
-        .hero-chip:active { cursor: grabbing; }
+        .hero {
+            width: 55px; height: 55px;
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: bold;
+            text-align: center; cursor: grab;
+            user-select: none; transition: transform 0.1s;
+            background-size: cover; background-position: center;
+            color: white; text-shadow: 1px 1px 2px black;
+        }
+        .hero:active { cursor: grabbing; transform: scale(1.1); }
 
-        /* 영웅 대기소 */
-        .hero-pool { width: 90%; max-width: 800px; background: #2a2a2a; padding: 20px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 8px; }
-        
-        button { margin-top: 20px; padding: 10px 20px; cursor: pointer; background: #f99e1a; border: none; font-weight: bold; border-radius: 4px; }
+        /* 영웅 보관함 */
+        .hero-pool-container {
+            width: 100%; max-width: 900px; margin-top: 30px;
+            background: var(--panel-bg); padding: 15px; border-radius: 8px;
+        }
+        .pool-header { margin-bottom: 15px; border-bottom: 2px solid var(--ow-orange); padding-bottom: 5px; font-size: 18px; }
+        .hero-pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 150px; justify-content: center; }
+
+        .controls { margin: 30px 0; display: flex; gap: 10px; }
+        button {
+            padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-save { background: var(--ow-orange); color: white; }
+        .btn-reset { background: #555; color: white; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
-    <h2>OW2 HERO TIER LIST</h2>
+    <h1>Overwatch 2 Tier List</h1>
 
-    <div class="tier-container">
-        <div class="tier-row"><div class="tier-label s-tier">S</div><div class="tier-dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
-        <div class="tier-row"><div class="tier-label a-tier">A</div><div class="tier-dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
-        <div class="tier-row"><div class="tier-label b-tier">B</div><div class="tier-dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
-        <div class="tier-row" style="border-bottom:none;"><div class="tier-label c-tier">C</div><div class="tier-dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+    <div class="tier-list">
+        <div class="tier-row"><div class="tier-label s">S</div><div class="dropzone" id="s-tier"></div></div>
+        <div class="tier-row"><div class="tier-label a">A</div><div class="dropzone" id="a-tier"></div></div>
+        <div class="tier-row"><div class="tier-label b">B</div><div class="dropzone" id="b-tier"></div></div>
+        <div class="tier-row"><div class="tier-label c">C</div><div class="dropzone" id="c-tier"></div></div>
+        <div class="tier-row" style="border:none;"><div class="tier-label f">F</div><div class="dropzone" id="f-tier"></div></div>
     </div>
 
-    <div class="hero-pool" id="pool" ondrop="drop(event)" ondragover="allowDrop(event)">
-        </div>
+    <div class="hero-pool-container">
+        <div class="pool-header">HEROES</div>
+        <div class="hero-pool" id="hero-pool"></div>
+    </div>
 
-    <button onclick="saveTier()">결과 저장하기 (JSON)</button>
+    <div class="controls">
+        <button class="btn-reset" onclick="location.reload()">초기화</button>
+        <button class="btn-save" onclick="saveTier()">데이터 저장</button>
+    </div>
 
 <script>
-    const heroes = ['트레이서', '겐지', '윈스턴', '키리코', '아나', '소전', '라인하르트', '캐시디', '디바', '메르시'];
+    const allHeroes = [
+        // 탱커
+        'D.Va', '둠피스트', '정커퀸', '오리사', '라마트라', '라인하르트', '로드호그', '시그마', '윈스턴', '레킹볼', '자리야', '마우가니',
+        // 딜러
+        '애쉬', '바스티온', '캐시디', '에코', '겐지', '한조', '정크랫', '메이', '파라', '리퍼', '소전', '솔저:76', '솜브라', '시메트라', '토리비온', '트레이서', '위도우메이커', '벤처',
+        // 힐러
+        '아나', '바티스트', '브리기테', '일리아리', '키리코', '라이프위버', '루시우', '메르시', '모이라', '젠야타', '유노'
+    ];
 
-    // 영웅 칩 생성
-    const pool = document.getElementById('pool');
-    heroes.forEach((name, index) => {
-        const chip = document.createElement('div');
-        chip.className = 'hero-chip';
-        chip.draggable = true;
-        chip.id = 'hero-' + index;
-        chip.innerText = name;
-        chip.ondragstart = drag;
-        pool.appendChild(chip);
+    const poolEl = document.getElementById('hero-pool');
+
+    // 영웅 생성
+    allHeroes.forEach(name => {
+        const div = document.createElement('div');
+        div.className = 'hero';
+        div.innerText = name;
+        // 나중에 실제 이미지를 넣으려면 아래 주석을 활용하세요
+        // div.style.backgroundImage = `url('hero_image_url_${name}.png')`;
+        poolEl.appendChild(div);
     });
 
-    // 드래그 앤 드롭 로직
-    function allowDrop(ev) { ev.preventDefault(); }
-    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
-    function drop(ev) {
-        ev.preventDefault();
-        const data = ev.dataTransfer.getData("text");
-        const draggedElement = document.getElementById(data);
-        
-        // 드롭 대상이 'dropzone'인지 확인 (칩 위에 드롭하는 경우 방지)
-        let target = ev.target;
-        while (target && !target.classList.contains('tier-dropzone') && !target.classList.contains('hero-pool')) {
-            target = target.parentElement;
-        }
-        
-        if (target) target.appendChild(draggedElement);
-    }
+    // SortableJS 설정 (모바일 드래그앤드롭 핵심)
+    const dropzones = document.querySelectorAll('.dropzone, .hero-pool');
+    dropzones.forEach(zone => {
+        new Sortable(zone, {
+            group: 'shared', // 여러 구역 간 이동 가능하게 설정
+            animation: 150,
+            ghostClass: 'blue-background-class',
+            forceFallback: true, // 모바일에서 더 안정적으로 작동
+            fallbackTolerance: 3 // 클릭과 드래그 구분
+        });
+    });
 
     function saveTier() {
         const result = {};
         document.querySelectorAll('.tier-row').forEach(row => {
             const label = row.querySelector('.tier-label').innerText;
-            const items = Array.from(row.querySelectorAll('.hero-chip')).map(c => c.innerText);
-            result[label] = items;
+            const heroes = Array.from(row.querySelectorAll('.hero')).map(h => h.innerText);
+            result[label] = heroes;
         });
-        console.log("티어 리스트 결과:", result);
-        alert("결과가 콘솔에 저장되었습니다!");
+        
+        console.log("티어 저장 결과:", result);
+        alert("티어 데이터가 저장되었습니다. (개발자 도구 콘솔에서 확인 가능)");
+        // 여기서 관리자 이메일(jazzhjm@gmail.com) 연동 로직을 추가할 수 있습니다.
     }
 </script>
 </body>
