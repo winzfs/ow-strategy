@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이홈 배치 테스트</title>
+    <style>
+        :root { --accent: #ff9c00; --bg: #111; }
+        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        
+        /* 아이템 상점 */
+        .shop { background: #222; padding: 15px; border-radius: 12px; display: flex; gap: 15px; margin-bottom: 20px; border: 1px solid #333; }
+        .shop-item { width: 50px; height: 50px; cursor: pointer; border-radius: 8px; transition: 0.2s; background: #000; border: 1px solid #444; padding: 5px; }
+        .shop-item:hover { transform: scale(1.1); border-color: var(--accent); }
+
+        /* 마이홈 캔버스 */
+        #room-canvas { 
+            position: relative; 
+            width: 350px; 
+            height: 450px; 
+            background: #1a1a1a; 
+            background-image: linear-gradient(#222 1px, transparent 1px), linear-gradient(90deg, #222 1px, transparent 1px);
+            background-size: 20px 20px; /* 격자 무늬 */
+            border: 3px solid #333; 
+            border-radius: 20px; 
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* 배치된 아이템 */
+        .placed-item { 
+            position: absolute; 
+            width: 60px; 
+            height: 60px; 
+            cursor: move; 
+            touch-action: none; /* 모바일 스크롤 방지 */
+            user-select: none;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+        }
+        .placed-item.dragging { opacity: 0.7; transform: scale(1.1); z-index: 1000; }
+
+        .controls { margin-top: 20px; display: flex; gap: 10px; }
+        button { padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-save { background: var(--accent); color: black; }
+        .btn-reset { background: #444; color: white; }
+    </style>
+</head>
+<body>
+
+    <h2 style="color:var(--accent);">🏠 요원실 배치 테스트</h2>
+    <p style="font-size: 12px; color: #888;">아이콘을 클릭하여 추가하고, 드래그해서 배치하세요.</p>
+
+    <div class="shop">
+        <img src="https://cdn-icons-png.flaticon.com/512/287/287221.png" class="shop-item" onclick="addItem('hero1', this.src)" title="캐릭터1">
+        <img src="https://cdn-icons-png.flaticon.com/512/287/287226.png" class="shop-item" onclick="addItem('hero2', this.src)" title="캐릭터2">
+        <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="addItem('pc', this.src)" title="컴퓨터">
+        <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="addItem('sofa', this.src)" title="소파">
+    </div>
+
+    <div id="room-canvas"></div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetRoom()">초기화</button>
+        <button class="btn-save" onclick="saveData()">저장하기</button>
+    </div>
+
+    <script>
+        let placedItems = [];
+        const canvas = document.getElementById('room-canvas');
+
+        // 1. 아이템 추가
+        function addItem(type, src) {
+            const id = 'item_' + Date.now();
+            const itemObj = { id, src, x: 20, y: 20 }; // 초기 위치
+            placedItems.push(itemObj);
+            renderItem(itemObj);
+        }
+
+        // 2. 화면에 아이템 생성
+        function renderItem(itemObj) {
+            const img = document.createElement('img');
+            img.src = itemObj.src;
+            img.className = 'placed-item';
+            img.id = itemObj.id;
+            img.style.left = itemObj.x + 'px';
+            img.style.top = itemObj.y + 'px';
+
+            // 마우스/터치 이벤트 연결
+            img.onmousedown = (e) => handleDrag(e, itemObj, img);
+            img.ontouchstart = (e) => handleDrag(e, itemObj, img);
+            
+            // 더블 클릭 시 삭제
+            img.ondblclick = () => removeItem(itemObj.id);
+
+            canvas.appendChild(img);
+        }
+
+        // 3. 드래그 로직 (핵심)
+        function handleDrag(e, data, el) {
+            e.preventDefault();
+            el.classList.add('dragging');
+
+            const isTouch = e.type === 'touchstart';
+            const moveEvent = isTouch ? 'touchmove' : 'mousemove';
+            const upEvent = isTouch ? 'touchend' : 'mouseup';
+            
+            const startX = isTouch ? e.touches[0].clientX : e.clientX;
+            const startY = isTouch ? e.touches[0].clientY : e.clientY;
+            
+            const initialLeft = parseInt(el.style.left);
+            const initialTop = parseInt(el.style.top);
+
+            function onMove(me) {
+                const curX = isTouch ? me.touches[0].clientX : me.clientX;
+                const curY = isTouch ? me.touches[0].clientY : me.clientY;
+
+                const dx = curX - startX;
+                const dy = curY - startY;
+
+                let newX = initialLeft + dx;
+                let newY = initialTop + dy;
+
+                // 캔버스 밖으로 나가지 않게 제한
+                const rect = canvas.getBoundingClientRect();
+                newX = Math.max(0, Math.min(newX, rect.width - 60));
+                newY = Math.max(0, Math.min(newY, rect.height - 60));
+
+                el.style.left = newX + 'px';
+                el.style.top = newY + 'px';
+                data.x = newX;
+                data.y = newY;
+            }
+
+            function onUp() {
+                el.classList.remove('dragging');
+                document.removeEventListener(moveEvent, onMove);
+                document.removeEventListener(upEvent, onUp);
+            }
+
+            document.addEventListener(moveEvent, onMove);
+            document.addEventListener(upEvent, onUp);
+        }
+
+        // 4. 삭제 및 초기화
+        function removeItem(id) {
+            placedItems = placedItems.filter(i => i.id !== id);
+            document.getElementById(id).remove();
+        }
+
+        function resetRoom() {
+            if(confirm("방을 비우시겠습니까?")) {
+                canvas.innerHTML = '';
+                placedItems = [];
+            }
+        }
+
+        // 5. 저장 (테스트용 로컬스토리지 사용)
+        function saveData() {
+            localStorage.setItem('test_room_save', JSON.stringify(placedItems));
+            alert("배치가 로컬에 저장되었습니다!\n아이템 수: " + placedItems.length);
+        }
+
+        // 6. 페이지 로드 시 불러오기
+        window.onload = () => {
+            const saved = localStorage.getItem('test_room_save');
+            if(saved) {
+                placedItems = JSON.parse(saved);
+                placedItems.forEach(renderItem);
+            }
+        };
+    </script>
+</body>
+</html>
