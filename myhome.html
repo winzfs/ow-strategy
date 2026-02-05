@@ -1,128 +1,127 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>16비트 쿼터뷰 마이홈 테스터</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
-    <style>
-        body { margin: 0; background: #222; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; }
-        #ui-panel { color: white; padding: 10px; background: #333; width: 100%; text-align: center; }
-        canvas { border: 4px solid #555; image-rendering: pixelated; }
-    </style>
+<meta charset="UTF-8" />
+<title>My Home - Quarter View</title>
+<style>
+  body {
+    background:#222;
+    color:#fff;
+    font-family: monospace;
+    display:flex;
+  }
+
+  #ui {
+    width:200px;
+    padding:10px;
+    border-right:2px solid #444;
+  }
+
+  button {
+    width:100%;
+    margin-bottom:6px;
+    cursor:pointer;
+  }
+
+  canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+</style>
 </head>
 <body>
 
-<div id="ui-panel">
-    <h3>16-Bit MyHome Builder</h3>
-    <p>클릭하여 가구 배치 | 'S' 키로 저장 (콘솔확인)</p>
-    <button onclick="pickItem('bed')">침대 (Red)</button>
-    <button onclick="pickItem('table')">테이블 (Green)</button>
-    <button onclick="pickItem('plant')">화분 (Blue)</button>
+<div id="ui">
+  <h3>🪑 가구</h3>
+  <button onclick="selectItem('chair')">의자</button>
+  <button onclick="selectItem('table')">테이블</button>
+  <button onclick="selectItem('character')">캐릭터</button>
 </div>
 
+<canvas id="game" width="800" height="600"></canvas>
+
 <script>
-const config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    backgroundColor: '#4488aa',
-    scene: { preload: preload, create: create, update: update }
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const TILE_W = 64;
+const TILE_H = 32;
+const MAP_SIZE = 8;
+
+let selectedItem = null;
+
+// 임시 색상 애셋 (이미지로 교체 가능)
+const assets = {
+  floor: "#555",
+  chair: "#c96",
+  table: "#9c6",
+  character: "#6cf"
 };
 
-const game = new Phaser.Game(config);
-let selectedItem = 'bed';
-let mapItems = [];
-let previewItem;
+const map = Array.from({ length: MAP_SIZE }, () =>
+  Array.from({ length: MAP_SIZE }, () => null)
+);
 
-function preload() {
-    // 실제 16비트 애셋이 있다면 여기서 로드합니다.
-    // this.load.image('bed', 'bed_iso.png');
+function isoToScreen(x, y) {
+  return {
+    x: (x - y) * TILE_W / 2 + canvas.width / 2,
+    y: (x + y) * TILE_H / 2 + 100
+  };
 }
 
-function create() {
-    const scene = this;
-    
-    // 1. 바닥 타일 (Isometric Grid) 그리기
-    const tileWidth = 64;
-    const tileHeight = 32;
-    const mapSize = 8;
+function drawTile(x, y) {
+  const p = isoToScreen(x, y);
+  ctx.fillStyle = assets.floor;
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+  ctx.lineTo(p.x + TILE_W / 2, p.y + TILE_H / 2);
+  ctx.lineTo(p.x, p.y + TILE_H);
+  ctx.lineTo(p.x - TILE_W / 2, p.y + TILE_H / 2);
+  ctx.closePath();
+  ctx.fill();
+}
 
-    for (let x = 0; x < mapSize; x++) {
-        for (let y = 0; y < mapSize; y++) {
-            let tx = (x - y) * (tileWidth / 2) + 400;
-            let ty = (x + y) * (tileHeight / 2) + 150;
-            
-            let tile = scene.add.graphics();
-            tile.lineStyle(1, 0xeeeeee, 0.3);
-            tile.strokePoints([
-                {x: tx, y: ty - tileHeight/2},
-                {x: tx + tileWidth/2, y: ty},
-                {x: tx, y: ty + tileHeight/2},
-                {x: tx - tileWidth/2, y: ty}
-            ], true);
-        }
+function drawObject(x, y, type) {
+  const p = isoToScreen(x, y);
+  ctx.fillStyle = assets[type];
+  ctx.fillRect(p.x - 10, p.y + 10, 20, 20);
+}
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  for (let y=0;y<MAP_SIZE;y++) {
+    for (let x=0;x<MAP_SIZE;x++) {
+      drawTile(x,y);
+      if (map[y][x]) {
+        drawObject(x,y,map[y][x]);
+      }
     }
-
-    // 2. 가구 배치 미리보기용 객체
-    previewItem = scene.add.rectangle(0, 0, 40, 60, 0xffffff, 0.5);
-    previewItem.setOrigin(0.5, 1);
-
-    // 3. 클릭 이벤트: 가구 배치
-    scene.input.on('pointerdown', (pointer) => {
-        // 화면 좌표 -> 아이소메트릭 좌표 역계산
-        let mx = pointer.x - 400;
-        let my = pointer.y - 150;
-        
-        let isoX = Math.floor((my / (tileHeight/2) + mx / (tileWidth/2)) / 2);
-        let isoY = Math.floor((my / (tileHeight/2) - mx / (tileWidth/2)) / 2);
-
-        if (isoX >= 0 && isoX < mapSize && isoY >= 0 && isoY < mapSize) {
-            placeFurniture(scene, isoX, isoY);
-        }
-    });
-
-    // 저장 키 설정
-    scene.input.keyboard.on('keydown-S', () => {
-        console.log("저장된 데이터:", JSON.stringify(mapItems));
-        alert("배치 데이터가 콘솔에 출력되었습니다. 관리자에게 전송 준비 완료!");
-    });
+  }
 }
 
-function update() {
-    // 마우스 따라다니는 미리보기 로직
-    const pointer = this.input.activePointer;
-    let mx = pointer.x - 400;
-    let my = pointer.y - 150;
-    
-    let isoX = Math.floor((my / 16 + mx / 32) / 2);
-    let isoY = Math.floor((my / 16 - mx / 32) / 2);
+canvas.addEventListener("click", e => {
+  if (!selectedItem) return;
 
-    previewItem.x = (isoX - isoY) * 32 + 400;
-    previewItem.y = (isoX + isoY) * 16 + 150;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left - canvas.width/2;
+  const my = e.clientY - rect.top - 100;
+
+  const x = Math.floor((my / TILE_H + mx / TILE_W));
+  const y = Math.floor((my / TILE_H - mx / TILE_W));
+
+  if (x>=0 && y>=0 && x<MAP_SIZE && y<MAP_SIZE) {
+    map[y][x] = selectedItem;
+    draw();
+  }
+});
+
+function selectItem(item) {
+  selectedItem = item;
 }
 
-function placeFurniture(scene, x, y) {
-    let color;
-    if (selectedItem === 'bed') color = 0xff4444;
-    else if (selectedItem === 'table') color = 0x44ff44;
-    else color = 0x4444ff;
-
-    let tx = (x - y) * 32 + 400;
-    let ty = (x + y) * 16 + 150;
-
-    let item = scene.add.rectangle(tx, ty, 40, 60, color);
-    item.setStrokeStyle(2, 0x000000);
-    item.setOrigin(0.5, 1); // 발치를 기준으로 세움
-    
-    // 뎁스 정렬: Y 좌표가 높을수록 앞에 보이게 함
-    item.setDepth(ty);
-
-    mapItems.push({ type: selectedItem, x: x, y: y });
-}
-
-function pickItem(type) {
-    selectedItem = type;
-}
+draw();
 </script>
+
 </body>
 </html>
