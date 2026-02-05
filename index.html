@@ -156,32 +156,72 @@
 
 #search-title-area { margin-bottom: 15px; padding-left: 5px; border-left: 4px solid var(--accent); }
 
-        
+
+.side-item {
+    padding: 15px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ccc;
+    cursor: pointer;
+    transition: 0.2s;
+    border-left: 4px solid transparent;
+}
+.side-item:hover { background: #1a1a1a; color: white; }
+.side-item.active {
+    background: #1a1a1a;
+    color: var(--accent);
+    border-left: 4px solid var(--accent);
+}
+
+         
     </style>
 </head>
 <body>
 <body>
     <h1 style="display:none;">오버워치 허브 - 실시간 그룹찾기/파티 매칭 커뮤니티</h1>
      
-<nav>
-    <div class="nav-tabs">
-        <div onclick="showPage('list')" id="tab-list" class="active">파티찾기</div>
-        <div onclick="showPage('profile')" id="tab-profile">내 정보</div>
-        <div onclick="showPage('noti')" id="tab-noti">알림<span id="menu-new-tag" class="menu-new">N</span></div>
-        <a href="commu.html">커뮤니티</a>
-        <a href="tiermaker.html">티어메이커</a>
+<header style="background: #000; height: 55px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <button onclick="toggleSidebar()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">☰</button>
+        <span style="color: var(--accent); font-weight: 900; font-size: 18px; letter-spacing: -1px;">OWHUB</span>
     </div>
-    <div id="auth-ui">
-        <div id="login-form" style="display:flex; gap:4px; align-items: center;">
-            <input type="email" id="login-email" placeholder="이메일" style="width:70px; font-size:10px;">
-            <input type="password" id="login-password" placeholder="비번" style="width:50px; font-size:10px;">
-            <button id="btn-login" class="btn-sub" style="height: 30px; padding: 0 8px; font-size: 10px; flex-shrink:0;">접속</button>
+    <div id="header-auth-status" style="font-size: 11px; color: #888;">로그인 필요</div>
+</header>
+
+<div id="sidebar-overlay" onclick="toggleSidebar()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1100;"></div>
+
+<div id="sidebar" style="position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #111; z-index: 1200; transition: 0.3s; box-shadow: 5px 0 15px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
+    <div style="padding: 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: bold; color: var(--accent);">MENU</span>
+        <button onclick="toggleSidebar()" style="background: none; border: none; color: #666; font-size: 20px; cursor: pointer;">✕</button>
+    </div>
+    
+    <div style="flex-grow: 1; padding: 10px 0;">
+        <div onclick="sideShowPage('list')" class="side-item active" id="side-tab-list">🏠 파티찾기</div>
+        <div onclick="sideShowPage('profile')" class="side-item" id="side-tab-profile">👤 내 정보</div>
+        <div onclick="sideShowPage('noti')" class="side-item" id="side-tab-noti">
+            🔔 알림 센터 <span id="side-menu-new-tag" class="menu-new">N</span>
         </div>
-        <div id="user-info" style="display:none;">
-            <button id="btn-logout" class="btn-sub" style="height: 30px; padding: 0 10px;">로그아웃</button>
+        <a href="commu.html" class="side-item" style="text-decoration: none; color: white; display: block;">💬 커뮤니티</a>
+        <a href="tiermaker.html" class="side-item" style="text-decoration: none; color: white; display: block;">📊 티어메이커</a>
+    </div>
+
+    <div style="padding: 20px; background: #0a0a0a; border-top: 1px solid #222;">
+        <div id="side-login-form">
+            <input type="email" id="login-email" placeholder="이메일" style="margin-bottom: 8px;">
+            <input type="password" id="login-password" placeholder="비밀번호" style="margin-bottom: 8px;">
+            <button id="btn-login" class="btn-main" style="margin-top: 0;">로그인 / 가입</button>
+            <div style="text-align: center; margin-top: 10px;">
+                <small onclick="forgotPassword()" style="color: #555; cursor: pointer;">비밀번호 찾기</small>
+            </div>
+        </div>
+        <div id="side-user-info" style="display:none; text-align: center;">
+            <div id="user-display-email" style="font-size: 11px; color: #888; margin-bottom: 10px; word-break: break-all;"></div>
+            <button id="btn-logout" class="btn-sub" style="width: 100%;">로그아웃</button>
         </div>
     </div>
-</nav>
+</div>
+
 
 
 
@@ -202,6 +242,9 @@
 @keyframes ping {
     75%, 100% { transform: scale(2.5); opacity: 0; }
 }
+
+
+  
 </style>
 
 
@@ -425,6 +468,25 @@ const getPosBadge = (pos) => {
             <img src="${iconUrl}" style="width:12px; height:12px; margin-right:4px; filter:${pos==='지원'?'brightness(0)':'none'};">
             ${pos}
         </span>`;
+};
+
+
+
+     // 사이드바 열기/닫기
+window.toggleSidebar = () => {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const isOpen = sidebar.style.left === '0px';
+    sidebar.style.left = isOpen ? '-280px' : '0px';
+    overlay.style.display = isOpen ? 'none' : 'block';
+};
+
+// 사이드바에서 페이지 이동
+window.sideShowPage = (id) => {
+    window.showPage(id); // 기존에 있던 showPage 함수 호출
+    document.querySelectorAll('.side-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('side-tab-' + id).classList.add('active');
+    window.toggleSidebar(); // 이동 후 닫기
 };
 
 
@@ -663,8 +725,10 @@ window.renderList = () => {
 
         // 1. 상태 감시 함수 수정 (테스트 계정은 인증 없이도 UI 통과)
             onAuthStateChanged(auth, async (user) => {
-        const loginForm = document.getElementById('login-form');
-        const userInfo = document.getElementById('user-info');
+          const loginForm = document.getElementById('side-login-form'); 
+         const userInfo = document.getElementById('side-user-info');
+         const userEmailDisp = document.getElementById('user-display-email');
+         const headerAuth = document.getElementById('header-auth-status');
 
         if (user) {
             const isSpecialAccount = (user.email === ADMIN_EMAIL) || (CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === user.email.toLowerCase()));
@@ -672,8 +736,10 @@ window.renderList = () => {
                 loginForm.style.display = 'flex'; userInfo.style.display = 'none';
                 return; 
             }
-            loginForm.style.display = 'none'; userInfo.style.display = 'block';
-            loadMyProfile(user.uid);
+          loginForm.style.display = 'none';
+        userInfo.style.display = 'block';
+        userEmailDisp.innerText = user.email;
+        headerAuth.innerText = "요원 접속 중";
 
             // 실시간 알림 구독 (로그인 시에만)
             onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
@@ -682,16 +748,16 @@ window.renderList = () => {
                 snap.docs.forEach(doc => { if (doc.data().fromUid === user.uid) newSentSet.add(doc.data().postId); });
                 mySentRequests = newSentSet;
                 const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
-                const newTag = document.getElementById('menu-new-tag');
+                const newTag = document.getElementById('side-menu-new-tag');
                 if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
                 renderList(); renderNotiUI(); 
             });
-        } else {
-            // 비로그인 상태 UI
-            loginForm.style.display = 'flex'; userInfo.style.display = 'none';
-            mySentRequests = new Set(); lastMatchSnap = null;
-        }
-
+           } else {
+        loginForm.style.display = 'block';
+        userInfo.style.display = 'none';
+        headerAuth.innerText = "로그인 필요";
+    }
+});
         // [중요] 로그인 여부와 관계없이 파티 목록은 항상 구독 (이 위치로 이동)
         onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
             currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
