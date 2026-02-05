@@ -3,51 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>My Home</title>
-
+<title>Quarter View Home</title>
 <style>
-  body {
-    margin:0;
-    background:#1e1e1e;
-    color:white;
-    font-family: monospace;
-    display:flex;
-    height:100vh;
-    overflow:hidden;
-  }
-
-  #ui {
-    width:140px;
-    background:#111;
-    padding:8px;
-    box-sizing:border-box;
-  }
-
-  button {
-    width:100%;
-    margin-bottom:6px;
-    padding:6px;
-    font-size:12px;
-  }
-
-  canvas {
-    flex:1;
-    background:#2a2a2a;
-    image-rendering: pixelated;
-    touch-action:none;
-  }
+body {
+  margin:0;
+  display:flex;
+  background:#1a1a1a;
+  color:white;
+  font-family:monospace;
+}
+#ui {
+  width:140px;
+  background:#111;
+  padding:8px;
+}
+button {
+  width:100%;
+  margin-bottom:6px;
+}
+canvas {
+  flex:1;
+  background:#222;
+  image-rendering:pixelated;
+  touch-action:none;
+}
 </style>
 </head>
 <body>
 
 <div id="ui">
-  <b>🏠 배치</b>
+  <b>배치</b>
   <button onclick="select('chair')">의자</button>
   <button onclick="select('table')">테이블</button>
-  <button onclick="select('plant')">화분</button>
   <button onclick="select('character')">캐릭터</button>
   <hr>
-  <button onclick="select(null)">❌ 선택 해제</button>
+  <button onclick="select(null)">선택 해제</button>
 </div>
 
 <canvas id="c"></canvas>
@@ -56,152 +46,143 @@
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
-function resize() {
-  canvas.width = window.innerWidth - 140;
-  canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener("resize", resize);
+canvas.width = window.innerWidth - 140;
+canvas.height = window.innerHeight;
 
-// ===== 설정 =====
 const TILE_W = 64;
 const TILE_H = 32;
-const MAP_W = 7;
-const MAP_H = 7;
+const WALL_H = 64;
+const MAP = 6;
 
-// 색상 = 임시 16비트 애셋
-const colors = {
-  floor: "#555",
-  wall: "#888",
-  chair: "#c96",
-  table: "#9c6",
-  plant: "#6c9",
-  character: "#6cf"
+const OFFSET_Y = 60;
+
+const color = {
+  floor:"#555",
+  wall:"#777",
+  chair:"#c96",
+  table:"#9c6",
+  character:"#6cf"
 };
 
 let selected = null;
 let dragging = null;
-
-// 배치된 오브젝트
 const objects = [];
 
-// ===== 좌표 변환 =====
-function iso(x, y) {
+function iso(x,y){
   return {
-    x: (x - y) * TILE_W / 2 + canvas.width / 2,
-    y: (x + y) * TILE_H / 2 + 100
+    x:(x-y)*TILE_W/2 + canvas.width/2,
+    y:(x+y)*TILE_H/2 + OFFSET_Y
   };
 }
 
-// ===== 바닥 =====
-function drawFloor() {
-  for (let y=0;y<MAP_H;y++) {
-    for (let x=0;x<MAP_W;x++) {
-      const p = iso(x,y);
-      ctx.fillStyle = colors.floor;
+function drawFloor(){
+  for(let y=0;y<MAP;y++){
+    for(let x=0;x<MAP;x++){
+      const p=iso(x,y);
+      ctx.fillStyle=color.floor;
       ctx.beginPath();
       ctx.moveTo(p.x, p.y);
-      ctx.lineTo(p.x + TILE_W/2, p.y + TILE_H/2);
-      ctx.lineTo(p.x, p.y + TILE_H);
-      ctx.lineTo(p.x - TILE_W/2, p.y + TILE_H/2);
+      ctx.lineTo(p.x+TILE_W/2, p.y+TILE_H/2);
+      ctx.lineTo(p.x, p.y+TILE_H);
+      ctx.lineTo(p.x-TILE_W/2, p.y+TILE_H/2);
       ctx.closePath();
       ctx.fill();
     }
   }
 }
 
-// ===== 벽 =====
-function drawWalls() {
-  for (let x=0;x<MAP_W;x++) {
-    const p = iso(x,0);
-    ctx.fillStyle = colors.wall;
-    ctx.fillRect(p.x - 4, p.y - 40, 8, 40);
+// 🔥 진짜 벽
+function drawWalls(){
+  // 뒤쪽 벽
+  for(let x=0;x<MAP;x++){
+    const p=iso(x,0);
+    ctx.fillStyle=color.wall;
+    ctx.fillRect(
+      p.x-TILE_W/2,
+      p.y-WALL_H,
+      TILE_W,
+      WALL_H
+    );
   }
-  for (let y=0;y<MAP_H;y++) {
-    const p = iso(0,y);
-    ctx.fillStyle = colors.wall;
-    ctx.fillRect(p.x - 30, p.y - 20, 30, 8);
+
+  // 왼쪽 벽
+  for(let y=0;y<MAP;y++){
+    const p=iso(0,y);
+    ctx.fillStyle="#666";
+    ctx.beginPath();
+    ctx.moveTo(p.x-TILE_W/2, p.y);
+    ctx.lineTo(p.x-TILE_W/2, p.y-WALL_H);
+    ctx.lineTo(p.x, p.y-WALL_H+TILE_H/2);
+    ctx.lineTo(p.x, p.y+TILE_H/2);
+    ctx.closePath();
+    ctx.fill();
   }
 }
 
-// ===== 오브젝트 =====
-function drawObjects() {
+function drawObjects(){
   objects
-    .sort((a,b)=> (a.y - b.y))
+    .sort((a,b)=>a.y-b.y)
     .forEach(o=>{
-      const p = iso(o.x,o.y);
-      ctx.fillStyle = colors[o.type];
-      ctx.fillRect(p.x - 10, p.y + 4, 20, 20);
+      const p=iso(o.x,o.y);
+      ctx.fillStyle=color[o.type];
+      ctx.fillRect(p.x-10, p.y+8, 20, 24);
     });
 }
 
-// ===== 렌더 =====
-function render() {
+function render(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawFloor();
   drawWalls();
+  drawFloor();
   drawObjects();
 }
+
 render();
 
-// ===== UI =====
-function select(t) {
-  selected = t;
-}
+function select(t){ selected=t; }
 
-// ===== 드래그 & 터치 =====
-function getPos(e) {
-  const r = canvas.getBoundingClientRect();
-  const t = e.touches ? e.touches[0] : e;
+function screenToGrid(mx,my){
+  const dx = mx - canvas.width/2;
+  const dy = my - OFFSET_Y;
   return {
-    x: t.clientX - r.left,
-    y: t.clientY - r.top
+    x:Math.floor(dy/TILE_H + dx/TILE_W),
+    y:Math.floor(dy/TILE_H - dx/TILE_W)
   };
 }
 
-function pickObject(mx,my) {
-  for (let o of objects) {
-    const p = iso(o.x,o.y);
-    if (
-      mx > p.x-10 && mx < p.x+10 &&
-      my > p.y && my < p.y+24
-    ) return o;
+canvas.addEventListener("pointerdown",e=>{
+  const r=canvas.getBoundingClientRect();
+  const mx=e.clientX-r.left;
+  const my=e.clientY-r.top;
+
+  for(let o of objects){
+    const p=iso(o.x,o.y);
+    if(mx>p.x-12 && mx<p.x+12 && my>p.y && my<p.y+30){
+      dragging=o; return;
+    }
   }
-  return null;
-}
 
-function gridFromScreen(mx,my) {
-  const dx = mx - canvas.width/2;
-  const dy = my - 100;
-  const x = Math.floor((dy / TILE_H + dx / TILE_W));
-  const y = Math.floor((dy / TILE_H - dx / TILE_W));
-  return {x,y};
-}
-
-canvas.addEventListener("pointerdown", e=>{
-  const p = getPos(e);
-  dragging = pickObject(p.x,p.y);
-
-  if (!dragging && selected) {
-    const g = gridFromScreen(p.x,p.y);
-    if (g.x>=0 && g.y>=0 && g.x<MAP_W && g.y<MAP_H) {
-      objects.push({ ...g, type:selected });
+  if(selected){
+    const g=screenToGrid(mx,my);
+    if(g.x>=0&&g.y>=0&&g.x<MAP&&g.y<MAP){
+      objects.push({x:g.x,y:g.y,type:selected});
       render();
     }
   }
 });
 
-canvas.addEventListener("pointermove", e=>{
-  if (!dragging) return;
-  const p = getPos(e);
-  const g = gridFromScreen(p.x,p.y);
-  dragging.x = Math.max(0,Math.min(MAP_W-1,g.x));
-  dragging.y = Math.max(0,Math.min(MAP_H-1,g.y));
+canvas.addEventListener("pointermove",e=>{
+  if(!dragging)return;
+  const r=canvas.getBoundingClientRect();
+  const g=screenToGrid(
+    e.clientX-r.left,
+    e.clientY-r.top
+  );
+  dragging.x=Math.max(0,Math.min(MAP-1,g.x));
+  dragging.y=Math.max(0,Math.min(MAP-1,g.y));
   render();
 });
 
-canvas.addEventListener("pointerup", ()=> dragging=null);
-canvas.addEventListener("pointerleave", ()=> dragging=null);
+canvas.addEventListener("pointerup",()=>dragging=null);
 </script>
 
 </body>
