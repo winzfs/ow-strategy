@@ -3,129 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>요원실 마이홈 - SVG 리빌드</title>
+    <title>요원실 마이홈 - 쿼터뷰 리빌드</title>
     <style>
-        :root { --wall-l: #2c3e50; --wall-r: #1a252f; --floor: #111; --grid: rgba(255,255,255,0.08); --accent: #ff9c00; }
-        body { background: #000; color: white; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; overscroll-behavior: none; }
+        :root { --wall: #2c3e50; --floor: #1a1a1a; --line: rgba(255,255,255,0.1); --accent: #ff9c00; }
+        body { background: #000; color: white; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; overflow: hidden; }
 
         /* 상점 UI */
-        .shop { width: 100%; max-width: 450px; background: #1a1a1a; padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; overflow-x: auto; border: 1px solid #333; box-sizing: border-box; }
-        .shop-item { width: 55px; height: 55px; background: #000; border: 2px solid #333; border-radius: 8px; padding: 5px; flex-shrink: 0; cursor: pointer; }
+        .shop { width: 100%; max-width: 400px; background: #222; padding: 10px; border-radius: 12px; margin-bottom: 10px; display: flex; gap: 8px; overflow-x: auto; border: 1px solid #444; }
+        .shop-item { width: 50px; height: 50px; background: #111; border: 1px solid #555; border-radius: 8px; flex-shrink: 0; cursor: pointer; padding: 5px; }
 
-        /* 📌 룸 뷰포트 */
-        .room-viewport {
+        /* 📌 메인 룸 스테이지 */
+        .stage {
             position: relative;
-            width: 100%;
-            max-width: 450px;
-            aspect-ratio: 1 / 1;
-            background: #050505;
-            border: 2px solid #222;
-            border-radius: 15px;
-            overflow: hidden;
-            touch-action: none; /* 모바일 드래그 필수 */
-        }
-
-        /* 📌 SVG 배경 (좌표가 고정되어 절대 깨지지 않음) */
-        .room-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-        
-        /* 배치 아이템 레이어 */
-        .items-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
-        .item {
-            position: absolute; width: 70px; height: auto;
-            cursor: move; pointer-events: auto;
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+            width: 100vw;
+            height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
             touch-action: none;
         }
 
-        .btn-save { margin-top: 15px; width: 100%; max-width: 450px; background: var(--accent); border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; color: black; font-size: 16px; }
+        /* 💎 아이소메트릭 맵 전체 회전 (각도 고정 핵심) */
+        .map {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            transform: rotateX(60deg) rotateZ(45deg);
+            transform-style: preserve-3d;
+        }
+
+        /* 🧱 바닥 (그리드 포함) */
+        .floor {
+            position: absolute;
+            inset: 0;
+            background: var(--floor);
+            border: 4px solid #333;
+            /* 바닥 격자 */
+            background-image: 
+                linear-gradient(var(--line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--line) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 1;
+        }
+
+        /* 🧱 벽 (바닥의 모서리에 수직으로 세움) */
+        .wall { position: absolute; background: var(--wall); transform-origin: bottom; }
+        
+        .wall-left {
+            width: 300px; height: 200px;
+            bottom: 300px; left: 0;
+            transform: rotateX(-90deg) rotateY(0deg); /* 바닥 기준 수직 */
+            background: linear-gradient(to top, #2c3e50, #34495e);
+            border-bottom: 2px solid rgba(0,0,0,0.5);
+        }
+
+        .wall-right {
+            width: 200px; height: 300px;
+            left: 300px; bottom: 0;
+            transform: rotateX(-90deg) rotateY(90deg); /* 바닥 기준 수직 */
+            transform-origin: left bottom;
+            background: linear-gradient(to top, #1a252f, #2c3e50);
+            border-bottom: 2px solid rgba(0,0,0,0.5);
+        }
+
+        /* 📦 아이템 레이어 (바닥에 수직으로 세우기) */
+        .item-wrapper {
+            position: absolute;
+            width: 60px; height: 60px;
+            transform-style: preserve-3d;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .item-img {
+            width: 60px; height: 60px;
+            /* 아이템을 카메라 방향으로 다시 세우기 */
+            transform: rotateZ(-45deg) rotateX(-60deg);
+            transform-origin: bottom center;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+            pointer-events: auto;
+        }
+
+        .btn-save { background: var(--accent); border: none; padding: 15px 50px; border-radius: 30px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div class="shop">
-        <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="addItem(this.src)">
-        <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="addItem(this.src)">
-        <img src="https://cdn-icons-png.flaticon.com/512/1674/1674291.png" class="shop-item" onclick="addItem(this.src)">
-        <img src="https://cdn-icons-png.flaticon.com/512/3534/3534064.png" class="shop-item" onclick="addItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="spawnItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="spawnItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/1674/1674291.png" class="shop-item" onclick="spawnItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/3534/3534064.png" class="shop-item" onclick="spawnItem(this.src)">
     </div>
 
-    <div class="room-viewport" id="room">
-        <svg class="room-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path d="M 0 65 L 50 90 L 100 65 L 50 40 Z" fill="var(--floor)" stroke="#333" stroke-width="0.2"/>
-            
-            <g stroke="var(--grid)" stroke-width="0.1">
-                <path d="M 10 60 L 60 85 M 20 55 L 70 80 M 30 50 L 80 75 M 40 45 L 90 70" />
-                <path d="M 90 60 L 40 85 M 80 55 L 30 80 M 70 50 L 20 75 M 60 45 L 10 70" />
-            </g>
-
-            <path d="M 0 15 L 50 40 L 50 90 L 0 65 Z" fill="var(--wall-l)" />
-            
-            <path d="M 100 15 L 50 40 L 50 90 L 100 65 Z" fill="var(--wall-r)" />
-            
-            <line x1="50" y1="40" x2="50" y2="90" stroke="rgba(0,0,0,0.2)" stroke-width="0.5" />
-        </svg>
-
-        <div class="items-layer" id="items-layer"></div>
+    <div class="stage">
+        <div class="map" id="map">
+            <div class="floor"></div>
+            <div class="wall wall-left"></div>
+            <div class="wall wall-right"></div>
+            </div>
     </div>
 
-    <button class="btn-save" onclick="alert('배치가 성공적으로 저장되었습니다!')">배치 저장하기</button>
+    <button class="btn-save" onclick="alert('배치가 저장되었습니다!')">배치 저장</button>
 
     <script>
-        const layer = document.getElementById('items-layer');
-        const room = document.getElementById('room');
+        const map = document.getElementById('map');
 
-        function addItem(src) {
+        function spawnItem(src) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'item-wrapper';
+            wrapper.style.left = '120px';
+            wrapper.style.top = '120px';
+
             const img = document.createElement('img');
             img.src = src;
-            img.className = 'item';
-            // 초기 소환 위치 (바닥 중앙 위쪽)
-            img.style.left = 'calc(50% - 35px)';
-            img.style.top = '50%';
-
-            setupDrag(img);
+            img.className = 'item-img';
             
-            // 더블 탭 삭제
-            let lastTap = 0;
-            img.onpointerdown = (e) => {
-                const now = Date.now();
-                if(now - lastTap < 300) img.remove();
-                lastTap = now;
-            };
+            wrapper.appendChild(img);
+            setupDrag(wrapper);
+            
+            // 더블 클릭 삭제
+            wrapper.ondblclick = () => wrapper.remove();
 
-            layer.appendChild(img);
+            map.appendChild(wrapper);
         }
 
         function setupDrag(el) {
+            let isDragging = false;
+            
             el.onpointerdown = (e) => {
-                el.setPointerCapture(e.pointerId); // 드래그 중 포커스 고정
-                
-                const rect = room.getBoundingClientRect();
-                const shiftX = e.clientX - el.getBoundingClientRect().left;
-                const shiftY = e.clientY - el.getBoundingClientRect().top;
-
-                const onMove = (me) => {
-                    let newX = me.clientX - rect.left - shiftX;
-                    let newY = me.clientY - rect.top - shiftY;
-
-                    // 화면 밖으로 못 나가게 제한
-                    newX = Math.max(0, Math.min(newX, room.clientWidth - el.clientWidth));
-                    newY = Math.max(0, Math.min(newY, room.clientHeight - el.clientHeight));
-
-                    el.style.left = newX + 'px';
-                    el.style.top = newY + 'px';
-                    
-                    // 깊이 정렬: 아래에 있을수록 z-index가 높음
-                    el.style.zIndex = Math.floor(newY + el.clientHeight);
-                };
-
-                const onUp = () => {
-                    el.onpointermove = null;
-                    el.onpointerup = null;
-                };
-
-                el.onpointermove = onMove;
-                el.onpointerup = onUp;
+                isDragging = true;
+                el.setPointerCapture(e.pointerId);
+                e.stopPropagation();
             };
+
+            el.onpointermove = (e) => {
+                if (!isDragging) return;
+                
+                const rect = map.getBoundingClientRect();
+                // 45도 회전된 맵의 좌표 계산 (간소화)
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // 마우스 위치에 따른 그리드 이동 (단순화된 이동 로직)
+                el.style.left = (x - 30) + 'px';
+                el.style.top = (y - 30) + 'px';
+            };
+
+            el.onpointerup = () => isDragging = false;
         }
     </script>
 </body>
