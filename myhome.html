@@ -2,142 +2,270 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>아이소메트릭 룸 정밀 보정 버전</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>마이홈 - 모바일 최적화</title>
     <style>
-        :root { --accent: #ff9c00; --bg: #111; }
-        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        :root { --bg-color: #111; --wall-l: #2a2a2a; --wall-r: #333; --floor: #1e1e1e; }
         
-        /* 상점 UI */
-        .shop { background: #222; padding: 15px; border-radius: 12px; display: flex; gap: 10px; margin-bottom: 20px; border: 1px solid #333; }
-        .shop-item { width: 50px; height: 50px; cursor: pointer; border: 1px solid #444; padding: 5px; background: #000; border-radius: 5px; transition: 0.2s; }
-        .shop-item:hover { transform: scale(1.1); border-color: var(--accent); }
+        body {
+            background-color: black;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* 모바일에서 당겨서 새로고침 되는 것 방지 */
+            overscroll-behavior: none; 
+        }
 
-        /* 룸 컨테이너 */
+        /* 1. 상점 UI */
+        .shop-container {
+            width: 100%;
+            max-width: 500px;
+            background: #222;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            border: 1px solid #333;
+        }
+
+        .tab-menu { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab { 
+            padding: 5px 12px; font-size: 14px; color: #888; cursor: pointer; border-radius: 20px; background: #1a1a1a;
+        }
+        .tab.active { background: #ff9c00; color: black; font-weight: bold; }
+
+        .item-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .shop-item { 
+            width: 50px; height: 50px; flex-shrink: 0; background: #000; border-radius: 8px; border: 1px solid #444; padding: 5px; 
+        }
+
+        /* 2. 방 뷰포트 (여기가 핵심) */
         .room-viewport {
             position: relative;
-            width: 500px;
-            height: 500px;
+            width: 100%;
+            max-width: 500px; /* PC에서는 너무 커지지 않게 */
+            aspect-ratio: 1 / 0.8; /* 정사각형에 가까운 비율 유지 */
             background: #000;
             border-radius: 15px;
             overflow: hidden;
             border: 2px solid #333;
+            /* 터치 시 브라우저 스크롤 방지 (매우 중요) */
+            touch-action: none; 
+        }
+
+        /* 3. 절대 깨지지 않는 '중앙 앵커' 시스템 
+           모든 벽과 바닥은 이 점(Center Anchor)을 기준으로 그려집니다.
+        */
+        .center-anchor {
+            position: absolute;
+            top: 45%; /* 방의 꼭짓점 높이 */
+            left: 50%; /* 방의 가로 중앙 */
+            width: 0; height: 0;
         }
 
         /* 왼쪽 벽 */
         .wall-left {
             position: absolute;
-            width: 250px; height: 300px;
-            background: #2a2a2a;
-            top: 50px; left: 0;
-            transform: skewY(26.5deg); /* 아이소메트릭 표준 각도 */
-            transform-origin: right bottom;
-            border-right: 2px solid #111;
+            bottom: 0; right: 0; /* 앵커 기준 왼쪽 아래 */
+            width: 300px; height: 400px; /* 충분히 크게 */
+            background: var(--wall-l);
+            transform-origin: bottom right;
+            transform: skewY(26.5deg);
+            border-right: 1px solid #000;
         }
 
         /* 오른쪽 벽 */
         .wall-right {
             position: absolute;
-            width: 250px; height: 300px;
-            background: #333;
-            top: 50px; right: 0;
+            bottom: 0; left: 0; /* 앵커 기준 오른쪽 아래 */
+            width: 300px; height: 400px;
+            background: var(--wall-r);
+            transform-origin: bottom left;
             transform: skewY(-26.5deg);
-            transform-origin: left bottom;
         }
 
-        /* 바닥 (마름모) */
+        /* 바닥 */
         .floor {
             position: absolute;
-            width: 500px; height: 250px;
-            background: #1e1e1e;
-            bottom: 25px; /* 벽 끝에 딱 붙도록 조정 */
-            left: 0;
-            /* 바닥을 마름모로 만드는 공식 */
-            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-            background-image: repeating-linear-gradient(45deg, #252525 0, #252525 1px, transparent 0, transparent 40px),
-                              repeating-linear-gradient(-45deg, #252525 0, #252525 1px, transparent 0, transparent 40px);
+            top: 0; left: 0; /* 앵커 기준 바로 아래 시작 */
+            width: 400px; height: 400px;
+            background: var(--floor);
+            /* 바닥 격자 무늬 */
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            /* 마름모 꼴로 변형 (가장 안정적인 방식) */
+            transform-origin: top left;
+            transform: rotate(-45deg) skew(15deg, 15deg) scale(0.7); 
+            border: 1px solid #333;
         }
 
-        /* 아이템 */
+        /* 배치된 아이템 */
         .placed-item {
             position: absolute;
-            width: 80px;
-            cursor: move;
+            width: 70px; /* 기본 크기 */
             z-index: 100;
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+            
+            /* 모바일 드래그 필수 설정 */
+            touch-action: none; 
             user-select: none;
-            touch-action: none;
+            -webkit-user-select: none;
         }
     </style>
 </head>
 <body>
 
-    <h2 style="color:var(--accent);">📐 요원실 배치 (좌표 보정 완료)</h2>
-
-    <div class="shop">
-        <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="addItem(this.src)" title="PC">
-        <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="addItem(this.src)" title="소파">
-        <img src="https://cdn-icons-png.flaticon.com/512/2311/2311453.png" class="shop-item" onclick="addItem(this.src)" title="테이블">
-        <img src="https://cdn-icons-png.flaticon.com/512/1674/1674291.png" class="shop-item" onclick="addItem(this.src)" title="요원">
-    </div>
-
-    <div class="room-viewport" id="room">
-        <div class="wall-left"></div>
-        <div class="wall-right"></div>
-        <div class="floor"></div>
+    <h3 style="margin-top:0; color:#ff9c00">🛠️ 요원실 (모바일 패치버전)</h3>
+    
+    <div class="shop-container">
+        <div class="tab-menu">
+            <div class="tab active" onclick="setMode('furniture')">가구</div>
+            <div class="tab" onclick="setMode('wall')">벽지</div>
+        </div>
+        
+        <div id="shop-furniture" class="item-scroll">
+            <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="spawnItem(this.src)">
+            <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="spawnItem(this.src)">
+            <img src="https://cdn-icons-png.flaticon.com/512/2311/2311453.png" class="shop-item" onclick="spawnItem(this.src)">
+            <img src="https://cdn-icons-png.flaticon.com/512/1674/1674291.png" class="shop-item" onclick="spawnItem(this.src)">
         </div>
 
-    <script>
-        const room = document.getElementById('room');
-        const SNAP = 10; 
+        <div id="shop-wall" class="item-scroll" style="display:none;">
+            <div class="shop-item" style="background:#2a2a2a" onclick="setWallColor('#2a2a2a', '#333')"></div>
+            <div class="shop-item" style="background:#2c3e50" onclick="setWallColor('#2c3e50', '#34495e')"></div>
+            <div class="shop-item" style="background:#5d4037" onclick="setWallColor('#5d4037', '#795548')"></div>
+            <div class="shop-item" style="background:#2e7d32" onclick="setWallColor('#2e7d32', '#388e3c')"></div>
+        </div>
+    </div>
 
-        function addItem(src) {
+    <div class="room-viewport" id="canvas">
+        <div class="center-anchor">
+            <div class="floor"></div>
+            <div class="wall-left" id="w-left"></div>
+            <div class="wall-right" id="w-right"></div>
+        </div>
+        </div>
+
+    <p style="font-size:12px; color:#666;">* 터치하여 드래그, 더블 터치로 삭제</p>
+    <button onclick="savePos()" style="background:#ff9c00; border:none; padding:10px 30px; border-radius:20px; font-weight:bold;">배치 저장하기</button>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const SNAP = 10; // 자석 효과 감도
+
+        // 탭 변경
+        function setMode(mode) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('shop-furniture').style.display = mode === 'furniture' ? 'flex' : 'none';
+            document.getElementById('shop-wall').style.display = mode === 'wall' ? 'flex' : 'none';
+        }
+
+        // 벽지 변경
+        function setWallColor(c1, c2) {
+            document.querySelector(':root').style.setProperty('--wall-l', c1);
+            document.querySelector(':root').style.setProperty('--wall-r', c2);
+        }
+
+        // 아이템 생성
+        function spawnItem(src) {
             const img = document.createElement('img');
             img.src = src;
             img.className = 'placed-item';
-            // 초기 위치를 정중앙(바닥 위)으로 설정
-            img.style.left = '210px';
-            img.style.top = '250px';
+            
+            // 화면 중앙쯤에 배치
+            img.style.left = (canvas.clientWidth / 2 - 35) + 'px';
+            img.style.top = (canvas.clientHeight / 2) + 'px';
 
-            img.onmousedown = (e) => startDrag(e, img);
-            img.ontouchstart = (e) => startDrag(e, img);
+            // 이벤트 연결 (모바일 & PC)
+            addDragEvent(img);
+            
+            // 더블클릭 삭제
+            let lastTap = 0;
+            img.addEventListener('touchend', function (e) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 300 && tapLength > 0) {
+                    img.remove();
+                    e.preventDefault();
+                }
+                lastTap = currentTime;
+            });
             img.ondblclick = () => img.remove();
 
-            room.appendChild(img);
+            canvas.appendChild(img);
         }
 
-        function startDrag(e, el) {
-            e.preventDefault();
-            const isTouch = e.type === 'touchstart';
-            let startX = isTouch ? e.touches[0].clientX : e.clientX;
-            let startY = isTouch ? e.touches[0].clientY : e.clientY;
-            let initX = el.offsetLeft;
-            let initY = el.offsetTop;
+        // 핵심: 드래그 로직 (모바일 호환)
+        function addDragEvent(el) {
+            let startX, startY, initLeft, initTop;
 
-            function onMove(me) {
-                const curX = isTouch ? me.touches[0].clientX : me.clientX;
-                const curY = isTouch ? me.touches[0].clientY : me.clientY;
-                
-                let nextX = Math.round((initX + (curX - startX)) / SNAP) * SNAP;
-                let nextY = Math.round((initY + (curY - startY)) / SNAP) * SNAP;
+            function start(e) {
+                // 터치 이벤트인 경우 e.touches[0] 사용
+                const point = e.touches ? e.touches[0] : e;
+                startX = point.clientX;
+                startY = point.clientY;
+                initLeft = el.offsetLeft;
+                initTop = el.offsetTop;
 
-                const rect = room.getBoundingClientRect();
-                nextX = Math.max(0, Math.min(nextX, rect.width - el.width));
-                nextY = Math.max(0, Math.min(nextY, rect.height - el.height));
+                // 드래그 중 스크롤 방지
+                if(e.cancelable) e.preventDefault();
 
-                el.style.left = nextX + 'px';
-                el.style.top = nextY + 'px';
-                
-                // Y좌표 기준으로 레이어 순서(깊이감) 변경
-                el.style.zIndex = Math.floor(nextY + el.height);
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', end);
+                document.addEventListener('touchmove', move, { passive: false });
+                document.addEventListener('touchend', end);
             }
 
-            function onEnd() {
-                document.removeEventListener(isTouch ? 'touchmove' : 'mousemove', onMove);
-                document.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+            function move(e) {
+                const point = e.touches ? e.touches[0] : e;
+                const dx = point.clientX - startX;
+                const dy = point.clientY - startY;
+
+                let nextLeft = initLeft + dx;
+                let nextTop = initTop + dy;
+
+                // 캔버스 밖으로 못 나가게 제한
+                const maxW = canvas.clientWidth - el.clientWidth;
+                const maxH = canvas.clientHeight - el.clientHeight;
+                
+                nextLeft = Math.max(0, Math.min(nextLeft, maxW));
+                nextTop = Math.max(0, Math.min(nextTop, maxH));
+
+                // 스냅핑 (선택사항)
+                // nextLeft = Math.round(nextLeft / SNAP) * SNAP;
+                // nextTop = Math.round(nextTop / SNAP) * SNAP;
+
+                el.style.left = nextLeft + 'px';
+                el.style.top = nextTop + 'px';
+                
+                // 깊이 효과 (아래로 갈수록 앞으로 튀어나옴)
+                el.style.zIndex = Math.floor(nextTop);
+                
+                if(e.cancelable) e.preventDefault(); // 중요: 모바일 스크롤 막기
             }
 
-            document.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove);
-            document.addEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
+            function end() {
+                document.removeEventListener('mousemove', move);
+                document.removeEventListener('mouseup', end);
+                document.removeEventListener('touchmove', move);
+                document.removeEventListener('touchend', end);
+            }
+
+            el.addEventListener('mousedown', start);
+            el.addEventListener('touchstart', start, { passive: false });
+        }
+
+        function savePos() {
+            alert("좌표 저장 완료 (콘솔 확인)");
+            // 실제 구현 시 placedItems 배열을 만들어 저장
         }
     </script>
 </body>
