@@ -3,83 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>요원실 마이홈 - 시점 교정판</title>
+    <title>요원실 마이홈 - SVG 리빌드</title>
     <style>
-        :root { --wall-color: #2c3e50; --floor-color: #1a1a1a; --grid-color: rgba(255,255,255,0.07); --accent: #ff9c00; }
-        body { background: #000; color: white; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; overscroll-behavior: none; font-family: sans-serif; }
+        :root { --wall-l: #2c3e50; --wall-r: #1a252f; --floor: #111; --grid: rgba(255,255,255,0.08); --accent: #ff9c00; }
+        body { background: #000; color: white; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; overscroll-behavior: none; }
 
         /* 상점 UI */
-        .shop { width: 100%; max-width: 420px; background: #1a1a1a; padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; overflow-x: auto; border: 1px solid #333; box-sizing: border-box; }
+        .shop { width: 100%; max-width: 450px; background: #1a1a1a; padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; overflow-x: auto; border: 1px solid #333; box-sizing: border-box; }
         .shop-item { width: 55px; height: 55px; background: #000; border: 2px solid #333; border-radius: 8px; padding: 5px; flex-shrink: 0; cursor: pointer; }
 
-        /* 📌 룸 컨테이너 */
-        .room-container {
+        /* 📌 룸 뷰포트 */
+        .room-viewport {
             position: relative;
             width: 100%;
-            max-width: 420px;
-            aspect-ratio: 1 / 1.1; /* 시점을 위해 약간 세로로 긴 비율 */
+            max-width: 450px;
+            aspect-ratio: 1 / 1;
             background: #050505;
             border: 2px solid #222;
             border-radius: 15px;
             overflow: hidden;
-            touch-action: none;
+            touch-action: none; /* 모바일 드래그 필수 */
         }
 
-        /* 📌 아이소메트릭 월드 (중앙 정렬 및 시점 변환) */
-        .world {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -45%) scale(1.2); /* 전체적인 크기 및 위치 조정 */
-            width: 250px;
-            height: 250px;
-        }
-
-        /* 📐 바닥 (다이아몬드) */
-        .floor {
-            position: absolute;
-            width: 200px; height: 200px;
-            background: var(--floor-color);
-            transform: rotateX(60deg) rotateZ(45deg); /* 아이소메트릭 표준 각도 */
-            bottom: 0; left: 25px;
-            border: 2px solid #333;
-            /* 격자 추가 */
-            background-image: 
-                linear-gradient(var(--grid-color) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 25px 25px;
-            z-index: 1;
-        }
-
-        /* 📐 왼쪽 벽 */
-        .wall-left {
-            position: absolute;
-            width: 125px; height: 180px;
-            background: #34495e;
-            transform: skewY(-30deg);
-            bottom: 100px; left: 0;
-            z-index: 2;
-            border-right: 1px solid rgba(0,0,0,0.3);
-        }
-
-        /* 📐 오른쪽 벽 */
-        .wall-right {
-            position: absolute;
-            width: 125px; height: 180px;
-            background: #2c3e50;
-            transform: skewY(30deg);
-            bottom: 100px; right: 0;
-            z-index: 2;
-        }
-
-        /* 배치 레이어 */
-        .items-layer {
-            position: absolute;
-            inset: 0;
-            z-index: 10;
-            pointer-events: none;
-        }
-
+        /* 📌 SVG 배경 (좌표가 고정되어 절대 깨지지 않음) */
+        .room-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+        
+        /* 배치 아이템 레이어 */
+        .items-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
         .item {
             position: absolute; width: 70px; height: auto;
             cursor: move; pointer-events: auto;
@@ -87,7 +37,7 @@
             touch-action: none;
         }
 
-        .btn-save { margin-top: 20px; width: 100%; max-width: 420px; background: var(--accent); border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-save { margin-top: 15px; width: 100%; max-width: 450px; background: var(--accent); border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; color: black; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -99,16 +49,26 @@
         <img src="https://cdn-icons-png.flaticon.com/512/3534/3534064.png" class="shop-item" onclick="addItem(this.src)">
     </div>
 
-    <div class="room-container" id="room">
-        <div class="world">
-            <div class="floor"></div>
-            <div class="wall-left"></div>
-            <div class="wall-right"></div>
-        </div>
+    <div class="room-viewport" id="room">
+        <svg class="room-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M 0 65 L 50 90 L 100 65 L 50 40 Z" fill="var(--floor)" stroke="#333" stroke-width="0.2"/>
+            
+            <g stroke="var(--grid)" stroke-width="0.1">
+                <path d="M 10 60 L 60 85 M 20 55 L 70 80 M 30 50 L 80 75 M 40 45 L 90 70" />
+                <path d="M 90 60 L 40 85 M 80 55 L 30 80 M 70 50 L 20 75 M 60 45 L 10 70" />
+            </g>
+
+            <path d="M 0 15 L 50 40 L 50 90 L 0 65 Z" fill="var(--wall-l)" />
+            
+            <path d="M 100 15 L 50 40 L 50 90 L 100 65 Z" fill="var(--wall-r)" />
+            
+            <line x1="50" y1="40" x2="50" y2="90" stroke="rgba(0,0,0,0.2)" stroke-width="0.5" />
+        </svg>
+
         <div class="items-layer" id="items-layer"></div>
     </div>
 
-    <button class="btn-save" onclick="alert('배치가 저장되었습니다!')">배치 저장하기</button>
+    <button class="btn-save" onclick="alert('배치가 성공적으로 저장되었습니다!')">배치 저장하기</button>
 
     <script>
         const layer = document.getElementById('items-layer');
@@ -118,11 +78,13 @@
             const img = document.createElement('img');
             img.src = src;
             img.className = 'item';
-            img.style.left = '175px';
-            img.style.top = '220px';
+            // 초기 소환 위치 (바닥 중앙 위쪽)
+            img.style.left = 'calc(50% - 35px)';
+            img.style.top = '50%';
 
             setupDrag(img);
             
+            // 더블 탭 삭제
             let lastTap = 0;
             img.onpointerdown = (e) => {
                 const now = Date.now();
@@ -135,7 +97,8 @@
 
         function setupDrag(el) {
             el.onpointerdown = (e) => {
-                el.setPointerCapture(e.pointerId);
+                el.setPointerCapture(e.pointerId); // 드래그 중 포커스 고정
+                
                 const rect = room.getBoundingClientRect();
                 const shiftX = e.clientX - el.getBoundingClientRect().left;
                 const shiftY = e.clientY - el.getBoundingClientRect().top;
@@ -144,18 +107,24 @@
                     let newX = me.clientX - rect.left - shiftX;
                     let newY = me.clientY - rect.top - shiftY;
 
+                    // 화면 밖으로 못 나가게 제한
                     newX = Math.max(0, Math.min(newX, room.clientWidth - el.clientWidth));
                     newY = Math.max(0, Math.min(newY, room.clientHeight - el.clientHeight));
 
                     el.style.left = newX + 'px';
                     el.style.top = newY + 'px';
-                    el.style.zIndex = Math.floor(newY + 100);
+                    
+                    // 깊이 정렬: 아래에 있을수록 z-index가 높음
+                    el.style.zIndex = Math.floor(newY + el.clientHeight);
+                };
+
+                const onUp = () => {
+                    el.onpointermove = null;
+                    el.onpointerup = null;
                 };
 
                 el.onpointermove = onMove;
-                el.onpointerup = () => {
-                    el.onpointermove = null;
-                };
+                el.onpointerup = onUp;
             };
         }
     </script>
