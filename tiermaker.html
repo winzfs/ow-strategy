@@ -3,269 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OW2 멀티 티어메이커</title>
+    <title>OW2 TIER MAKER</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
             --ow-orange: #f99e1a;
-            --bg-dark: #080a0e;
-            --panel: #1a1e26;
+            --bg-dark: #0b0e12;
+            --panel: #1e232d;
             --tier-s: #ff7f7f; --tier-a: #ffbf7f; --tier-b: #ffff7f; --tier-c: #7fff7f; --tier-d: #7fbfff;
         }
 
         body {
             background: var(--bg-dark); color: white; font-family: 'Malgun Gothic', sans-serif;
             margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center;
-            overflow-x: hidden; touch-action: manipulation;
+            overflow-x: hidden; -webkit-tap-highlight-color: transparent;
         }
 
-        /* 상단 헤더 및 제목 */
-        header { width: 100%; max-width: 1000px; margin: 10px 0 20px 0; text-align: center; }
-        header h1 { color: var(--ow-orange); font-style: italic; text-transform: uppercase; letter-spacing: -1px; margin: 0; }
-        header p { color: #888; margin: 5px 0; font-size: 0.9rem; }
+        header { width: 100%; max-width: 900px; text-align: left; padding: 10px; border-bottom: 2px solid var(--ow-orange); margin-bottom: 15px; }
+        header h1 { margin: 0; font-size: 1.5rem; color: var(--ow-orange); text-transform: uppercase; }
 
-        /* 포지션 탭 스타일 */
-        .tab-container { display: flex; width: 100%; max-width: 1000px; gap: 5px; margin-bottom: 15px; }
+        /* 탭 메뉴 */
+        .tab-menu { display: flex; width: 100%; max-width: 900px; gap: 4px; margin-bottom: 10px; }
         .tab-btn {
-            flex: 1; padding: 12px; border: none; background: #222; color: #777;
-            cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s;
-            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0% 100%);
+            flex: 1; padding: 12px 5px; border: none; background: #252a34; color: #888;
+            font-weight: bold; cursor: pointer; border-radius: 4px 4px 0 0;
         }
         .tab-btn.active { background: var(--ow-orange); color: black; }
 
-        /* 티어표 구역 (캡처 대상) */
-        .capture-area { width: 100%; max-width: 1000px; padding: 15px; background: var(--bg-dark); min-height: 450px; }
-        .tier-page { display: none; }
-        .tier-page.active { display: block; }
-        
-        .tier-board { display: flex; flex-direction: column; gap: 8px; }
-        .tier-row { display: flex; background: var(--panel); border-radius: 4px; position: relative; min-height: 85px; border: 1px solid #333; }
+        /* 티어표 영역 */
+        #capture-zone { width: 100%; max-width: 900px; background: var(--bg-dark); padding: 5px; box-sizing: border-box; }
+        .tier-board { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+        .tier-row { display: flex; background: var(--panel); min-height: 80px; border-radius: 4px; position: relative; }
         
         .tier-label {
-            width: 70px; min-width: 70px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem; font-weight: 900; color: #000; clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+            width: 60px; min-width: 60px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: 900; color: #000; border-radius: 4px 0 0 4px;
         }
 
-        .row-remove {
-            position: absolute; left: -35px; top: 50%; transform: translateY(-50%);
-            color: #666; cursor: pointer; border: none; background: none; font-size: 24px; padding: 5px;
-        }
+        .dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 8px; gap: 6px; align-content: flex-start; min-height: 60px; }
 
-        .dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 10px; gap: 8px; min-height: 60px; }
-
-        /* 영웅 카드 */
+        /* 영웅 아이콘 */
         .hero {
-            width: 55px; height: 70px; background: #2a2f3b; border: 2px solid #4a5162;
-            cursor: grab; position: relative; background-size: cover; background-position: center;
-            user-select: none; touch-action: none; z-index: 10;
+            width: 50px; height: 62px; background: #2a2f3b; border: 1.5px solid #4a5162;
+            position: relative; background-size: cover; background-position: center;
+            border-radius: 3px; touch-action: none; user-select: none;
         }
-        .hero span { position: absolute; bottom: 0; font-size: 8px; background: rgba(0,0,0,0.8); width: 100%; text-align: center; pointer-events: none; }
+        .hero span { position: absolute; bottom: 0; font-size: 8px; background: rgba(0,0,0,0.8); width: 100%; text-align: center; padding: 1px 0; }
         
-        /* 티어표에 있을 때만 삭제 버튼 */
+        /* 배치된 영웅 클릭 시 삭제 버튼 */
         .del-btn {
-            position: absolute; top: -10px; right: -10px; width: 22px; height: 22px;
-            background: #ff4e50; color: white; border-radius: 50%; display: none;
-            align-items: center; justify-content: center; font-size: 14px; border: 2px solid white; z-index: 20;
+            position: absolute; top: -8px; right: -8px; width: 20px; height: 20px;
+            background: #ff4444; color: white; border-radius: 50%; display: none;
+            align-items: center; justify-content: center; font-size: 12px; font-weight: bold; border: 1.5px solid white; z-index: 30;
         }
         .tier-row .hero.selected .del-btn { display: flex; }
-        .hero.dragging { opacity: 0.7; transform: scale(1.1); z-index: 9999 !important; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
 
-        /* 하단 로스터 구역 */
-        .roster-container { width: 100%; max-width: 1000px; margin-top: 10px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; }
-        .pool-content { display: none; flex-wrap: wrap; gap: 8px; justify-content: center; }
-        .pool-content.active { display: flex; }
+        /* 로스터 영역 */
+        .roster-wrap { width: 100%; max-width: 900px; margin-top: 20px; background: #161b22; padding: 15px; border-radius: 8px; box-sizing: border-box; }
+        .roster-title { font-size: 0.9rem; margin-bottom: 10px; color: #aaa; border-left: 3px solid var(--ow-orange); padding-left: 8px; }
+        .pool-view { display: none; flex-wrap: wrap; gap: 8px; justify-content: flex-start; }
+        .pool-view.active { display: flex; }
 
-        /* 컨트롤 */
-        .controls { width: 100%; max-width: 1000px; margin: 15px 0; display: flex; gap: 5px; flex-wrap: wrap; }
-        .input-group { flex: 1; display: flex; gap: 5px; min-width: 250px; }
-        .btn-save { background: var(--ow-orange); color: black; border: none; padding: 12px; cursor: pointer; border-radius: 4px; font-weight: bold; flex: 1; }
+        /* 컨트롤 패널 */
+        .controls { width: 100%; max-width: 900px; display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; padding: 0 5px; }
+        .controls input, .controls button { padding: 10px; border-radius: 4px; border: 1px solid #333; }
+        .btn-save { background: var(--ow-orange); color: black; font-weight: bold; flex-grow: 1; border: none !important; }
 
-        @media (max-width: 600px) { .row-remove { left: -5px; color: white; text-shadow: 0 0 3px black; z-index: 30; } }
+        /* 티어 줄 삭제 버튼 */
+        .row-del-btn {
+            position: absolute; left: -30px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #444; font-size: 1.5rem; cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .row-del-btn { left: 2px; color: rgba(255,255,255,0.5); z-index: 10; }
+            .tier-label { width: 50px; min-width: 50px; font-size: 1.2rem; }
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>OVERWATCH 2 TIER LIST</h1>
-        <p>포지션별로 나만의 티어리스트를 만들어보세요</p>
+        <h1>Overwatch 2 Tier Maker</h1>
     </header>
 
-    <div class="tab-container">
-        <button class="tab-btn active" onclick="switchTab('tank')">🛡️ 돌격</button>
-        <button class="tab-btn" onclick="switchTab('damage')">⚔️ 공격</button>
-        <button class="tab-btn" onclick="switchTab('support')">💉 지원</button>
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="changeTab('tank')">TANK</button>
+        <button class="tab-btn" onclick="changeTab('damage')">DPS</button>
+        <button class="tab-btn" onclick="changeTab('support')">SUP</button>
     </div>
 
-    <div id="capture-zone" class="capture-area">
-        <h2 id="capture-title" style="margin: 0 0 15px 0; text-align: center; color: var(--ow-orange);">돌격(TANK) 티어표</h2>
-        
-        <div id="board-tank" class="tier-page active">
-            <div class="tier-board">
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-s)">S</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-a)">A</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-b)">B</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-c)">C</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-d)">D</div><div class="dropzone"></div></div>
-            </div>
-        </div>
-
-        <div id="board-damage" class="tier-page">
-            <div class="tier-board">
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-s)">S</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-a)">A</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-b)">B</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-c)">C</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-d)">D</div><div class="dropzone"></div></div>
-            </div>
-        </div>
-
-        <div id="board-support" class="tier-page">
-            <div class="tier-board">
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-s)">S</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-a)">A</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-b)">B</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-c)">C</div><div class="dropzone"></div></div>
-                <div class="tier-row"><button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:var(--tier-d)">D</div><div class="dropzone"></div></div>
-            </div>
+    <div id="capture-zone">
+        <div id="current-board-title" style="padding: 10px; font-weight: bold; color: var(--ow-orange);">돌격(TANK) 리스트</div>
+        <div class="tier-board" id="main-board">
+            <div class="tier-row"><button class="row-del-btn" onclick="this.parentElement.remove()">×</button><div class="tier-label" style="background:var(--tier-s)">S</div><div class="dropzone"></div></div>
+            <div class="tier-row"><button class="row-del-btn" onclick="this.parentElement.remove()">×</button><div class="tier-label" style="background:var(--tier-a)">A</div><div class="dropzone"></div></div>
+            <div class="tier-row"><button class="row-del-btn" onclick="this.parentElement.remove()">×</button><div class="tier-label" style="background:var(--tier-b)">B</div><div class="dropzone"></div></div>
+            <div class="tier-row"><button class="row-del-btn" onclick="this.parentElement.remove()">×</button><div class="tier-label" style="background:var(--tier-c)">C</div><div class="dropzone"></div></div>
+            <div class="tier-row"><button class="row-del-btn" onclick="this.parentElement.remove()">×</button><div class="tier-label" style="background:var(--tier-d)">D</div><div class="dropzone"></div></div>
         </div>
     </div>
 
     <div class="controls">
-        <div class="input-group">
-            <input type="text" id="new-tier-name" placeholder="티어명" style="width:60px; padding:10px;">
-            <input type="color" id="new-tier-color" value="#666666" style="width:40px; height:43px; border:none;">
-            <button onclick="createNewTier()" style="flex:1;">티어 추가</button>
-        </div>
-        <button class="btn-save" onclick="downloadImage()">현재 티어표 이미지로 저장</button>
+        <input type="text" id="tier-name" placeholder="티어명" style="width:70px;">
+        <input type="color" id="tier-color" value="#666666" style="width:40px; padding:0;">
+        <button onclick="addTier()">티어 추가</button>
+        <button class="btn-save" onclick="saveImage()">이미지 저장</button>
     </div>
 
-    <div class="roster-container">
-        <div id="pool-tank" class="pool-content active dropzone"></div>
-        <div id="pool-damage" class="pool-content dropzone"></div>
-        <div id="pool-support" class="pool-content dropzone"></div>
+    <div class="roster-wrap">
+        <div class="roster-title">HERO ROSTER</div>
+        <div id="pool-tank" class="pool-view active dropzone"></div>
+        <div id="pool-damage" class="pool-view dropzone"></div>
+        <div id="pool-support" class="pool-view dropzone"></div>
     </div>
 
 <script>
-    const IMG_BASE_URL = "images/";
-    const heroData = {
-        tank: [{id:'dva', name:'D.Va'}, {id:'doomfist', name:'둠피'}, {id:'junkerqueen', name:'정커퀸'}, {id:'orisa', name:'오리사'}, {id:'ramattra', name:'라마트라'}, {id:'reinhardt', name:'라인'}, {id:'roadhog', name:'로드'}, {id:'sigma', name:'시그마'}, {id:'winston', name:'윈스턴'}, {id:'wreckingball', name:'레킹볼'}, {id:'zarya', name:'자리야'}, {id:'mauga', name:'마우가'}],
-        damage: [{id:'ashe', name:'애쉬'}, {id:'bastion', name:'바스티온'}, {id:'cassidy', name:'캐시디'}, {id:'echo', name:'에코'}, {id:'genji', name:'겐지'}, {id:'hanzo', name:'한조'}, {id:'junkrat', name:'정크랫'}, {id:'mei', name:'메이'}, {id:'pharah', name:'파라'}, {id:'reaper', name:'리퍼'}, {id:'sojourn', name:'소전'}, {id:'soldier76', name:'솔저'}, {id:'sombra', name:'솜브라'}, {id:'symmetra', name:'시메'}, {id:'torbjorn', name:'토비'}, {id:'tracer', name:'트레'}, {id:'widowmaker', name:'위도'}, {id:'venture', name:'벤처'}],
-        support: [{id:'ana', name:'아나'}, {id:'baptiste', name:'바티'}, {id:'brigitte', name:'브리'}, {id:'illari', name:'일리아리'}, {id:'kiriko', name:'키리코'}, {id:'lifeweaver', name:'라위'}, {id:'lucio', name:'루시우'}, {id:'mercy', name:'메르시'}, {id:'moira', name:'모이라'}, {id:'zenyatta', name:'젠야타'}, {id:'juno', name:'유노'}]
+    const IMG_URL = "images/";
+    const heroList = {
+        tank: [{id:'dva', n:'D.Va'}, {id:'doomfist', n:'둠피'}, {id:'junkerqueen', n:'정커퀸'}, {id:'orisa', n:'오리사'}, {id:'ramattra', n:'라마트라'}, {id:'reinhardt', n:'라인'}, {id:'roadhog', n:'로드'}, {id:'sigma', n:'시그마'}, {id:'winston', n:'윈스턴'}, {id:'wreckingball', n:'레킹볼'}, {id:'zarya', n:'자리야'}, {id:'mauga', n:'마우가'}],
+        damage: [{id:'ashe', n:'애쉬'}, {id:'bastion', n:'바스티온'}, {id:'cassidy', n:'캐시디'}, {id:'echo', n:'에코'}, {id:'genji', n:'겐지'}, {id:'hanzo', n:'한조'}, {id:'junkrat', n:'정크랫'}, {id:'mei', n:'메이'}, {id:'pharah', n:'파라'}, {id:'reaper', n:'리퍼'}, {id:'sojourn', n:'소전'}, {id:'soldier76', n:'솔저'}, {id:'sombra', n:'솜브라'}, {id:'symmetra', n:'시메'}, {id:'torbjorn', n:'토비'}, {id:'tracer', n:'트레'}, {id:'widowmaker', n:'위도'}, {id:'venture', n:'벤처'}],
+        support: [{id:'ana', n:'아나'}, {id:'baptiste', n:'바티'}, {id:'brigitte', n:'브리'}, {id:'illari', n:'일리아리'}, {id:'kiriko', n:'키리코'}, {id:'lifeweaver', n:'라위'}, {id:'lucio', n:'루시우'}, {id:'mercy', n:'메르시'}, {id:'moira', n:'모이라'}, {id:'zenyatta', n:'젠야타'}, {id:'juno', n:'유노'}]
     };
 
-    let activeItem = null;
-    let currentRole = 'tank';
+    let draggedItem = null;
 
-    function init() {
-        Object.keys(heroData).forEach(role => {
-            const pool = document.getElementById(`pool-${role}`);
-            heroData[role].forEach(h => {
-                const div = document.createElement('div');
-                div.className = 'hero';
-                div.style.backgroundImage = `url('${IMG_BASE_URL}${h.id}.png')`;
-                div.dataset.role = role;
-                div.innerHTML = `<span>${h.name}</span><div class="del-btn" onclick="removeHero(event, this)">×</div>`;
+    function createHeroes() {
+        Object.keys(heroList).forEach(role => {
+            const container = document.getElementById(`pool-${role}`);
+            heroList[role].forEach(h => {
+                const el = document.createElement('div');
+                el.className = 'hero';
+                el.style.backgroundImage = `url('${IMG_URL}${h.id}.png')`;
+                el.dataset.role = role;
+                el.innerHTML = `<span>${h.n}</span><div class="del-btn">×</div>`;
                 
-                div.addEventListener('click', (e) => {
+                // 클릭 시 선택(삭제버튼 노출용)
+                el.onclick = (e) => {
                     e.stopPropagation();
-                    document.querySelectorAll('.hero').forEach(el => el.classList.remove('selected'));
-                    div.classList.add('selected');
-                });
+                    document.querySelectorAll('.hero').forEach(x => x.classList.remove('selected'));
+                    el.classList.add('selected');
+                };
 
-                div.addEventListener('touchstart', onTouchStart, {passive: false});
-                div.addEventListener('touchmove', onTouchMove, {passive: false});
-                div.addEventListener('touchend', onTouchEnd, {passive: false});
-                pool.appendChild(div);
+                // 삭제 버튼 클릭 시 원래 로스터로 복구
+                el.querySelector('.del-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    document.getElementById(`pool-${el.dataset.role}`).appendChild(el);
+                    el.classList.remove('selected');
+                };
+
+                // 모바일 드래그 지원
+                el.ontouchstart = (e) => { draggedItem = el; el.classList.add('dragging'); };
+                el.ontouchmove = (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    el.style.position = 'fixed';
+                    el.style.left = touch.clientX - 25 + 'px';
+                    el.style.top = touch.clientY - 30 + 'px';
+                    el.style.zIndex = 1000;
+                };
+                el.ontouchend = (e) => {
+                    el.classList.remove('dragging');
+                    el.style.position = 'static';
+                    const touch = e.changedTouches[0];
+                    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const zone = target?.closest('.dropzone');
+                    if(zone) zone.appendChild(el);
+                    draggedItem = null;
+                };
+                container.appendChild(el);
             });
         });
-        document.querySelectorAll('.dropzone').forEach(setupDropzone);
     }
 
-    function switchTab(role) {
-        currentRole = role;
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-
-        document.querySelectorAll('.tier-page').forEach(pg => pg.classList.remove('active'));
-        document.getElementById(`board-${role}`).classList.add('active');
-
-        document.querySelectorAll('.pool-content').forEach(p => p.classList.remove('active'));
+    function changeTab(role) {
+        // 탭 버튼 활성화
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // 로스터 풀 교체
+        document.querySelectorAll('.pool-view').forEach(p => p.classList.remove('active'));
         document.getElementById(`pool-${role}`).classList.add('active');
-
-        const titleMap = { tank: '돌격(TANK) 티어표', damage: '공격(DAMAGE) 티어표', support: '지원(SUPPORT) 티어표' };
-        document.getElementById('capture-title').innerText = titleMap[role];
+        
+        // 제목 변경
+        const names = {tank:'돌격(TANK)', damage:'공격(DPS)', support:'지원(SUP)'};
+        document.getElementById('current-board-title').innerText = `${names[role]} 리스트`;
     }
 
-    // 모바일 터치 드래그 로직
-    function onTouchStart(e) {
-        activeItem = this;
-        activeItem.classList.add('dragging');
-    }
-
-    function onTouchMove(e) {
-        if (!activeItem) return;
-        e.preventDefault();
-        const touch = e.touches[0];
-        activeItem.style.position = 'fixed';
-        activeItem.style.left = (touch.clientX - 25) + 'px';
-        activeItem.style.top = (touch.clientY - 35) + 'px';
-    }
-
-    function onTouchEnd(e) {
-        if (!activeItem) return;
-        activeItem.classList.remove('dragging');
-        activeItem.style.position = 'static';
-        const touch = e.changedTouches[0];
-        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-        const zone = dropTarget?.closest('.dropzone');
-        if (zone) zone.appendChild(activeItem);
-        activeItem = null;
-    }
-
-    function setupDropzone(zone) {
-        zone.addEventListener('dragover', e => e.preventDefault());
-        zone.addEventListener('drop', () => { if(activeItem) zone.appendChild(activeItem); });
-    }
-
-    function removeHero(e, btn) {
-        e.stopPropagation();
-        const hero = btn.parentElement;
-        document.getElementById(`pool-${hero.dataset.role}`).appendChild(hero);
-        hero.classList.remove('selected');
-    }
-
-    function removeRow(btn) {
-        const row = btn.parentElement;
-        row.querySelectorAll('.hero').forEach(h => document.getElementById(`pool-${h.dataset.role}`).appendChild(h));
-        row.remove();
-    }
-
-    function createNewTier() {
-        const name = document.getElementById('new-tier-name').value || "N";
-        const color = document.getElementById('new-tier-color').value;
-        const activeBoard = document.querySelector('.tier-page.active .tier-board');
+    function addTier() {
+        const name = document.getElementById('tier-name').value || 'N';
+        const color = document.getElementById('tier-color').value;
         const row = document.createElement('div');
         row.className = 'tier-row';
-        row.innerHTML = `<button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:${color}">${name}</div><div class="dropzone"></div>`;
-        activeBoard.appendChild(row);
-        setupDropzone(row.querySelector('.dropzone'));
+        row.innerHTML = `<button class="row-del-btn" onclick="this.parentElement.remove()">×</button><div class="tier-label" style="background:${color}">${name}</div><div class="dropzone"></div>`;
+        document.getElementById('main-board').appendChild(row);
     }
 
-    function downloadImage() {
+    function saveImage() {
         document.querySelectorAll('.hero').forEach(h => h.classList.remove('selected'));
-        const target = document.getElementById('capture-zone');
-        html2canvas(target, {backgroundColor:'#080a0e', useCORS: true}).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `ow2-${currentRole}-tier.png`;
-            link.href = canvas.toDataURL();
-            link.click();
+        html2canvas(document.getElementById('capture-zone'), {backgroundColor:'#0b0e12'}).then(canvas => {
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL();
+            a.download = 'tier-list.png';
+            a.click();
         });
     }
 
-    init();
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.hero').forEach(h => h.classList.remove('selected'));
-    });
+    // 바탕 클릭 시 선택 해제
+    document.addEventListener('click', () => document.querySelectorAll('.hero').forEach(h => h.classList.remove('selected')));
+
+    createHeroes();
 </script>
 </body>
 </html>
