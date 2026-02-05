@@ -115,35 +115,40 @@
      
 /* 수정된 필터 태그 스타일 */
 /* 수정된 필터 태그 스타일 */
+/* 1. 기본 스타일: 위치 이동을 아예 제거하고 색상 변화에 집중 */
 .filter-tag { 
     cursor: pointer; 
-    transition: transform 0.1s ease, background 0.2s, border 0.2s; 
-    border: 2px solid transparent; /* 공간 미리 확보 */
+    transition: background 0.2s, border 0.2s, box-shadow 0.2s; 
+    border: 2px solid transparent; 
     display: inline-flex;
     align-items: center;
-    user-select: none; /* 드래그 방지 */
-    transform: translateY(0); /* 기본 위치 */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent; /* 모바일 터치 시 생기는 파란 박스 제거 */
 }
 
-/* 마우스를 올렸을 때만 위로 이동 */
-/* 단, 클릭 중이거나(active) 이미 선택된 상태에서는 이동을 억제하여 덜컥거림 방지 */
-.filter-tag:hover:not(.active) { 
-    transform: translateY(-2px); 
-    filter: brightness(1.1);
+/* 2. PC(마우스) 환경에서만 호버 시 위로 이동하도록 제한 */
+@media (hover: hover) {
+    .filter-tag:hover:not(.active) { 
+        transform: translateY(-2px); 
+        filter: brightness(1.1);
+    }
 }
 
-/* 선택된 상태 스타일 */
+/* 3. 선택된 상태: 위치 이동(transform)을 절대 쓰지 않고 테두리로만 표시 */
 .filter-tag.active { 
     border: 2px solid white !important; 
-    transform: translateY(0) !important; /* 선택된 태그는 호버해도 움직이지 않게 고정 */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    box-shadow: 0 0 12px rgba(255,156,0,0.4);
     filter: brightness(1.2);
+    /* 모바일에서 튀는 현상을 막기 위해 위치 강제 고정 */
+    transform: none !important; 
 }
 
-/* 클릭하는 순간 살짝 눌리는 느낌 (선택 사항) */
+/* 4. 터치하는 '순간'에만 살짝 어두워지거나 작아지는 피드백 (선택 사항) */
 .filter-tag:active {
-    transform: translateY(1px);
+    filter: brightness(0.9);
+    transform: scale(0.95); /* 위로 올라가는 대신 살짝 작아지게 하면 훨씬 자연스러움 */
 }
+
 
 
 
