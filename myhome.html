@@ -1,126 +1,207 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<title>My Home - Quarter View</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>My Home</title>
+
 <style>
   body {
-    background:#222;
-    color:#fff;
+    margin:0;
+    background:#1e1e1e;
+    color:white;
     font-family: monospace;
     display:flex;
+    height:100vh;
+    overflow:hidden;
   }
 
   #ui {
-    width:200px;
-    padding:10px;
-    border-right:2px solid #444;
+    width:140px;
+    background:#111;
+    padding:8px;
+    box-sizing:border-box;
   }
 
   button {
     width:100%;
     margin-bottom:6px;
-    cursor:pointer;
+    padding:6px;
+    font-size:12px;
   }
 
   canvas {
+    flex:1;
+    background:#2a2a2a;
     image-rendering: pixelated;
-    image-rendering: crisp-edges;
+    touch-action:none;
   }
 </style>
 </head>
 <body>
 
 <div id="ui">
-  <h3>🪑 가구</h3>
-  <button onclick="selectItem('chair')">의자</button>
-  <button onclick="selectItem('table')">테이블</button>
-  <button onclick="selectItem('character')">캐릭터</button>
+  <b>🏠 배치</b>
+  <button onclick="select('chair')">의자</button>
+  <button onclick="select('table')">테이블</button>
+  <button onclick="select('plant')">화분</button>
+  <button onclick="select('character')">캐릭터</button>
+  <hr>
+  <button onclick="select(null)">❌ 선택 해제</button>
 </div>
 
-<canvas id="game" width="800" height="600"></canvas>
+<canvas id="c"></canvas>
 
 <script>
-const canvas = document.getElementById("game");
+const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
+function resize() {
+  canvas.width = window.innerWidth - 140;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+// ===== 설정 =====
 const TILE_W = 64;
 const TILE_H = 32;
-const MAP_SIZE = 8;
+const MAP_W = 7;
+const MAP_H = 7;
 
-let selectedItem = null;
-
-// 임시 색상 애셋 (이미지로 교체 가능)
-const assets = {
+// 색상 = 임시 16비트 애셋
+const colors = {
   floor: "#555",
+  wall: "#888",
   chair: "#c96",
   table: "#9c6",
+  plant: "#6c9",
   character: "#6cf"
 };
 
-const map = Array.from({ length: MAP_SIZE }, () =>
-  Array.from({ length: MAP_SIZE }, () => null)
-);
+let selected = null;
+let dragging = null;
 
-function isoToScreen(x, y) {
+// 배치된 오브젝트
+const objects = [];
+
+// ===== 좌표 변환 =====
+function iso(x, y) {
   return {
     x: (x - y) * TILE_W / 2 + canvas.width / 2,
     y: (x + y) * TILE_H / 2 + 100
   };
 }
 
-function drawTile(x, y) {
-  const p = isoToScreen(x, y);
-  ctx.fillStyle = assets.floor;
-  ctx.beginPath();
-  ctx.moveTo(p.x, p.y);
-  ctx.lineTo(p.x + TILE_W / 2, p.y + TILE_H / 2);
-  ctx.lineTo(p.x, p.y + TILE_H);
-  ctx.lineTo(p.x - TILE_W / 2, p.y + TILE_H / 2);
-  ctx.closePath();
-  ctx.fill();
-}
-
-function drawObject(x, y, type) {
-  const p = isoToScreen(x, y);
-  ctx.fillStyle = assets[type];
-  ctx.fillRect(p.x - 10, p.y + 10, 20, 20);
-}
-
-function draw() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  for (let y=0;y<MAP_SIZE;y++) {
-    for (let x=0;x<MAP_SIZE;x++) {
-      drawTile(x,y);
-      if (map[y][x]) {
-        drawObject(x,y,map[y][x]);
-      }
+// ===== 바닥 =====
+function drawFloor() {
+  for (let y=0;y<MAP_H;y++) {
+    for (let x=0;x<MAP_W;x++) {
+      const p = iso(x,y);
+      ctx.fillStyle = colors.floor;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + TILE_W/2, p.y + TILE_H/2);
+      ctx.lineTo(p.x, p.y + TILE_H);
+      ctx.lineTo(p.x - TILE_W/2, p.y + TILE_H/2);
+      ctx.closePath();
+      ctx.fill();
     }
   }
 }
 
-canvas.addEventListener("click", e => {
-  if (!selectedItem) return;
+// ===== 벽 =====
+function drawWalls() {
+  for (let x=0;x<MAP_W;x++) {
+    const p = iso(x,0);
+    ctx.fillStyle = colors.wall;
+    ctx.fillRect(p.x - 4, p.y - 40, 8, 40);
+  }
+  for (let y=0;y<MAP_H;y++) {
+    const p = iso(0,y);
+    ctx.fillStyle = colors.wall;
+    ctx.fillRect(p.x - 30, p.y - 20, 30, 8);
+  }
+}
 
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left - canvas.width/2;
-  const my = e.clientY - rect.top - 100;
+// ===== 오브젝트 =====
+function drawObjects() {
+  objects
+    .sort((a,b)=> (a.y - b.y))
+    .forEach(o=>{
+      const p = iso(o.x,o.y);
+      ctx.fillStyle = colors[o.type];
+      ctx.fillRect(p.x - 10, p.y + 4, 20, 20);
+    });
+}
 
-  const x = Math.floor((my / TILE_H + mx / TILE_W));
-  const y = Math.floor((my / TILE_H - mx / TILE_W));
+// ===== 렌더 =====
+function render() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawFloor();
+  drawWalls();
+  drawObjects();
+}
+render();
 
-  if (x>=0 && y>=0 && x<MAP_SIZE && y<MAP_SIZE) {
-    map[y][x] = selectedItem;
-    draw();
+// ===== UI =====
+function select(t) {
+  selected = t;
+}
+
+// ===== 드래그 & 터치 =====
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return {
+    x: t.clientX - r.left,
+    y: t.clientY - r.top
+  };
+}
+
+function pickObject(mx,my) {
+  for (let o of objects) {
+    const p = iso(o.x,o.y);
+    if (
+      mx > p.x-10 && mx < p.x+10 &&
+      my > p.y && my < p.y+24
+    ) return o;
+  }
+  return null;
+}
+
+function gridFromScreen(mx,my) {
+  const dx = mx - canvas.width/2;
+  const dy = my - 100;
+  const x = Math.floor((dy / TILE_H + dx / TILE_W));
+  const y = Math.floor((dy / TILE_H - dx / TILE_W));
+  return {x,y};
+}
+
+canvas.addEventListener("pointerdown", e=>{
+  const p = getPos(e);
+  dragging = pickObject(p.x,p.y);
+
+  if (!dragging && selected) {
+    const g = gridFromScreen(p.x,p.y);
+    if (g.x>=0 && g.y>=0 && g.x<MAP_W && g.y<MAP_H) {
+      objects.push({ ...g, type:selected });
+      render();
+    }
   }
 });
 
-function selectItem(item) {
-  selectedItem = item;
-}
+canvas.addEventListener("pointermove", e=>{
+  if (!dragging) return;
+  const p = getPos(e);
+  const g = gridFromScreen(p.x,p.y);
+  dragging.x = Math.max(0,Math.min(MAP_W-1,g.x));
+  dragging.y = Math.max(0,Math.min(MAP_H-1,g.y));
+  render();
+});
 
-draw();
+canvas.addEventListener("pointerup", ()=> dragging=null);
+canvas.addEventListener("pointerleave", ()=> dragging=null);
 </script>
 
 </body>
