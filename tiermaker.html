@@ -8,166 +8,198 @@
         :root {
             --ow-orange: #f99e1a;
             --ow-blue: #00aeff;
-            --bg-dark: #020408;
-            --tier-s: #ff4e50; --tier-a: #ffa64d; --tier-b: #f2e33c; --tier-c: #bfff00; --tier-f: #55acee;
+            --bg-dark: #080a0e;
+            --panel: #1a1e26;
+            --tier-s: #ff4e50; --tier-a: #ffa64d; --tier-b: #f2e33c; --tier-c: #bfff00; --tier-d: #45b3e0;
         }
 
         body {
-            background-color: var(--bg-dark);
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(0, 174, 255, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(249, 158, 26, 0.05) 0%, transparent 40%);
-            color: white; font-family: 'Arial Black', sans-serif;
-            margin: 0; padding: 20px; min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center;
+            background: var(--bg-dark); color: white; font-family: 'Malgun Gothic', sans-serif;
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
         }
 
-        /* 헤더 디자인 */
-        header { width: 100%; max-width: 1000px; margin-bottom: 30px; position: relative; }
-        header h1 { 
-            margin: 0; font-size: 2.8rem; font-style: italic; text-transform: uppercase;
-            letter-spacing: -2px; color: var(--ow-orange);
-            filter: drop-shadow(0 0 10px rgba(249, 158, 26, 0.5));
-        }
-
-        /* 티어 보드 레이아웃 */
-        .tier-board { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 15px; }
-
-        .tier-row {
-            display: flex; background: rgba(255, 255, 255, 0.03);
-            border-radius: 0 15px 15px 0; border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative; overflow: hidden;
-        }
-
-        /* 티어 라벨 (기울어진 디자인) */
+        header { width: 100%; max-width: 1000px; margin-bottom: 30px; border-left: 6px solid var(--ow-orange); padding-left: 15px; }
+        
+        /* 티어 대시보드 */
+        .tier-board { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 10px; }
+        .tier-row { display: flex; background: var(--panel); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; position: relative; }
+        
         .tier-label {
-            width: 100px; min-width: 100px; min-height: 90px;
+            width: 80px; min-width: 80px; min-height: 90px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; font-weight: 900; color: #000;
-            clip-path: polygon(0 0, 100% 0, 80% 100%, 0% 100%);
-            z-index: 2;
+            font-size: 2rem; font-weight: 900; color: #000;
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
         }
 
-        .s { background: var(--tier-s); box-shadow: inset -5px 0 15px rgba(0,0,0,0.3); }
-        .a { background: var(--tier-a); } .b { background: var(--tier-b); }
-        .c { background: var(--tier-c); } .f { background: var(--tier-f); }
+        .s { background: var(--tier-s); } .a { background: var(--tier-a); } 
+        .b { background: var(--tier-b); } .c { background: var(--tier-c); } .d { background: var(--tier-d); }
+        .custom { background: #666; color: white; }
 
-        .dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 15px; gap: 12px; min-height: 60px; }
+        .dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 10px; gap: 10px; min-height: 70px; }
 
-        /* 영웅 카드 - 훨씬 더 게임답게 */
+        /* 영웅 카드 스타일 */
         .hero {
-            width: 65px; height: 85px; background: #1a1e26;
-            border: 2px solid #3d4455; position: relative;
-            cursor: pointer; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); /* 카드 자체도 기울임 */
-            user-select: none; touch-action: none;
+            width: 65px; height: 80px; background: #2a2f3b; border: 2px solid #4a5162;
+            cursor: grab; position: relative; overflow: visible;
+            background-size: cover; background-position: center;
+            transition: transform 0.2s;
         }
-
-        .hero::after {
-            content: attr(data-name); position: absolute; bottom: 5px; width: 100%;
-            text-align: center; font-size: 10px; color: #aaa; text-transform: uppercase;
+        .hero span { position: absolute; bottom: 0; font-size: 9px; background: rgba(0,0,0,0.7); width: 100%; text-align: center; padding: 2px 0; pointer-events: none; }
+        
+        /* 삭제 버튼 (클릭 시 나타남) */
+        .del-btn {
+            position: absolute; top: -10px; right: -10px; width: 22px; height: 22px;
+            background: #ff0000; color: white; border-radius: 50%; border: 2px solid white;
+            display: none; align-items: center; justify-content: center; font-size: 14px;
+            cursor: pointer; z-index: 10; font-weight: bold;
         }
+        .hero.selected .del-btn { display: flex; }
+        .hero:active { cursor: grabbing; }
 
-        .hero:hover {
-            border-color: var(--ow-blue); transform: scale(1.1) rotate(-2deg);
-            box-shadow: 0 0 20px rgba(0, 174, 255, 0.6);
-            z-index: 10;
-        }
+        /* 컨트롤 및 로스터 */
+        .controls { width: 100%; max-width: 1000px; margin: 20px 0; display: flex; gap: 10px; }
+        .btn { padding: 10px 20px; border: none; cursor: pointer; font-weight: bold; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); }
+        .btn-add { background: var(--ow-blue); color: white; }
+        .btn-save { background: var(--ow-orange); color: white; }
 
-        .hero.dragging { opacity: 0.3; transform: scale(0.7); }
-
-        /* 하단 보관함 */
-        .pool-container {
-            width: 100%; max-width: 1000px; margin-top: 50px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-            padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .pool-title { color: var(--ow-blue); margin-bottom: 20px; font-size: 1.2rem; text-transform: uppercase; }
-
-        /* 버튼 디자인 */
-        .btn {
-            background: #f99e1a; color: black; border: none; padding: 15px 40px;
-            font-weight: bold; text-transform: uppercase; cursor: pointer;
-            clip-path: polygon(15% 0, 100% 0, 85% 100%, 0% 100%);
-            transition: 0.3s; margin-top: 20px;
-        }
-        .btn:hover { background: white; transform: scale(1.05); }
-
+        .roster-section { width: 100%; max-width: 1000px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 8px; }
+        
+        /* 티어 줄 삭제 버튼 */
+        .row-del { position: absolute; left: -40px; top: 30px; color: #555; cursor: pointer; font-size: 20px; border: none; background: none; }
+        .row-del:hover { color: red; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>HERO TIER LIST</h1>
-        <div style="color:var(--ow-blue)">SYSTEM ONLINE // 2026.02.06</div>
+        <h1>오버워치 영웅 티어메이커</h1>
     </header>
 
-    <div class="tier-board">
-        <div class="tier-row"><div class="tier-label s">S</div><div class="dropzone" id="z-s"></div></div>
-        <div class="tier-row"><div class="tier-label a">A</div><div class="dropzone" id="z-a"></div></div>
-        <div class="tier-row"><div class="tier-label b">B</div><div class="dropzone" id="z-b"></div></div>
-        <div class="tier-row"><div class="tier-label c">C</div><div class="dropzone" id="z-c"></div></div>
-        <div class="tier-row"><div class="tier-label f">F</div><div class="dropzone" id="z-f"></div></div>
+    <div class="tier-board" id="tier-board">
+        <div class="tier-row" id="row-s"><div class="tier-label s">S</div><div class="dropzone"></div></div>
+        <div class="tier-row" id="row-a"><div class="tier-label a">A</div><div class="dropzone"></div></div>
+        <div class="tier-row" id="row-b"><div class="tier-label b">B</div><div class="dropzone"></div></div>
+        <div class="tier-row" id="row-c"><div class="tier-label c">C</div><div class="dropzone"></div></div>
+        <div class="tier-row" id="row-d"><div class="tier-label d">D</div><div class="dropzone"></div></div>
     </div>
 
-    <div class="pool-container">
-        <div class="pool-title">HERO ROSTER</div>
+    <div class="controls">
+        <button class="btn btn-add" onclick="addTierRow()">티어 추가</button>
+        <button class="btn btn-save" onclick="saveTierData()">결과 저장</button>
+    </div>
+
+    <div class="roster-section">
+        <h3>영웅 로스터</h3>
         <div class="dropzone" id="pool"></div>
     </div>
 
-    <button class="btn" onclick="saveData()">CONFIRM DATA</button>
-
 <script>
-    const heroList = [
-        'D.Va', 'Doomfist', 'JunkerQueen', 'Orisa', 'Ramattra', 'Reinhardt', 'Roadhog', 'Sigma', 'Winston', 'WreckingBall', 'Zarya', 'Mauga',
-        'Ashe', 'Bastion', 'Cassidy', 'Echo', 'Genji', 'Hanzo', 'Junkrat', 'Mei', 'Pharah', 'Reaper', 'Sojourn', 'Soldier76', 'Sombra', 'Symmetra', 'Torbjorn', 'Tracer', 'Widowmaker', 'Venture',
-        'Ana', 'Baptiste', 'Brigitte', 'Illari', 'Kiriko', 'Lifeweaver', 'Lucio', 'Mercy', 'Moira', 'Zenyatta', 'Juno'
+    // 1. 서버 이미지 연동 설정
+    // 서버의 이미지 폴더 경로를 여기에 적으세요. (예: "https://yourserver.com/images/")
+    const IMG_BASE_URL = "images/"; 
+
+    const heroes = [
+        {id: 'dva', name: 'D.Va'}, {id: 'doomfist', name: '둠피스트'}, {id: 'junkerqueen', name: '정커퀸'},
+        {id: 'orisa', name: '오리사'}, {id: 'ramattra', name: '라마트라'}, {id: 'reinhardt', name: '라인하르트'},
+        {id: 'roadhog', name: '로드호그'}, {id: 'sigma', name: '시그마'}, {id: 'winston', name: '윈스턴'},
+        {id: 'ball', name: '레킹볼'}, {id: 'zarya', name: '자리야'}, {id: 'mauga', name: '마우가'},
+        {id: 'tracer', name: '트레이서'}, {id: 'genji', name: '겐지'}, {id: 'sojourn', name: '소전'},
+        {id: 'kiriko', name: '키리코'}, {id: 'ana', name: '아나'}, {id: 'juno', name: '유노'}
+        // ... 필요한 영웅 계속 추가 가능
     ];
 
     const pool = document.getElementById('pool');
     let dragItem = null;
 
-    // 영웅 카드 생성
-    heroList.forEach(name => {
+    // 2. 영웅 카드 생성 함수
+    function createHeroCard(hero) {
         const div = document.createElement('div');
         div.className = 'hero';
-        div.setAttribute('data-name', name);
         div.draggable = true;
         
-        // PC 드래그
+        // 서버 이미지 연결 (id 기반 파일명 가정: dva.png)
+        div.style.backgroundImage = `url('${IMG_BASE_URL}${hero.id}.png')`;
+        div.innerHTML = `<span>${hero.name}</span><div class="del-btn">×</div>`;
+        
+        // 클릭 시 삭제 버튼 토글
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.hero').forEach(h => { if(h !== div) h.classList.remove('selected'); });
+            div.classList.toggle('selected');
+        });
+
+        // 삭제 버튼 클릭 시 보관함으로 복구
+        div.querySelector('.del-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            pool.appendChild(div);
+            div.classList.remove('selected');
+        });
+
+        // 드래그 이벤트
         div.addEventListener('dragstart', () => { dragItem = div; div.classList.add('dragging'); });
         div.addEventListener('dragend', () => { dragItem = null; div.classList.remove('dragging'); });
-        
-        // 모바일 터치 드래그 (오프라인 지원용 핵심 로직)
-        div.addEventListener('touchstart', (e) => {
-            dragItem = div;
-            div.classList.add('dragging');
-        }, {passive: true});
+
+        // 터치 이벤트 (모바일)
+        div.addEventListener('touchstart', (e) => { dragItem = div; }, {passive: true});
 
         pool.appendChild(div);
-    });
+    }
 
-    // 드롭존 로직
-    const zones = document.querySelectorAll('.dropzone');
-    zones.forEach(zone => {
+    // 초기화 로드
+    heroes.forEach(createHeroCard);
+
+    // 3. 티어 줄 추가 함수
+    function addTierRow() {
+        const title = prompt("추가할 티어 이름을 입력하세요", "E");
+        if(!title) return;
+
+        const row = document.createElement('div');
+        row.className = 'tier-row';
+        row.innerHTML = `
+            <button class="row-del" onclick="this.parentElement.remove()">×</button>
+            <div class="tier-label custom">${title}</div>
+            <div class="dropzone"></div>
+        `;
+        document.getElementById('tier-board').appendChild(row);
+        setupDropzone(row.querySelector('.dropzone'));
+    }
+
+    // 4. 드롭존 설정
+    function setupDropzone(zone) {
         zone.addEventListener('dragover', (e) => e.preventDefault());
-        zone.addEventListener('drop', () => { if(dragItem) zone.appendChild(dragItem); });
+        zone.addEventListener('drop', () => { 
+            if(dragItem) {
+                zone.appendChild(dragItem);
+                dragItem.classList.remove('selected');
+            }
+        });
         
-        // 모바일 터치 종료 시 드롭 시뮬레이션
         zone.addEventListener('touchend', (e) => {
             if(!dragItem) return;
             const touch = e.changedTouches[0];
             const target = document.elementFromPoint(touch.clientX, touch.clientY);
             const dropTarget = target?.closest('.dropzone');
             if(dropTarget) dropTarget.appendChild(dragItem);
-            dragItem.classList.remove('dragging');
             dragItem = null;
         });
+    }
+
+    document.querySelectorAll('.dropzone').forEach(setupDropzone);
+
+    // 바탕 클릭 시 선택 해제
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.hero').forEach(h => h.classList.remove('selected'));
     });
 
-    function saveData() {
-        alert("데이터가 관리자용 로그로 생성되었습니다.\n이메일: jazzhjm@gmail.com");
+    function saveTierData() {
+        const data = {};
+        document.querySelectorAll('.tier-row').forEach(row => {
+            const label = row.querySelector('.tier-label').innerText;
+            const heroList = Array.from(row.querySelectorAll('.hero span')).map(s => s.innerText);
+            data[label] = heroList;
+        });
+        console.log("저장된 티어 데이터:", data);
+        alert("데이터가 콘솔에 저장되었습니다.");
     }
 </script>
 </body>
