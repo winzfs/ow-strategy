@@ -500,11 +500,15 @@ window.toggleSidebar = () => {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
     
+    if (!sidebar) return; // 에러 방지
+
     // open 클래스가 있으면 제거, 없으면 추가
     const isOpen = sidebar.classList.toggle('open');
     
     // 오버레이(배경 어둡게) 처리
-    overlay.style.display = isOpen ? 'block' : 'none';
+    if (overlay) {
+        overlay.style.display = isOpen ? 'block' : 'none';
+    }
 };
 
 // 사이드바 메뉴 클릭 시 페이지 이동 및 닫기
