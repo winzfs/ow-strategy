@@ -677,6 +677,12 @@ window.renderList = () => {
         // [중요] 로그인 여부와 관계없이 파티 목록은 항상 구독 (이 위치로 이동)
         onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
             currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
+              // 🔥 파티 데이터가 들어오면 상태바 숫자도 즉시 갱신
+    const activeParties = currentPosts.filter(p => !p.deleted).length;
+    const partyEl = document.getElementById('live-party-count');
+    if (partyEl) {
+        partyEl.innerText = `현재 모집중인 파티: ${activeParties}`;
+    } 
             renderList(); renderEvalList();
         });
     });
@@ -928,16 +934,19 @@ onSnapshot(collection(db, "presences"), (snap) => {
     // [부스트 로직]
     // 1명(본인)만 있을 때 3~5명 사이로 랜덤하게 보이게 하고,
     // 현재 올라온 파티 글 수에 따라 가중치를 더함
-    const partyCount = currentPosts.filter(p => !p.deleted).length;
+       // currentPosts가 아직 로딩 전일 경우를 대비해 [] 빈 배열 처리
+    const safePosts = currentPosts || [];
+    const partyCount = safePosts.filter(p => !p.deleted).length;
+    
     const minUsers = 3; 
     const finalDisplayCount = actualOnlineCount + minUsers + (partyCount * 2);
 
-    // UI 업데이트
     const countEl = document.getElementById('live-user-count');
-    const partyEl = document.getElementById('live-party-count');
-    
     if(countEl) countEl.innerText = `전투 대기 중인 요원: ${finalDisplayCount}명`;
-    if(partyEl) partyEl.innerText = `ACTIVE MISSIONS: ${partyCount}`;
+    
+    // 여기서도 파티 개수 업데이트 (중복 보장)
+    const partyEl = document.getElementById('live-party-count');
+    if(partyEl) partyEl.innerText = `현재 모집중인 파티: ${partyCount}`;
 });
 
 // --- 실시간 접속자 로직 끝 ---
