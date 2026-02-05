@@ -2,232 +2,151 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>아이소메트릭 마이홈 - 심화 버전</title>
+    <title>안정적인 마이홈 배치 테스트</title>
     <style>
-        :root { --accent: #ff9c00; --bg: #0a0a0a; --grid: 20px; }
-        body { background: var(--bg); color: white; font-family: 'Pretendard', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        :root { --accent: #ff9c00; --bg: #1a1a1a; }
+        body { background: #111; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        
+        /* 상점 UI */
+        .shop { background: #222; padding: 15px; border-radius: 12px; display: flex; gap: 10px; margin-bottom: 20px; border: 1px solid #333; }
+        .shop-item { width: 50px; height: 50px; cursor: pointer; border: 1px solid #444; padding: 5px; background: #000; border-radius: 5px; }
 
-        /* 상점 및 카테고리 */
-        .shop-container { background: #1a1a1a; padding: 15px; border-radius: 15px; width: 600px; border: 1px solid #333; margin-bottom: 20px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .tab { cursor: pointer; font-size: 13px; color: #888; padding: 5px 10px; border-radius: 5px; }
-        .tab.active { color: var(--accent); background: #333; font-weight: bold; }
-        .item-list { display: flex; gap: 12px; overflow-x: auto; padding: 5px; }
-        .shop-item { width: 50px; height: 50px; cursor: pointer; transition: 0.2s; background: #000; border-radius: 8px; padding: 5px; border: 1px solid #444; flex-shrink: 0; }
-        .shop-item:hover { border-color: var(--accent); transform: scale(1.1); }
-
-        /* 메인 룸 컨테이너 */
-        .room-viewport {
+        /* 룸 컨테이너 (시각적 아이소메트릭) */
+        .room-container {
             position: relative;
-            width: 600px;
-            height: 500px;
-            background: #111;
-            border-radius: 20px;
-            overflow: hidden;
-            border: 4px solid #222;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-        }
-
-        /* 아이소메트릭 베이스 (회전 중심) */
-        .iso-base {
-            position: absolute;
-            top: 55%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg);
-            transform-style: preserve-3d;
-        }
-
-        /* 바닥 */
-        #floor {
-            width: 400px;
+            width: 500px;
             height: 400px;
-            background: #1e1e1e;
-            background-image: linear-gradient(#2a2a2a 1px, transparent 1px), linear-gradient(90deg, #2a2a2a 1px, transparent 1px);
-            background-size: 40px 40px; /* 스냅 단위 */
-            border: 2px solid #333;
+            background: #252525;
+            border: 2px solid #444;
+            overflow: hidden;
+            border-radius: 10px;
         }
 
-        /* 벽면 (L자형) */
-        .wall { position: absolute; background: #2a2a2a; border: 1px solid #333; transition: background 0.3s; }
-        .wall-left { width: 400px; height: 200px; transform: rotateX(-90deg) translateZ(-200px); top: -200px; transform-origin: bottom; }
-        .wall-right { width: 200px; height: 400px; transform: rotateY(-90deg) translateZ(0); left: 400px; transform-origin: left; }
-
-        /* 아이템 레이어 (기울기 역회전) */
-        .item-layer {
+        /* 입체 벽면 표현 (CSS로 그림) */
+        .wall-left {
             position: absolute;
+            width: 50%; height: 70%;
+            background: #333;
+            transform: skewY(26deg);
+            border-right: 2px solid #111;
             top: 0; left: 0;
-            width: 100%; height: 100%;
-            transform: rotateZ(-45deg) rotateX(-60deg); /* 바닥 회전의 반대 */
-            pointer-events: none;
+        }
+        .wall-right {
+            position: absolute;
+            width: 50%; height: 70%;
+            background: #3d3d3d;
+            transform: skewY(-26deg);
+            top: 0; right: 0;
+        }
+        .floor {
+            position: absolute;
+            width: 100%; height: 50%;
+            background: #222;
+            bottom: 0;
+            /* 바닥 격자 */
+            background-image: 
+                linear-gradient(30deg, #2a2a2a 12%, transparent 12.5%, transparent 87%, #2a2a2a 87.5%, #2a2a2a),
+                linear-gradient(150deg, #2a2a2a 12%, transparent 12.5%, transparent 87%, #2a2a2a 87.5%, #2a2a2a),
+                linear-gradient(30deg, #2a2a2a 12%, transparent 12.5%, transparent 87%, #2a2a2a 87.5%, #2a2a2a),
+                linear-gradient(150deg, #2a2a2a 12%, transparent 12.5%, transparent 87%, #2a2a2a 87.5%, #2a2a2a),
+                linear-gradient(60deg, #333 25%, transparent 25.5%, transparent 75%, #333 75%, #333),
+                linear-gradient(60deg, #333 25%, transparent 25.5%, transparent 75%, #333 75%, #333);
+            background-size: 80px 46px;
         }
 
+        /* 배치된 아이템 */
         .placed-item {
             position: absolute;
-            width: 80px;
-            pointer-events: auto;
+            width: 70px;
             cursor: move;
+            z-index: 10;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
             user-select: none;
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+            touch-action: none;
         }
-        .placed-item.dragging { opacity: 0.8; filter: brightness(1.2); z-index: 10000 !important; }
-
-        .controls { margin-top: 20px; display: flex; gap: 10px; }
-        button { padding: 10px 25px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-save { background: var(--accent); color: black; }
     </style>
 </head>
 <body>
 
-    <h2 style="color:var(--accent); margin-bottom: 5px;">🕹️ 요원실 커스텀 (Beta)</h2>
-    <p style="font-size: 12px; color: #666; margin-bottom: 20px;">더블 클릭 시 아이템이 삭제됩니다.</p>
+    <h2 style="color:var(--accent);">🏠 요원실 꾸미기 (안정화 버전)</h2>
 
-    <div class="shop-container">
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('furniture')">가구</div>
-            <div class="tab" onclick="switchTab('character')">캐릭터</div>
-            <div class="tab" onclick="switchTab('wallpaper')">벽지</div>
-        </div>
-        
-        <div id="list-furniture" class="item-list">
-            <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="addItem('pc', this.src)">
-            <img src="https://cdn-icons-png.flaticon.com/512/2311/2311453.png" class="shop-item" onclick="addItem('table', this.src)">
-            <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="addItem('sofa', this.src)">
-            <img src="https://cdn-icons-png.flaticon.com/512/2311/2311440.png" class="shop-item" onclick="addItem('bed', this.src)">
-            <img src="https://cdn-icons-png.flaticon.com/512/3534/3534064.png" class="shop-item" onclick="addItem('plant', this.src)">
-        </div>
-
-        <div id="list-character" class="item-list" style="display:none;">
-            <img src="https://cdn-icons-png.flaticon.com/512/1674/1674291.png" class="shop-item" onclick="addItem('hero1', this.src)">
-            <img src="https://cdn-icons-png.flaticon.com/512/1674/1674292.png" class="shop-item" onclick="addItem('hero2', this.src)">
-            <img src="https://cdn-icons-png.flaticon.com/512/1674/1674294.png" class="shop-item" onclick="addItem('hero3', this.src)">
-        </div>
-
-        <div id="list-wallpaper" class="item-list" style="display:none;">
-            <div class="shop-item" style="background:#2a2a2a" onclick="changeWall('#2a2a2a')"></div>
-            <div class="shop-item" style="background:#3a4a5a" onclick="changeWall('#3a4a5a')"></div>
-            <div class="shop-item" style="background:#5a3a3a" onclick="changeWall('#5a3a3a')"></div>
-            <div class="shop-item" style="background:#3a5a4a" onclick="changeWall('#3a5a4a')"></div>
-        </div>
+    <div class="shop">
+        <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="addItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="addItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/2311/2311453.png" class="shop-item" onclick="addItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/1674/1674291.png" class="shop-item" onclick="addItem(this.src)">
     </div>
 
-    <div class="room-viewport">
-        <div class="iso-base">
-            <div id="floor"></div>
-            <div class="wall wall-left" id="wall-l"></div>
-            <div class="wall wall-right" id="wall-r"></div>
-            <div id="items-container" style="position: absolute; top:0; left:0; width:100%; height:100%; transform-style: preserve-3d;"></div>
+    <div class="room-container" id="room">
+        <div class="floor"></div>
+        <div class="wall-left"></div>
+        <div class="wall-right"></div>
         </div>
-    </div>
 
-    <div class="controls">
-        <button class="btn-save" onclick="saveRoom()">배치 저장하기</button>
-        <button style="background:#333; color:white" onclick="location.reload()">초기화</button>
-    </div>
+    <p style="font-size: 12px; color:#888; margin-top:10px;">드래그해서 배치하고 더블 클릭해서 삭제하세요.</p>
 
     <script>
-        let placedItems = [];
-        const container = document.getElementById('items-container');
-        const SNAP_SIZE = 40; // 그리드 스냅 단위
+        const room = document.getElementById('room');
+        const SNAP = 20; // 스냅 단위
 
-        // 탭 전환
-        function switchTab(type) {
-            document.querySelectorAll('.item-list').forEach(l => l.style.display = 'none');
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('list-' + type).style.display = 'flex';
-            event.target.classList.add('active');
-        }
-
-        // 벽지 변경
-        function changeWall(color) {
-            document.getElementById('wall-l').style.backgroundColor = color;
-            document.getElementById('wall-r').style.backgroundColor = color;
-            localStorage.setItem('ow_wall_color', color);
-        }
-
-        // 아이템 추가
-        function addItem(type, src) {
-            const id = 'item_' + Date.now();
-            const itemObj = { id, src, x: 0, y: 0 };
-            placedItems.push(itemObj);
-            renderItem(itemObj);
-        }
-
-        function renderItem(obj) {
-            // 아이소메트릭 배치를 위해 div와 img를 분리 (Z-index 및 역회전 때문)
-            const wrapper = document.createElement('div');
-            wrapper.className = 'placed-item';
-            wrapper.id = obj.id;
-            wrapper.style.transform = `translate3d(${obj.x}px, ${obj.y}px, 0) rotateZ(-45deg) rotateX(-60deg)`;
-            wrapper.style.transformStyle = 'preserve-3d';
-            
+        function addItem(src) {
             const img = document.createElement('img');
-            img.src = obj.src;
-            img.style.width = '100%';
-            img.style.pointerEvents = 'none';
-            img.style.transform = 'translateY(-50%)'; // 바닥에 붙어 보이게 조정
+            img.src = src;
+            img.className = 'placed-item';
+            img.style.left = '215px';
+            img.style.top = '150px';
 
-            wrapper.appendChild(img);
-            wrapper.onmousedown = (e) => startDrag(e, obj, wrapper);
-            wrapper.ondblclick = () => { placedItems = placedItems.filter(i => i.id !== obj.id); wrapper.remove(); };
+            // 드래그 이벤트
+            img.onmousedown = (e) => startDrag(e, img);
+            img.ontouchstart = (e) => startDrag(e, img);
+            
+            // 삭제
+            img.ondblclick = () => img.remove();
 
-            container.appendChild(wrapper);
+            room.appendChild(img);
         }
 
-        function startDrag(e, data, el) {
+        function startDrag(e, el) {
             e.preventDefault();
-            el.classList.add('dragging');
-
-            const startX = e.clientX;
-            const startY = e.clientY;
-            const initX = data.x;
-            const initY = data.y;
+            
+            const isTouch = e.type === 'touchstart';
+            let startX = isTouch ? e.touches[0].clientX : e.clientX;
+            let startY = isTouch ? e.touches[0].clientY : e.clientY;
+            
+            let initialX = el.offsetLeft;
+            let initialY = el.offsetTop;
 
             function onMove(me) {
-                // 마우스 이동 거리를 아이소메트릭 좌표계로 변환 (간략화)
-                let dx = (me.clientX - startX);
-                let dy = (me.clientY - startY);
+                const curX = isTouch ? me.touches[0].clientX : me.clientX;
+                const curY = isTouch ? me.touches[0].clientY : me.clientY;
 
-                // 아이소메트릭 이동 보정 (회전 각도에 따른 가중치)
-                let moveX = initX + (dx + dy) * 0.8;
-                let moveY = initY + (dy - dx) * 0.8;
+                let dx = curX - startX;
+                let dy = curY - startY;
 
-                // 📌 그리드 스냅 로직
-                data.x = Math.round(moveX / SNAP_SIZE) * SNAP_SIZE;
-                data.y = Math.round(moveY / SNAP_SIZE) * SNAP_SIZE;
+                // 📌 그리드 스냅 적용
+                let nextX = Math.round((initialX + dx) / SNAP) * SNAP;
+                let nextY = Math.round((initialY + dy) / SNAP) * SNAP;
 
-                // 범위 제한 (바닥 안쪽)
-                data.x = Math.max(0, Math.min(data.x, 360));
-                data.y = Math.max(0, Math.min(data.y, 360));
+                // 캔버스 경계 제한
+                const rect = room.getBoundingClientRect();
+                nextX = Math.max(0, Math.min(nextX, rect.width - el.width));
+                nextY = Math.max(0, Math.min(nextY, rect.height - el.height));
 
-                el.style.transform = `translate3d(${data.x}px, ${data.y}px, 0) rotateZ(-45deg) rotateX(-60deg)`;
-                el.style.zIndex = Math.floor(data.x + data.y); // 깊이감(Z-index) 자동 조절
+                el.style.left = nextX + 'px';
+                el.style.top = nextY + 'px';
+                
+                // 📌 깊이감(Z-index) 처리: 아래쪽에 있을수록 앞으로 오게 함
+                el.style.zIndex = nextY + el.height;
             }
 
-            function onUp() {
-                el.classList.remove('dragging');
-                document.removeEventListener('mousemove', onMove);
-                document.removeEventListener('mouseup', onUp);
+            function onEnd() {
+                document.removeEventListener(isTouch ? 'touchmove' : 'mousemove', onMove);
+                document.removeEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
             }
 
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('mouseup', onUp);
+            document.addEventListener(isTouch ? 'touchmove' : 'mousemove', onMove);
+            document.addEventListener(isTouch ? 'touchend' : 'mouseup', onEnd);
         }
-
-        function saveRoom() {
-            localStorage.setItem('ow_room_data', JSON.stringify(placedItems));
-            alert("방 배치가 저장되었습니다!");
-        }
-
-        window.onload = () => {
-            const saved = localStorage.getItem('ow_room_data');
-            const savedColor = localStorage.getItem('ow_wall_color');
-            if(savedColor) changeWall(savedColor);
-            if(saved) {
-                placedItems = JSON.parse(saved);
-                placedItems.forEach(renderItem);
-            }
-        };
     </script>
 </body>
 </html>
