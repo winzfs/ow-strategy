@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Overwatch 2 Tier Maker</title>
+    <style>
+        :root { --bg: #121212; --panel: #1e1e1e; }
+        body { background-color: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
+        
+        /* 티어 컨테이너 */
+        .tier-container { width: 90%; max-width: 800px; border: 2px solid #333; margin-bottom: 20px; }
+        .tier-row { display: flex; min-height: 80px; border-bottom: 1px solid #333; background: var(--panel); }
+        .tier-label { width: 100px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; color: #000; }
+        .tier-dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 10px; gap: 10px; }
+
+        /* 티어별 색상 */
+        .s-tier { background: #ff7f7f; } .a-tier { background: #ffbf7f; }
+        .b-tier { background: #ffff7f; } .c-tier { background: #7fff7f; }
+
+        /* 영웅 아이콘 스타일 */
+        .hero-chip { width: 60px; height: 60px; background: #444; border: 2px solid #aaa; border-radius: 4px; 
+                     cursor: grab; display: flex; align-items: center; justify-content: center; font-size: 10px; text-align: center; }
+        .hero-chip:active { cursor: grabbing; }
+
+        /* 영웅 대기소 */
+        .hero-pool { width: 90%; max-width: 800px; background: #2a2a2a; padding: 20px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 8px; }
+        
+        button { margin-top: 20px; padding: 10px 20px; cursor: pointer; background: #f99e1a; border: none; font-weight: bold; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <h2>OW2 HERO TIER LIST</h2>
+
+    <div class="tier-container">
+        <div class="tier-row"><div class="tier-label s-tier">S</div><div class="tier-dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+        <div class="tier-row"><div class="tier-label a-tier">A</div><div class="tier-dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+        <div class="tier-row"><div class="tier-label b-tier">B</div><div class="tier-dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+        <div class="tier-row" style="border-bottom:none;"><div class="tier-label c-tier">C</div><div class="tier-dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+    </div>
+
+    <div class="hero-pool" id="pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+        </div>
+
+    <button onclick="saveTier()">결과 저장하기 (JSON)</button>
+
+<script>
+    const heroes = ['트레이서', '겐지', '윈스턴', '키리코', '아나', '소전', '라인하르트', '캐시디', '디바', '메르시'];
+
+    // 영웅 칩 생성
+    const pool = document.getElementById('pool');
+    heroes.forEach((name, index) => {
+        const chip = document.createElement('div');
+        chip.className = 'hero-chip';
+        chip.draggable = true;
+        chip.id = 'hero-' + index;
+        chip.innerText = name;
+        chip.ondragstart = drag;
+        pool.appendChild(chip);
+    });
+
+    // 드래그 앤 드롭 로직
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+    function drop(ev) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const draggedElement = document.getElementById(data);
+        
+        // 드롭 대상이 'dropzone'인지 확인 (칩 위에 드롭하는 경우 방지)
+        let target = ev.target;
+        while (target && !target.classList.contains('tier-dropzone') && !target.classList.contains('hero-pool')) {
+            target = target.parentElement;
+        }
+        
+        if (target) target.appendChild(draggedElement);
+    }
+
+    function saveTier() {
+        const result = {};
+        document.querySelectorAll('.tier-row').forEach(row => {
+            const label = row.querySelector('.tier-label').innerText;
+            const items = Array.from(row.querySelectorAll('.hero-chip')).map(c => c.innerText);
+            result[label] = items;
+        });
+        console.log("티어 리스트 결과:", result);
+        alert("결과가 콘솔에 저장되었습니다!");
+    }
+</script>
+</body>
+</html>
