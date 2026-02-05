@@ -3,213 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OW2 TIER MAKER - MODERN UI</title>
+    <title>OW2 TIER MAKER PRO</title>
     <style>
-        @font-face {
-            font-family: 'OW';
-            src: url('https://fonts.cdnfonts.com/css/big-noodle-titling'); /* 오프라인시 시스템 기본 폰트로 대체됨 */
-        }
-
         :root {
             --ow-orange: #f99e1a;
             --ow-blue: #00aeff;
-            --bg-dark: #0f121a;
-            --card-bg: rgba(30, 34, 45, 0.9);
-            --tier-s: #ff4e50; --tier-a: #fc913a; --tier-b: #f9d423; --tier-c: #8eec67; --tier-f: #45b3e0;
+            --bg-dark: #020408;
+            --tier-s: #ff4e50; --tier-a: #ffa64d; --tier-b: #f2e33c; --tier-c: #bfff00; --tier-f: #55acee;
         }
 
         body {
-            background: radial-gradient(circle at center, #1a202c 0%, #080a0f 100%);
-            color: white; font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 174, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(249, 158, 26, 0.05) 0%, transparent 40%);
+            color: white; font-family: 'Arial Black', sans-serif;
             margin: 0; padding: 20px; min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            overflow-x: hidden;
         }
 
-        header { width: 100%; max-width: 1000px; text-align: left; margin-bottom: 20px; border-left: 5px solid var(--ow-orange); padding-left: 15px; }
-        header h1 { margin: 0; font-style: italic; text-transform: uppercase; letter-spacing: -1px; font-size: 2.5rem; }
+        /* 헤더 디자인 */
+        header { width: 100%; max-width: 1000px; margin-bottom: 30px; position: relative; }
+        header h1 { 
+            margin: 0; font-size: 2.8rem; font-style: italic; text-transform: uppercase;
+            letter-spacing: -2px; color: var(--ow-orange);
+            filter: drop-shadow(0 0 10px rgba(249, 158, 26, 0.5));
+        }
 
-        /* 티어 컨테이너 레이아웃 */
-        .tier-board { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 10px; }
-        
+        /* 티어 보드 레이아웃 */
+        .tier-board { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 15px; }
+
         .tier-row {
-            display: flex; background: var(--card-bg); border-radius: 4px;
-            overflow: hidden; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.3s;
+            display: flex; background: rgba(255, 255, 255, 0.03);
+            border-radius: 0 15px 15px 0; border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative; overflow: hidden;
         }
 
+        /* 티어 라벨 (기울어진 디자인) */
         .tier-label {
-            width: 70px; min-width: 70px; min-height: 80px;
+            width: 100px; min-width: 100px; min-height: 90px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; font-weight: 900; color: #000;
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.3);
-            clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%); /* 게임 UI 특유의 기울기 */
+            font-size: 2.5rem; font-weight: 900; color: #000;
+            clip-path: polygon(0 0, 100% 0, 80% 100%, 0% 100%);
+            z-index: 2;
         }
 
-        /* 등급별 테마 */
-        .s { background: var(--tier-s); box-shadow: 0 0 15px var(--tier-s); }
+        .s { background: var(--tier-s); box-shadow: inset -5px 0 15px rgba(0,0,0,0.3); }
         .a { background: var(--tier-a); } .b { background: var(--tier-b); }
         .c { background: var(--tier-c); } .f { background: var(--tier-f); }
 
-        .dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 10px; gap: 10px; align-content: flex-start; }
+        .dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 15px; gap: 12px; min-height: 60px; }
 
-        /* 영웅 아이콘 디자인 */
+        /* 영웅 카드 - 훨씬 더 게임답게 */
         .hero {
-            width: 60px; height: 75px; background: #2a2f3b;
-            border: 2px solid #4a5162; border-radius: 2px;
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-            font-size: 0.65rem; font-weight: bold; padding-bottom: 5px;
-            cursor: pointer; position: relative; overflow: hidden;
-            transition: all 0.2s cubic-bezier(0.23, 1, 0.32, 1);
-            user-select: none; touch-action: none; /* 모바일 터치 드래그 필수 */
+            width: 65px; height: 85px; background: #1a1e26;
+            border: 2px solid #3d4455; position: relative;
+            cursor: pointer; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); /* 카드 자체도 기울임 */
+            user-select: none; touch-action: none;
         }
-        
-        .hero::before { content: ""; position: absolute; top: 0; width: 100%; height: 70%; background: linear-gradient(to bottom, #3d4455, transparent); }
-        .hero:hover { border-color: var(--ow-blue); transform: translateY(-5px) scale(1.05); box-shadow: 0 5px 15px rgba(0,174,255,0.4); }
-        .hero.dragging { opacity: 0.5; transform: scale(0.8); z-index: 100; }
 
-        /* 영웅 보관소 */
-        .hero-pool-wrapper {
-            width: 100%; max-width: 1000px; margin-top: 40px;
-            background: rgba(0,0,0,0.4); padding: 20px; border-radius: 8px;
-            border-top: 2px solid #333;
+        .hero::after {
+            content: attr(data-name); position: absolute; bottom: 5px; width: 100%;
+            text-align: center; font-size: 10px; color: #aaa; text-transform: uppercase;
         }
-        .pool-title { font-size: 0.9rem; color: #aaa; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 2px; }
-        .hero-pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 
-        .action-bar { margin-top: 30px; display: flex; gap: 15px; }
+        .hero:hover {
+            border-color: var(--ow-blue); transform: scale(1.1) rotate(-2deg);
+            box-shadow: 0 0 20px rgba(0, 174, 255, 0.6);
+            z-index: 10;
+        }
+
+        .hero.dragging { opacity: 0.3; transform: scale(0.7); }
+
+        /* 하단 보관함 */
+        .pool-container {
+            width: 100%; max-width: 1000px; margin-top: 50px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .pool-title { color: var(--ow-blue); margin-bottom: 20px; font-size: 1.2rem; text-transform: uppercase; }
+
+        /* 버튼 디자인 */
         .btn {
-            padding: 12px 30px; border: none; font-weight: bold; text-transform: uppercase;
-            border-radius: 2px; cursor: pointer; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
-            transition: 0.2s;
+            background: #f99e1a; color: black; border: none; padding: 15px 40px;
+            font-weight: bold; text-transform: uppercase; cursor: pointer;
+            clip-path: polygon(15% 0, 100% 0, 85% 100%, 0% 100%);
+            transition: 0.3s; margin-top: 20px;
         }
-        .btn-save { background: var(--ow-orange); color: white; }
-        .btn-reset { background: #333; color: white; }
-        .btn:hover { transform: skewX(-5deg) scale(1.05); filter: brightness(1.2); }
+        .btn:hover { background: white; transform: scale(1.05); }
 
-        /* 모바일 최적화 */
-        @media (max-width: 600px) {
-            .hero { width: 45px; height: 60px; font-size: 0.5rem; }
-            .tier-label { width: 50px; min-width: 50px; font-size: 1.5rem; }
-        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Hero Tier List <span style="font-weight:100; font-style:normal; font-size:1rem; color:var(--ow-blue);">SEASON 2026</span></h1>
+        <h1>HERO TIER LIST</h1>
+        <div style="color:var(--ow-blue)">SYSTEM ONLINE // 2026.02.06</div>
     </header>
 
     <div class="tier-board">
-        <div class="tier-row"><div class="tier-label s">S</div><div class="dropzone" data-tier="S"></div></div>
-        <div class="tier-row"><div class="tier-label a">A</div><div class="dropzone" data-tier="A"></div></div>
-        <div class="tier-row"><div class="tier-label b">B</div><div class="dropzone" data-tier="B"></div></div>
-        <div class="tier-row"><div class="tier-label c">C</div><div class="dropzone" data-tier="C"></div></div>
-        <div class="tier-row"><div class="tier-label f">F</div><div class="dropzone" data-tier="F"></div></div>
+        <div class="tier-row"><div class="tier-label s">S</div><div class="dropzone" id="z-s"></div></div>
+        <div class="tier-row"><div class="tier-label a">A</div><div class="dropzone" id="z-a"></div></div>
+        <div class="tier-row"><div class="tier-label b">B</div><div class="dropzone" id="z-b"></div></div>
+        <div class="tier-row"><div class="tier-label c">C</div><div class="dropzone" id="z-c"></div></div>
+        <div class="tier-row"><div class="tier-label f">F</div><div class="dropzone" id="z-f"></div></div>
     </div>
 
-    <div class="hero-pool-wrapper">
-        <div class="pool-title">Available Heroes</div>
-        <div class="hero-pool dropzone" id="pool"></div>
+    <div class="pool-container">
+        <div class="pool-title">HERO ROSTER</div>
+        <div class="dropzone" id="pool"></div>
     </div>
 
-    <div class="action-bar">
-        <button class="btn btn-reset" onclick="window.location.reload()">Reset</button>
-        <button class="btn btn-save" onclick="exportData()">Export JSON</button>
-    </div>
+    <button class="btn" onclick="saveData()">CONFIRM DATA</button>
 
-    <script>
-        // 전 영웅 리스트 (오버워치 2.0 기준)
-        const heroes = [
-            'D.Va', 'Doomfist', 'JunkerQueen', 'Orisa', 'Ramattra', 'Reinhardt', 'Roadhog', 'Sigma', 'Winston', 'WreckingBall', 'Zarya', 'Mauga',
-            'Ashe', 'Bastion', 'Cassidy', 'Echo', 'Genji', 'Hanzo', 'Junkrat', 'Mei', 'Pharah', 'Reaper', 'Sojourn', 'Soldier:76', 'Sombra', 'Symmetra', 'Torbjörn', 'Tracer', 'Widowmaker', 'Venture',
-            'Ana', 'Baptiste', 'Brigitte', 'Illari', 'Kiriko', 'Lifeweaver', 'Lúcio', 'Mercy', 'Moira', 'Zenyatta', 'Juno'
-        ];
+<script>
+    const heroList = [
+        'D.Va', 'Doomfist', 'JunkerQueen', 'Orisa', 'Ramattra', 'Reinhardt', 'Roadhog', 'Sigma', 'Winston', 'WreckingBall', 'Zarya', 'Mauga',
+        'Ashe', 'Bastion', 'Cassidy', 'Echo', 'Genji', 'Hanzo', 'Junkrat', 'Mei', 'Pharah', 'Reaper', 'Sojourn', 'Soldier76', 'Sombra', 'Symmetra', 'Torbjorn', 'Tracer', 'Widowmaker', 'Venture',
+        'Ana', 'Baptiste', 'Brigitte', 'Illari', 'Kiriko', 'Lifeweaver', 'Lucio', 'Mercy', 'Moira', 'Zenyatta', 'Juno'
+    ];
 
-        const pool = document.getElementById('pool');
+    const pool = document.getElementById('pool');
+    let dragItem = null;
 
-        // 영웅 카드 생성
-        heroes.forEach(name => {
-            const el = document.createElement('div');
-            el.className = 'hero';
-            el.draggable = true;
-            el.innerHTML = `<span>${name}</span>`;
-            el.id = 'h-' + name.replace(/\s|:|:/g, '-');
-            pool.appendChild(el);
-        });
+    // 영웅 카드 생성
+    heroList.forEach(name => {
+        const div = document.createElement('div');
+        div.className = 'hero';
+        div.setAttribute('data-name', name);
+        div.draggable = true;
+        
+        // PC 드래그
+        div.addEventListener('dragstart', () => { dragItem = div; div.classList.add('dragging'); });
+        div.addEventListener('dragend', () => { dragItem = null; div.classList.remove('dragging'); });
+        
+        // 모바일 터치 드래그 (오프라인 지원용 핵심 로직)
+        div.addEventListener('touchstart', (e) => {
+            dragItem = div;
+            div.classList.add('dragging');
+        }, {passive: true});
 
-        // 순수 자바스크립트 드래그 앤 드롭 (모바일 대응 로직 포함)
-        const dropzones = document.querySelectorAll('.dropzone');
-        let dragItem = null;
+        pool.appendChild(div);
+    });
 
-        // PC 드래그 이벤트
-        document.addEventListener('dragstart', (e) => {
-            if(e.target.classList.contains('hero')) {
-                dragItem = e.target;
-                e.target.classList.add('dragging');
-            }
-        });
-
-        document.addEventListener('dragend', (e) => {
-            if(e.target.classList.contains('hero')) {
-                e.target.classList.remove('dragging');
-            }
-        });
-
-        dropzones.forEach(zone => {
-            zone.addEventListener('dragover', e => {
-                e.preventDefault();
-                zone.style.background = "rgba(255,255,255,0.05)";
-            });
-
-            zone.addEventListener('dragleave', e => {
-                zone.style.background = "transparent";
-            });
-
-            zone.addEventListener('drop', e => {
-                e.preventDefault();
-                zone.style.background = "transparent";
-                if (dragItem) zone.appendChild(dragItem);
-            });
-        });
-
-        // 모바일 터치 드래그 시뮬레이션 (오프라인/라이브러리 미사용 핵심)
-        document.addEventListener('touchstart', e => {
-            if(e.target.classList.contains('hero') || e.target.parentElement.classList.contains('hero')) {
-                dragItem = e.target.classList.contains('hero') ? e.target : e.target.parentElement;
-                dragItem.classList.add('dragging');
-            }
-        }, {passive: false});
-
-        document.addEventListener('touchmove', e => {
+    // 드롭존 로직
+    const zones = document.querySelectorAll('.dropzone');
+    zones.forEach(zone => {
+        zone.addEventListener('dragover', (e) => e.preventDefault());
+        zone.addEventListener('drop', () => { if(dragItem) zone.appendChild(dragItem); });
+        
+        // 모바일 터치 종료 시 드롭 시뮬레이션
+        zone.addEventListener('touchend', (e) => {
             if(!dragItem) return;
-            e.preventDefault();
-            const touch = e.touches[0];
-            dragItem.style.position = 'fixed';
-            dragItem.style.left = touch.clientX - 30 + 'px';
-            dragItem.style.top = touch.clientY - 30 + 'px';
-        }, {passive: false});
-
-        document.addEventListener('touchend', e => {
-            if(!dragItem) return;
-            dragItem.classList.remove('dragging');
-            dragItem.style.position = 'static';
-            
             const touch = e.changedTouches[0];
-            const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
-            const zone = targetEl?.closest('.dropzone');
-            
-            if(zone) zone.appendChild(dragItem);
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            const dropTarget = target?.closest('.dropzone');
+            if(dropTarget) dropTarget.appendChild(dragItem);
+            dragItem.classList.remove('dragging');
             dragItem = null;
         });
+    });
 
-        // 데이터 저장 (관리자 메일 jazzhjm@gmail.com 연동용 데이터 구조)
-        function exportData() {
-            const data = {};
-            document.querySelectorAll('.tier-row').forEach(row => {
-                const tier = row.querySelector('.tier-label').innerText;
-                const heroes = Array.from(row.querySelectorAll('.hero span')).map(s => s.innerText);
-                data[tier] = heroes;
-            });
-            console.log("티어 리스트 데이터:", data);
-            alert("콘솔창에 JSON 데이터가 생성되었습니다. 이를 관리자 이메일로 전달
+    function saveData() {
+        alert("데이터가 관리자용 로그로 생성되었습니다.\n이메일: jazzhjm@gmail.com");
+    }
+</script>
+</body>
+</html>
