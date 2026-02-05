@@ -2,65 +2,68 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>안정적인 마이홈 배치 테스트</title>
+    <title>아이소메트릭 룸 정밀 보정 버전</title>
     <style>
-        :root { --accent: #ff9c00; --bg: #1a1a1a; }
-        body { background: #111; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        :root { --accent: #ff9c00; --bg: #111; }
+        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
         /* 상점 UI */
         .shop { background: #222; padding: 15px; border-radius: 12px; display: flex; gap: 10px; margin-bottom: 20px; border: 1px solid #333; }
-        .shop-item { width: 50px; height: 50px; cursor: pointer; border: 1px solid #444; padding: 5px; background: #000; border-radius: 5px; }
+        .shop-item { width: 50px; height: 50px; cursor: pointer; border: 1px solid #444; padding: 5px; background: #000; border-radius: 5px; transition: 0.2s; }
+        .shop-item:hover { transform: scale(1.1); border-color: var(--accent); }
 
-        /* 룸 컨테이너 (시각적 아이소메트릭) */
-        .room-container {
+        /* 룸 컨테이너 */
+        .room-viewport {
             position: relative;
             width: 500px;
-            height: 400px;
-            background: #252525;
-            border: 2px solid #444;
+            height: 500px;
+            background: #000;
+            border-radius: 15px;
             overflow: hidden;
-            border-radius: 10px;
+            border: 2px solid #333;
         }
 
-        /* 입체 벽면 표현 (CSS로 그림) */
+        /* 왼쪽 벽 */
         .wall-left {
             position: absolute;
-            width: 50%; height: 70%;
-            background: #333;
-            transform: skewY(26deg);
+            width: 250px; height: 300px;
+            background: #2a2a2a;
+            top: 50px; left: 0;
+            transform: skewY(26.5deg); /* 아이소메트릭 표준 각도 */
+            transform-origin: right bottom;
             border-right: 2px solid #111;
-            top: 0; left: 0;
-        }
-        .wall-right {
-            position: absolute;
-            width: 50%; height: 70%;
-            background: #3d3d3d;
-            transform: skewY(-26deg);
-            top: 0; right: 0;
-        }
-        .floor {
-            position: absolute;
-            width: 100%; height: 50%;
-            background: #222;
-            bottom: 0;
-            /* 바닥 격자 */
-            background-image: 
-                linear-gradient(30deg, #2a2a2a 12%, transparent 12.5%, transparent 87%, #2a2a2a 87.5%, #2a2a2a),
-                linear-gradient(150deg, #2a2a2a 12%, transparent 12.5%, transparent 87%, #2a2a2a 87.5%, #2a2a2a),
-                linear-gradient(30deg, #2a2a2a 12%, transparent 12.5%, transparent 87%, #2a2a2a 87.5%, #2a2a2a),
-                linear-gradient(150deg, #2a2a2a 12%, transparent 12.5%, transparent 87%, #2a2a2a 87.5%, #2a2a2a),
-                linear-gradient(60deg, #333 25%, transparent 25.5%, transparent 75%, #333 75%, #333),
-                linear-gradient(60deg, #333 25%, transparent 25.5%, transparent 75%, #333 75%, #333);
-            background-size: 80px 46px;
         }
 
-        /* 배치된 아이템 */
+        /* 오른쪽 벽 */
+        .wall-right {
+            position: absolute;
+            width: 250px; height: 300px;
+            background: #333;
+            top: 50px; right: 0;
+            transform: skewY(-26.5deg);
+            transform-origin: left bottom;
+        }
+
+        /* 바닥 (마름모) */
+        .floor {
+            position: absolute;
+            width: 500px; height: 250px;
+            background: #1e1e1e;
+            bottom: 25px; /* 벽 끝에 딱 붙도록 조정 */
+            left: 0;
+            /* 바닥을 마름모로 만드는 공식 */
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            background-image: repeating-linear-gradient(45deg, #252525 0, #252525 1px, transparent 0, transparent 40px),
+                              repeating-linear-gradient(-45deg, #252525 0, #252525 1px, transparent 0, transparent 40px);
+        }
+
+        /* 아이템 */
         .placed-item {
             position: absolute;
-            width: 70px;
+            width: 80px;
             cursor: move;
-            z-index: 10;
-            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+            z-index: 100;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
             user-select: none;
             touch-action: none;
         }
@@ -68,39 +71,35 @@
 </head>
 <body>
 
-    <h2 style="color:var(--accent);">🏠 요원실 꾸미기 (안정화 버전)</h2>
+    <h2 style="color:var(--accent);">📐 요원실 배치 (좌표 보정 완료)</h2>
 
     <div class="shop">
-        <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="addItem(this.src)">
-        <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="addItem(this.src)">
-        <img src="https://cdn-icons-png.flaticon.com/512/2311/2311453.png" class="shop-item" onclick="addItem(this.src)">
-        <img src="https://cdn-icons-png.flaticon.com/512/1674/1674291.png" class="shop-item" onclick="addItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="addItem(this.src)" title="PC">
+        <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="addItem(this.src)" title="소파">
+        <img src="https://cdn-icons-png.flaticon.com/512/2311/2311453.png" class="shop-item" onclick="addItem(this.src)" title="테이블">
+        <img src="https://cdn-icons-png.flaticon.com/512/1674/1674291.png" class="shop-item" onclick="addItem(this.src)" title="요원">
     </div>
 
-    <div class="room-container" id="room">
-        <div class="floor"></div>
+    <div class="room-viewport" id="room">
         <div class="wall-left"></div>
         <div class="wall-right"></div>
+        <div class="floor"></div>
         </div>
-
-    <p style="font-size: 12px; color:#888; margin-top:10px;">드래그해서 배치하고 더블 클릭해서 삭제하세요.</p>
 
     <script>
         const room = document.getElementById('room');
-        const SNAP = 20; // 스냅 단위
+        const SNAP = 10; 
 
         function addItem(src) {
             const img = document.createElement('img');
             img.src = src;
             img.className = 'placed-item';
-            img.style.left = '215px';
-            img.style.top = '150px';
+            // 초기 위치를 정중앙(바닥 위)으로 설정
+            img.style.left = '210px';
+            img.style.top = '250px';
 
-            // 드래그 이벤트
             img.onmousedown = (e) => startDrag(e, img);
             img.ontouchstart = (e) => startDrag(e, img);
-            
-            // 삭제
             img.ondblclick = () => img.remove();
 
             room.appendChild(img);
@@ -108,26 +107,19 @@
 
         function startDrag(e, el) {
             e.preventDefault();
-            
             const isTouch = e.type === 'touchstart';
             let startX = isTouch ? e.touches[0].clientX : e.clientX;
             let startY = isTouch ? e.touches[0].clientY : e.clientY;
-            
-            let initialX = el.offsetLeft;
-            let initialY = el.offsetTop;
+            let initX = el.offsetLeft;
+            let initY = el.offsetTop;
 
             function onMove(me) {
                 const curX = isTouch ? me.touches[0].clientX : me.clientX;
                 const curY = isTouch ? me.touches[0].clientY : me.clientY;
+                
+                let nextX = Math.round((initX + (curX - startX)) / SNAP) * SNAP;
+                let nextY = Math.round((initY + (curY - startY)) / SNAP) * SNAP;
 
-                let dx = curX - startX;
-                let dy = curY - startY;
-
-                // 📌 그리드 스냅 적용
-                let nextX = Math.round((initialX + dx) / SNAP) * SNAP;
-                let nextY = Math.round((initialY + dy) / SNAP) * SNAP;
-
-                // 캔버스 경계 제한
                 const rect = room.getBoundingClientRect();
                 nextX = Math.max(0, Math.min(nextX, rect.width - el.width));
                 nextY = Math.max(0, Math.min(nextY, rect.height - el.height));
@@ -135,8 +127,8 @@
                 el.style.left = nextX + 'px';
                 el.style.top = nextY + 'px';
                 
-                // 📌 깊이감(Z-index) 처리: 아래쪽에 있을수록 앞으로 오게 함
-                el.style.zIndex = nextY + el.height;
+                // Y좌표 기준으로 레이어 순서(깊이감) 변경
+                el.style.zIndex = Math.floor(nextY + el.height);
             }
 
             function onEnd() {
