@@ -157,23 +157,25 @@
 #search-title-area { margin-bottom: 15px; padding-left: 5px; border-left: 4px solid var(--accent); }
 
 /* 사이드바 초기 상태 강제 설정 */
+/* 사이드바 기본 상태 */
 #sidebar {
     position: fixed;
     top: 0;
-    left: -280px; /* 초기 위치 */
+    left: 0; /* 0으로 고정하고 transform으로 밀어냅니다 */
     width: 280px;
     height: 100%;
     background: #111;
     z-index: 1200;
-    transition: transform 0.3s ease; /* left 대신 transform이 성능상 더 좋습니다 */
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(-100%); /* 화면 왼쪽 밖으로 숨김 */
     box-shadow: 5px 0 15px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
 }
 
-/* 열렸을 때 클래스 */
+/* 열렸을 때 상태 */
 #sidebar.open {
-    left: 0;
+    transform: translateX(0); /* 화면 안으로 들어옴 */
 }
 
          
@@ -207,12 +209,12 @@
     <div id="header-auth-status" style="font-size: 11px; color: #888;">로그인 필요</div>
 </header>
 
-<div id="sidebar-overlay" onclick="toggleSidebar()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1100;"></div>
+<div id="sidebar-overlay" onclick="window.toggleSidebar()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1100;"></div>
 
 <div id="sidebar" style="position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #111; z-index: 1200; transition: 0.3s; box-shadow: 5px 0 15px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
     <div style="padding: 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center;">
         <span style="font-weight: bold; color: var(--accent);">MENU</span>
-        <button onclick="toggleSidebar()" style="background: none; border: none; color: #666; font-size: 20px; cursor: pointer;">✕</button>
+        <button onclick="window.toggleSidebar()" style="background: none; border: none; color: #666; font-size: 20px; cursor: pointer;">✕</button>
     </div>
     
     <div style="flex-grow: 1; padding: 10px 0;">
@@ -493,30 +495,24 @@ const getPosBadge = (pos) => {
 
      // 사이드바 열기/닫기
 // 사이드바 열기/닫기 (개선된 버전)
+// 사이드바 열기/닫기 통합 함수
 window.toggleSidebar = () => {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
     
-    // 현재 열려있는지 확인
-    const isOpen = sidebar.classList.contains('open');
+    // open 클래스가 있으면 제거, 없으면 추가
+    const isOpen = sidebar.classList.toggle('open');
     
-    if (isOpen) {
-        sidebar.classList.remove('open');
-        sidebar.style.left = '-280px';
-        overlay.style.display = 'none';
-    } else {
-        sidebar.classList.add('open');
-        sidebar.style.left = '0';
-        overlay.style.display = 'block';
-    }
+    // 오버레이(배경 어둡게) 처리
+    overlay.style.display = isOpen ? 'block' : 'none';
 };
 
-// 사이드바에서 페이지 이동
+// 사이드바 메뉴 클릭 시 페이지 이동 및 닫기
 window.sideShowPage = (id) => {
-    // 1. 페이지 전환 (기존 showPage 함수 호출)
+    // 1. 페이지 전환
     window.showPage(id);
     
-    // 2. 사이드바 메뉴 활성화 UI 변경
+    // 2. 사이드바 메뉴 활성화 UI (선택 사항)
     document.querySelectorAll('.side-item').forEach(el => el.classList.remove('active'));
     const targetTab = document.getElementById('side-tab-' + id);
     if(targetTab) targetTab.classList.add('active');
@@ -524,6 +520,7 @@ window.sideShowPage = (id) => {
     // 3. 사이드바 닫기
     window.toggleSidebar();
 };
+
 
 
     window.forgotPassword = async () => {
