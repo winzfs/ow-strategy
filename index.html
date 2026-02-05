@@ -179,28 +179,31 @@
 
     <div class="box" style="padding: 15px; background: #111;">
     <div id="search-title-area">
-        <h3 id="search-title" style="margin:0; font-size: 16px; color: #eee;">전체 파티 보기</h3>
-        <small id="search-desc" style="color: #666; font-size: 11px;">원하는 포지션이나 티어 태그를 클릭해 보세요!</small>
+        <h3 id="search-title" style="margin:0; font-size: 16px; color: #eee;">매칭 검색</h3>
+        <small id="search-desc" style="color: #666; font-size: 11px;">포지션과 티어를 여러 개 선택할 수 있습니다!</small>
     </div>
     
-    <div style="display:flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
-        <span onclick="setFilter('pos', '탱커')" class="badge filter-tag" style="background:var(--tank); padding: 5px 10px;">#🛡️ 탱커</span>
-        <span onclick="setFilter('pos', '딜러')" class="badge filter-tag" style="background:var(--dps); padding: 5px 10px;">#⚔️ 딜러</span>
-        <span onclick="setFilter('pos', '지원')" class="badge filter-tag" style="background:var(--sup); color:black; padding: 5px 10px;">#💉 지원</span>
+    <div id="filter-pos-group" style="display:flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #222;">
+        <span onclick="toggleFilter('pos', '탱커', this)" class="badge filter-tag" style="background:var(--tank); padding: 5px 10px;">🛡️ 탱커</span>
+        <span onclick="toggleFilter('pos', '딜러', this)" class="badge filter-tag" style="background:var(--dps); padding: 5px 10px;">⚔️ 딜러</span>
+        <span onclick="toggleFilter('pos', '지원', this)" class="badge filter-tag" style="background:var(--sup); color:black; padding: 5px 10px;">💉 지원</span>
+    </div>
 
-        <span onclick="setFilter('tier', '배치')" class="badge filter-tag" style="background:#444; padding: 4px 8px;">#배치</span>
-        <span onclick="setFilter('tier', '브론즈')" class="badge filter-tag" style="background:#8b4513; padding: 4px 8px;">#브론즈</span>
-        <span onclick="setFilter('tier', '실버')" class="badge filter-tag" style="background:#c0c0c0; color:black; padding: 4px 8px;">#실버</span>
-        <span onclick="setFilter('tier', '골드')" class="badge filter-tag" style="background:#cd7f32; padding: 4px 8px;">#골드</span>
-        <span onclick="setFilter('tier', '플래티넘')" class="badge filter-tag" style="background:#e5e4e2; color:black; padding: 4px 8px;">#플래티넘</span>
-        <span onclick="setFilter('tier', '다이아몬드')" class="badge filter-tag" style="background:#b9f2ff; color:black; padding: 4px 8px;">#다이아</span>
-        <span onclick="setFilter('tier', '마스터')" class="badge filter-tag" style="background:#ffdb58; color:black; padding: 4px 8px;">#마스터</span>
-        <span onclick="setFilter('tier', '그랜드마스터')" class="badge filter-tag" style="background:#ffffff; color:black; padding: 4px 8px;">#그마</span>
-        <span onclick="setFilter('tier', '챔피언')" class="badge filter-tag" style="background:linear-gradient(45deg, #ff00ff, #00ffff); color:black; padding: 4px 8px; font-weight:900;">#챔피언</span>
+    <div id="filter-tier-group" style="display:flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">
+        <span onclick="toggleFilter('tier', '배치', this)" class="badge filter-tag" style="background:#444; padding: 4px 8px;">배치</span>
+        <span onclick="toggleFilter('tier', '브론즈', this)" class="badge filter-tag" style="background:#8b4513; padding: 4px 8px;">브론즈</span>
+        <span onclick="toggleFilter('tier', '실버', this)" class="badge filter-tag" style="background:#c0c0c0; color:black; padding: 4px 8px;">실버</span>
+        <span onclick="toggleFilter('tier', '골드', this)" class="badge filter-tag" style="background:#cd7f32; padding: 4px 8px;">골드</span>
+        <span onclick="toggleFilter('tier', '플래티넘', this)" class="badge filter-tag" style="background:#e5e4e2; color:black; padding: 4px 8px;">플래티넘</span>
+        <span onclick="toggleFilter('tier', '다이아몬드', this)" class="badge filter-tag" style="background:#b9f2ff; color:black; padding: 4px 8px;">다이아</span>
+        <span onclick="toggleFilter('tier', '마스터', this)" class="badge filter-tag" style="background:#ffdb58; color:black; padding: 4px 8px;">마스터</span>
+        <span onclick="toggleFilter('tier', '그랜드마스터', this)" class="badge filter-tag" style="background:#ffffff; color:black; padding: 4px 8px;">그마</span>
+        <span onclick="toggleFilter('tier', '챔피언', this)" class="badge filter-tag" style="background:linear-gradient(45deg, #ff00ff, #00ffff); color:black; padding: 4px 8px; font-weight:900;">챔피언</span>
         
-        <button onclick="resetFilter()" class="btn-sub" style="padding: 4px 10px; font-size: 10px; background: #222;">초기화 ↺</button>
+        <button onclick="resetFilter()" class="btn-sub" style="padding: 4px 10px; font-size: 10px; background: #222; margin-left: auto;">초기화 ↺</button>
     </div>
 </div>
+
 
 
      
@@ -302,7 +305,7 @@
     let mySentRequests = new Set(); 
     let targetData = null; 
     let rateTargetInfo = null;
-    let currentFilter = { pos: null, tier: null };
+    let currentFilter = { pos: [], tier: [] };
 
      const ICON_URLS = {
     // 포지션 아이콘 경로
@@ -374,30 +377,45 @@
 
 
 // 2. 필터 설정 함수 추가 (window 객체에 등록해야 HTML에서 호출 가능)
-window.setFilter = (type, value) => {
-    if (currentFilter[type] === value) currentFilter[type] = null; // 이미 선택된걸 또 누르면 해제
-    else currentFilter[type] = value;
+window.toggleFilter = (type, value, element) => {
+    const index = currentFilter[type].indexOf(value);
+    
+    if (index > -1) {
+        // 이미 선택되어 있다면 제거
+        currentFilter[type].splice(index, 1);
+        element.classList.remove('active');
+    } else {
+        // 선택되어 있지 않다면 추가
+        currentFilter[type].push(value);
+        element.classList.add('active');
+    }
     
     updateSearchTitle();
     window.renderList();
 };
 
+// 초기화 함수
 window.resetFilter = () => {
-    currentFilter = { pos: null, tier: null };
+    currentFilter = { pos: [], tier: [] };
+    // UI에서도 active 클래스 모두 제거
+    document.querySelectorAll('.filter-tag').forEach(el => el.classList.remove('active'));
     updateSearchTitle();
     window.renderList();
 };
 
+// 제목 업데이트
 const updateSearchTitle = () => {
     const title = document.getElementById('search-title');
     const { pos, tier } = currentFilter;
-    if (!pos && !tier) {
+    
+    if (pos.length === 0 && tier.length === 0) {
         title.innerText = "전체 파티 보기";
     } else {
-        title.innerText = `🔍 ${(pos || "")} ${(tier || "")} 검색 결과`;
+        const posText = pos.length > 0 ? `[${pos.join(', ')}]` : "";
+        const tierText = tier.length > 0 ? `[${tier.join(', ')}]` : "";
+        title.innerText = `🔍 ${posText} ${tierText} 필터링 중`;
     }
 };
-
 
 
      
@@ -442,11 +460,15 @@ window.renderList = () => {
     const listDiv = document.getElementById('party-list');
     if (!listDiv) return;
     
-    // 필터링 적용
     const filtered = currentPosts.filter(p => {
         if (p.deleted) return false;
-        if (currentFilter.pos && p.pos !== currentFilter.pos) return false;
-        if (currentFilter.tier && p.tier !== currentFilter.tier) return false;
+        
+        // 포지션 필터: 선택된 것이 있고, 해당 포지션이 포함되어 있지 않으면 제외
+        if (currentFilter.pos.length > 0 && !currentFilter.pos.includes(p.pos)) return false;
+        
+        // 티어 필터: 선택된 것이 있고, 해당 티어가 포함되어 있지 않으면 제외
+        if (currentFilter.tier.length > 0 && !currentFilter.tier.includes(p.tier)) return false;
+        
         return true;
     });
 
