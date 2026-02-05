@@ -1,166 +1,84 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>요원실 마이홈 - 아이소메트릭 최종</title>
+    <title>아이소메트릭 마이홈 - 정밀 보정본</title>
     <style>
-        :root { --wall-l: #34495e; --wall-r: #2c3e50; --floor: #222; --accent: #ff9c00; --grid-color: rgba(255,255,255,0.1); }
-        body { background: #000; color: white; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; overscroll-behavior: none; font-family: 'Pretendard', sans-serif; }
+        :root { --wall-l: #2c3e50; --wall-r: #1a252f; --floor: #111; --accent: #ff9c00; }
+        body { background: #000; color: white; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; overscroll-behavior: none; font-family: sans-serif; }
 
         /* 상점 UI */
-        .shop-container { width: 100%; max-width: 500px; background: #1a1a1a; padding: 15px; border-radius: 15px; border: 1px solid #333; margin-bottom: 20px; box-sizing: border-box; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .tab-menu { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #222; padding-bottom: 10px; }
-        .tab { font-size: 14px; color: #888; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-weight: 600; transition: 0.2s; }
-        .tab:hover { color: white; background: #222; }
-        .tab.active { color: black; background: var(--accent); }
-        .item-list { display: flex; gap: 12px; overflow-x: auto; padding: 5px 0; scrollbar-width: none; }
-        .item-list::-webkit-scrollbar { display: none; }
-        .shop-item { width: 60px; height: 60px; background: #111; border: 2px solid #333; border-radius: 12px; padding: 8px; flex-shrink: 0; cursor: pointer; transition: 0.2s; object-fit: contain; }
-        .shop-item:hover { border-color: var(--accent); transform: translateY(-3px); background: #222; }
-        .color-chip { width: 60px; height: 60px; border-radius: 12px; border: 2px solid #333; cursor: pointer; flex-shrink: 0; }
+        .shop { width: 100%; max-width: 480px; background: #1a1a1a; padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; overflow-x: auto; border: 1px solid #333; }
+        .shop-item { width: 55px; height: 55px; background: #080808; border: 2px solid #333; border-radius: 8px; padding: 5px; flex-shrink: 0; cursor: pointer; }
 
-        /* 📌 룸 뷰포트 (정사각형) */
+        /* 룸 뷰포트 */
         .room-viewport {
             position: relative;
             width: 100%;
-            max-width: 500px;
+            max-width: 480px;
             aspect-ratio: 1 / 1;
-            background: #0a0a0a;
-            border: 3px solid #222;
-            border-radius: 20px;
+            background: #050505;
+            border: 2px solid #222;
+            border-radius: 10px;
             overflow: hidden;
-            touch-action: none; /* 모바일 스크롤 방지 */
-            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+            touch-action: none;
         }
 
-        /* 배경 레이어 */
-        .room-bg { position: absolute; inset: 0; pointer-events: none; }
+        /* 🏗️ SVG 배경 시스템 (완벽한 30도 각도 구현) */
+        .room-svg { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
         
-        /* 📌 시점 변경의 핵심: 벽의 높이를 낮추고 바닥을 넓힘 */
-        
-        /* 왼쪽 벽 */
-        .wall-l {
-            position: absolute; width: 50%; height: 60%; left: 0; top: 0;
-            background: var(--wall-l);
-            /* 상단은 평평하게, 하단은 중앙으로 모이게 */
-            clip-path: polygon(0 0, 100% 0, 100% 60%, 0 100%);
-            filter: brightness(1.1); /* 빛 받는 면 */
-        }
-        /* 오른쪽 벽 */
-        .wall-r {
-            position: absolute; width: 50%; height: 60%; right: 0; top: 0;
-            background: var(--wall-r);
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 60%);
-        }
-        /* 📌 바닥 및 격자 추가 */
-        .floor {
-            position: absolute; width: 100%; height: 64%; bottom: 0; left: 0;
-            background: var(--floor);
-            /* 납작한 다이아몬드 형태 (하이 앵글) */
-            clip-path: polygon(50% 0, 100% 37.5%, 50% 75%, 0 37.5%);
-            
-            /* 📐 아이소메트릭 격자 패턴 */
-            background-image: 
-                linear-gradient(30deg, var(--grid-color) 1px, transparent 1px),
-                linear-gradient(150deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 40px 23px; /* 격자 비율 조정 */
-            background-position: center;
-        }
-
-        /* 아이템 */
+        /* 아이템 레이어 */
+        .items-layer { position: absolute; inset: 0; pointer-events: none; }
         .item {
             position: absolute; width: 80px; height: auto;
-            cursor: move; z-index: 100;
-            /* 바닥에 착시 그림자 추가 */
-            filter: drop-shadow(0 15px 10px rgba(0,0,0,0.4));
-            touch-action: none; user-select: none;
-            transition: filter 0.2s;
+            cursor: move; z-index: 10; pointer-events: auto;
+            filter: drop-shadow(0 15px 10px rgba(0,0,0,0.5));
+            touch-action: none;
         }
-        .item:active { filter: drop-shadow(0 25px 15px rgba(0,0,0,0.6)) brightness(1.1); }
 
-        .controls { margin-top: 20px; display: flex; gap: 10px; width: 100%; max-width: 500px; }
-        .btn { flex: 1; background: var(--accent); border: none; padding: 15px; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; color: black; transition: 0.2s; }
-        .btn:hover { filter: brightness(1.1); }
-        .btn-reset { background: #333; color: white; }
+        .btn-save { margin-top: 20px; width: 100%; max-width: 480px; background: var(--accent); border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 <body>
 
-    <div class="shop-container">
-        <div class="tab-menu">
-            <div class="tab active" id="tab-furniture" onclick="switchTab('furniture')">📦 가구</div>
-            <div class="tab" id="tab-character" onclick="switchTab('character')">🤖 캐릭터</div>
-            <div class="tab" id="tab-wall" onclick="switchTab('wall')">🎨 벽지/바닥</div>
-        </div>
-        
-        <div id="list-furniture" class="item-list">
-            <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="addItem(this.src)" title="게이밍 PC">
-            <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="addItem(this.src)" title="소파">
-            <img src="https://cdn-icons-png.flaticon.com/512/2311/2311453.png" class="shop-item" onclick="addItem(this.src)" title="테이블">
-            <img src="https://cdn-icons-png.flaticon.com/512/3534/3534064.png" class="shop-item" onclick="addItem(this.src)" title="화분">
-             <img src="https://cdn-icons-png.flaticon.com/512/995/995270.png" class="shop-item" onclick="addItem(this.src)" title="아케이드 게임기">
-        </div>
-
-        <div id="list-character" class="item-list" style="display:none;">
-            <img src="https://cdn-icons-png.flaticon.com/512/1674/1674291.png" class="shop-item" onclick="addItem(this.src)">
-            <img src="https://cdn-icons-png.flaticon.com/512/1674/1674292.png" class="shop-item" onclick="addItem(this.src)">
-            <img src="https://cdn-icons-png.flaticon.com/512/1674/1674294.png" class="shop-item" onclick="addItem(this.src)">
-        </div>
-
-        <div id="list-wall" class="item-list" style="display:none;">
-            <div class="color-chip" style="background:#34495e" onclick="changeTheme('#34495e', '#2c3e50', '#222')"></div>
-            <div class="color-chip" style="background:#4a2e2e" onclick="changeTheme('#4a2e2e', '#3a2525', '#2a1e1e')"></div>
-            <div class="color-chip" style="background:#2e4a3d" onclick="changeTheme('#2e4a3d', '#253a30', '#1e2a25')"></div>
-            <div class="color-chip" style="background:#555" onclick="changeTheme('#555', '#444', '#333')"></div>
-        </div>
+    <div class="shop">
+        <img src="https://cdn-icons-png.flaticon.com/512/963/963864.png" class="shop-item" onclick="addItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/3016/3016832.png" class="shop-item" onclick="addItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/1674/1674291.png" class="shop-item" onclick="addItem(this.src)">
+        <img src="https://cdn-icons-png.flaticon.com/512/3534/3534064.png" class="shop-item" onclick="addItem(this.src)">
     </div>
 
     <div class="room-viewport" id="room">
-        <div class="room-bg">
-            <div class="wall-l"></div>
-            <div class="wall-r"></div>
-            <div class="floor"></div>
-        </div>
-        </div>
+        <svg class="room-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M 50 40 L 100 65 L 50 90 L 0 65 Z" fill="var(--floor)" stroke="#333" stroke-width="0.2" />
+            <g stroke="rgba(255,255,255,0.05)" stroke-width="0.1">
+                <path d="M 10 45 L 60 70 M 20 50 L 70 75 M 30 55 L 80 80 M 40 60 L 90 85" />
+                <path d="M 90 45 L 40 70 M 80 50 L 30 75 M 70 55 L 20 80 M 60 60 L 10 85" />
+            </g>
+            <path d="M 0 5 L 50 30 L 50 65 L 0 40 Z" fill="var(--wall-l)" />
+            <path d="M 100 5 L 50 30 L 50 65 L 100 40 Z" fill="var(--wall-r)" />
+        </svg>
 
-    <div class="controls">
-        <button class="btn-reset btn" onclick="if(confirm('초기화 하시겠습니까?')) location.reload()">초기화</button>
-        <button class="btn" onclick="saveRoom()">배치 저장</button>
+        <div class="items-layer" id="items-layer"></div>
     </div>
-    <p style="font-size:11px; color:#666; margin-top:15px;">* 드래그하여 배치, 더블 탭으로 삭제</p>
+
+    <button class="btn-save" onclick="alert('저장되었습니다!')">배치 저장하기</button>
 
     <script>
+        const layer = document.getElementById('items-layer');
         const room = document.getElementById('room');
 
-        // 탭 전환
-        function switchTab(type) {
-            document.querySelectorAll('.item-list').forEach(l => l.style.display = 'none');
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('list-' + type).style.display = 'flex';
-            document.getElementById('tab-' + type).classList.add('active');
-        }
-
-        // 테마 변경 (벽왼쪽, 벽오른쪽, 바닥색)
-        function changeTheme(wl, wr, fl) {
-            document.documentElement.style.setProperty('--wall-l', wl);
-            document.documentElement.style.setProperty('--wall-r', wr);
-            document.documentElement.style.setProperty('--floor', fl);
-        }
-
-        // 아이템 추가
         function addItem(src) {
             const img = document.createElement('img');
             img.src = src;
             img.className = 'item';
-            // 초기 위치: 방 중앙
+            // 초기 위치: 바닥 중심
             img.style.left = 'calc(50% - 40px)';
-            img.style.top = 'calc(40% - 40px)';
+            img.style.top = '55%';
 
             setupDrag(img);
             
-            // 더블 탭 삭제
             let lastTap = 0;
             img.onpointerdown = (e) => {
                 const now = Date.now();
@@ -168,10 +86,9 @@
                 lastTap = now;
             };
 
-            room.appendChild(img);
+            layer.appendChild(img);
         }
 
-        // 드래그 로직 (모바일 최적화 Pointer Events)
         function setupDrag(el) {
             el.onpointerdown = (e) => {
                 el.setPointerCapture(e.pointerId);
@@ -183,14 +100,14 @@
                     let newX = me.clientX - rect.left - shiftX;
                     let newY = me.clientY - rect.top - shiftY;
 
-                    // 경계 제한
+                    // 이동 제한
                     newX = Math.max(0, Math.min(newX, room.clientWidth - el.clientWidth));
                     newY = Math.max(0, Math.min(newY, room.clientHeight - el.clientHeight));
 
                     el.style.left = newX + 'px';
                     el.style.top = newY + 'px';
                     
-                    // 깊이감 표현 (아래로 갈수록 앞으로)
+                    // Z-index: 아래쪽으로 갈수록 앞으로 (Y좌표 기준)
                     el.style.zIndex = Math.floor(newY + el.clientHeight);
                 };
 
@@ -202,16 +119,6 @@
                 el.onpointermove = onMove;
                 el.onpointerup = onUp;
             };
-        }
-
-        function saveRoom() {
-            // 실제 구현 시 여기에 Firebase 저장 로직이 들어갑니다.
-            const items = [];
-            document.querySelectorAll('.item').forEach(el => {
-                items.push({ src: el.src, x: el.style.left, y: el.style.top });
-            });
-            console.log('저장될 데이터:', items);
-            alert("현재 배치가 저장되었습니다! (콘솔 확인)");
         }
     </script>
 </body>
