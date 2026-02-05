@@ -156,7 +156,27 @@
 
 #search-title-area { margin-bottom: 15px; padding-left: 5px; border-left: 4px solid var(--accent); }
 
+/* 사이드바 초기 상태 강제 설정 */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px; /* 초기 위치 */
+    width: 280px;
+    height: 100%;
+    background: #111;
+    z-index: 1200;
+    transition: transform 0.3s ease; /* left 대신 transform이 성능상 더 좋습니다 */
+    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+}
 
+/* 열렸을 때 클래스 */
+#sidebar.open {
+    left: 0;
+}
+
+         
 .side-item {
     padding: 15px 20px;
     font-size: 15px;
@@ -181,7 +201,7 @@
      
 <header style="background: #000; height: 55px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
     <div style="display: flex; align-items: center; gap: 10px;">
-        <button onclick="toggleSidebar()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">☰</button>
+        <button onclick="window.toggleSidebar()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">☰</button>
         <span style="color: var(--accent); font-weight: 900; font-size: 18px; letter-spacing: -1px;">OWHUB</span>
     </div>
     <div id="header-auth-status" style="font-size: 11px; color: #888;">로그인 필요</div>
@@ -472,20 +492,37 @@ const getPosBadge = (pos) => {
 
 
      // 사이드바 열기/닫기
+// 사이드바 열기/닫기 (개선된 버전)
 window.toggleSidebar = () => {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
-    const isOpen = sidebar.style.left === '0px';
-    sidebar.style.left = isOpen ? '-280px' : '0px';
-    overlay.style.display = isOpen ? 'none' : 'block';
+    
+    // 현재 열려있는지 확인
+    const isOpen = sidebar.classList.contains('open');
+    
+    if (isOpen) {
+        sidebar.classList.remove('open');
+        sidebar.style.left = '-280px';
+        overlay.style.display = 'none';
+    } else {
+        sidebar.classList.add('open');
+        sidebar.style.left = '0';
+        overlay.style.display = 'block';
+    }
 };
 
 // 사이드바에서 페이지 이동
 window.sideShowPage = (id) => {
-    window.showPage(id); // 기존에 있던 showPage 함수 호출
+    // 1. 페이지 전환 (기존 showPage 함수 호출)
+    window.showPage(id);
+    
+    // 2. 사이드바 메뉴 활성화 UI 변경
     document.querySelectorAll('.side-item').forEach(el => el.classList.remove('active'));
-    document.getElementById('side-tab-' + id).classList.add('active');
-    window.toggleSidebar(); // 이동 후 닫기
+    const targetTab = document.getElementById('side-tab-' + id);
+    if(targetTab) targetTab.classList.add('active');
+    
+    // 3. 사이드바 닫기
+    window.toggleSidebar();
 };
 
 
@@ -501,15 +538,24 @@ window.sideShowPage = (id) => {
     window.closeModal = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
 
     window.showPage = (id) => {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    // 상단 탭이 있는 경우를 대비한 처리
+    const mainTab = document.getElementById('tab-' + id);
+    if(mainTab) {
         document.querySelectorAll('.nav-tabs div').forEach(t => t.classList.remove('active'));
-        document.getElementById('page-' + id).classList.add('active');
-        document.getElementById('tab-' + id).classList.add('active');
-        if(id === 'noti') {
-            document.getElementById('menu-new-tag').style.display = 'none';
-            renderNotiUI(); renderEvalList();
-        }
-    };
+        mainTab.classList.add('active');
+    }
+    
+    const targetPage = document.getElementById('page-' + id);
+    if(targetPage) targetPage.classList.add('active');
+    
+    if(id === 'noti') {
+        const newTag = document.getElementById('side-menu-new-tag');
+        if(newTag) newTag.style.display = 'none';
+        window.renderNotiUI(); 
+        window.renderEvalList();
+    }
+};
 
     const loadMyProfile = async (uid) => {
         const snap = await getDoc(doc(db, "users", uid));
