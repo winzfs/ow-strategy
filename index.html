@@ -112,10 +112,27 @@
         .badge-dps { background: var(--dps); color: white; }
         .badge-sup { background: var(--sup); color: black; }
 
-        /* 필터 태그 스타일 */
-.filter-tag { cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
-.filter-tag:hover { transform: translateY(-2px); filter: brightness(1.2); }
-.filter-tag.active { border: 2px solid white; box-shadow: 0 0 10px rgba(255,156,0,0.5); }
+     
+/* 수정된 필터 태그 스타일 */
+.filter-tag { 
+    cursor: pointer; 
+    transition: all 0.2s ease; /* 부드러운 전환 */
+    border: 2px solid transparent; /* 미리 2px 테두리를 투명하게 그려서 공간 확보 */
+    display: inline-block; /* 위치 고정력 강화 */
+}
+
+.filter-tag:hover { 
+    transform: translateY(-2px); 
+    filter: brightness(1.2); 
+}
+
+/* 클릭 시 위치 변화(덜컥거림) 방지 */
+.filter-tag.active { 
+    border: 2px solid white !important; /* 투명했던 테두리 색상만 변경 (크기 변화 없음) */
+    transform: translateY(0); /* 클릭된 상태에서는 위로 뜬 효과 제거 (선택 사항) */
+    box-shadow: 0 0 10px rgba(255,156,0,0.5); 
+}
+
 
 #search-title-area { margin-bottom: 15px; padding-left: 5px; border-left: 4px solid var(--accent); }
 
