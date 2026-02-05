@@ -414,10 +414,18 @@
         return mins < 60 ? mins + "분 전" : Math.floor(mins / 60) + "시간 전";
     };
 
-    const getPosBadge = (pos) => {
-        const colors = { '탱커': 'var(--tank)', '딜러': 'var(--dps)', '지원': 'var(--sup)' };
-        return `<span class="badge" style="background:${colors[pos] || '#555'}; color:${pos==='지원'?'black':'white'}">${pos}</span>`;
-    };
+    // 기존 함수를 지우고 이 코드를 복사해서 넣으세요
+const getPosBadge = (pos) => {
+    const colors = { '탱커': 'var(--tank)', '딜러': 'var(--dps)', '지원': 'var(--sup)' };
+    const iconUrl = ICON_URLS[pos] || ''; // 상단에 정의된 ICON_URLS 객체 참조
+    
+    return `
+        <span class="badge" style="background:${colors[pos] || '#555'}; color:${pos==='지원'?'black':'white'}; display:inline-flex; align-items:center; padding: 3px 6px;">
+            <img src="${iconUrl}" style="width:12px; height:12px; margin-right:4px; filter:${pos==='지원'?'brightness(0)':'none'};">
+            ${pos}
+        </span>`;
+};
+
 
     window.forgotPassword = async () => {
         const email = document.getElementById('login-email').value;
