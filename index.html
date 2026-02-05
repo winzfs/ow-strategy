@@ -210,7 +210,7 @@
 <script type="module">
     import { CONFIG } from './config.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, getDoc, setDoc, deleteDoc, getDocs, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { 
         getAuth, onAuthStateChanged, signInWithEmailAndPassword, 
         createUserWithEmailAndPassword, signOut, sendEmailVerification,
@@ -496,21 +496,46 @@
     document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
 
         document.getElementById('btn-post').onclick = async () => {
-        if(!auth.currentUser) return alert("로그인이 필요한 서비스입니다.");
+    if(!auth.currentUser) return alert("로그인이 필요한 서비스입니다.");
 
-        // [추가] 배틀태그 입력 여부 확인
-        const btagInput = document.getElementById('post-btag').value.trim();
-        if (!btagInput || !btagInput.includes('#')) {
-            alert("정확한 배틀태그(예: 닉네임#1234)를 입력해주세요!");
-            document.getElementById('post-btag').focus();
-            return;
+    // 배틀태그 입력 여부 확인
+    const btagInput = document.getElementById('post-btag').value.trim();
+    if (!btagInput || !btagInput.includes('#')) {
+        alert("정확한 배틀태그(예: 닉네임#1234)를 입력해주세요!");
+        document.getElementById('post-btag').focus();
+        return;
+    }
+
+    try {
+        // [추가된 로직] 1. 현재 내가 올린 활성화된(deleted: false) 글이 있는지 DB 조회
+        const q = query(
+            collection(db, "parties"), 
+            where("uid", "==", auth.currentUser.uid), 
+            where("deleted", "==", false)
+        );
+        const querySnapshot = await getDocs(q);
+
+        // [추가된 로직] 2. 기존 글이 있다면 팝업 띄우기
+        if (!querySnapshot.empty) {
+            if (confirm("이미 모집 중인 파티글이 있습니다.\n기존 글을 종료하고 새로운 글을 등록하시겠습니까?")) {
+                const batch = writeBatch(db);
+                querySnapshot.forEach((oldDoc) => {
+                    batch.update(oldDoc.ref, { deleted: true });
+                });
+                await batch.commit(); // 기존 글들 일괄 종료 처리
+            } else {
+                return; // 사용자가 취소를 누르면 여기서 중단
+            }
         }
 
+        // 3. 새 글 등록 (기존 기능 유지)
         const userSnap = await getDoc(doc(db, "users", auth.currentUser.uid));
-        let ownerRate = (userSnap.exists() && userSnap.data().rateCount > 0) ? (userSnap.data().rateTotal / userSnap.data().rateCount).toFixed(1) : "신규";
+        let ownerRate = (userSnap.exists() && userSnap.data().rateCount > 0) 
+            ? (userSnap.data().rateTotal / userSnap.data().rateCount).toFixed(1) 
+            : "신규";
         
         await addDoc(collection(db, "parties"), {
-            btag: btagInput, // 입력받은 배틀태그 저장
+            btag: btagInput,
             uid: auth.currentUser.uid, 
             ownerRate: ownerRate,
             pos: document.getElementById('post-main-pos').value, 
@@ -522,8 +547,15 @@
             members: [], 
             deleted: false
         });
-        alert("모집 시작!");
-    };
+
+        alert("새로운 파티 모집을 시작했습니다!");
+        document.getElementById('post-desc').value = ""; // 입력란 비워주기
+    } catch (error) {
+        console.error("Error:", error);
+        alert("오류가 발생했습니다: " + error.message);
+    }
+};
+
 
 
         window.openRequestModal = (uid, btag, postId) => {
