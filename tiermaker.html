@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OW2 티어메이커 모바일</title>
+    <title>OW2 티어메이커 FINAL</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
@@ -15,58 +15,57 @@
 
         body {
             background: var(--bg-dark); color: white; font-family: 'Malgun Gothic', sans-serif;
-            margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center;
-            touch-action: pan-y; /* 드래그 중 스크롤 방지 보조 */
+            margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden; touch-action: manipulation;
         }
 
         /* 티어표 구역 */
         .capture-area { width: 100%; max-width: 1000px; padding: 10px; background: var(--bg-dark); }
         .tier-board { display: flex; flex-direction: column; gap: 8px; }
-        .tier-row { display: flex; background: var(--panel); border-radius: 4px; position: relative; min-height: 80px; }
+        .tier-row { display: flex; background: var(--panel); border-radius: 4px; position: relative; min-height: 80px; border: 1px solid #333; }
         
         .tier-label {
             width: 70px; min-width: 70px; display: flex; align-items: center; justify-content: center;
             font-size: 1.5rem; font-weight: 900; color: #000; clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
         }
 
-        /* 티어 줄 제거 버튼 */
+        /* 티어 줄 제거 버튼 (수정됨) */
         .row-remove {
-            position: absolute; left: -30px; top: 50%; transform: translateY(-50%);
-            color: #444; cursor: pointer; border: none; background: none; font-size: 20px;
+            position: absolute; left: -35px; top: 50%; transform: translateY(-50%);
+            color: #888; cursor: pointer; border: none; background: none; font-size: 24px; padding: 5px;
         }
         .row-remove:hover { color: red; }
 
-        .dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 10px; gap: 8px; min-height: 60px; }
+        .dropzone { flex-grow: 1; display: flex; flex-wrap: wrap; padding: 10px; gap: 8px; min-height: 60px; pointer-events: auto; }
 
-        /* 영웅 카드 */
+        /* 영웅 카드 (모바일 최적화) */
         .hero {
-            width: 50px; height: 65px; background: #2a2f3b; border: 2px solid #4a5162;
+            width: 55px; height: 70px; background: #2a2f3b; border: 2px solid #4a5162;
             cursor: grab; position: relative; background-size: cover; background-position: center;
-            user-select: none; touch-action: none; /* 모바일 드래그 핵심 */
+            user-select: none; touch-action: none; z-index: 10;
         }
         .hero span { position: absolute; bottom: 0; font-size: 8px; background: rgba(0,0,0,0.8); width: 100%; text-align: center; pointer-events: none; }
         
-        /* 티어표에 올라갔을 때만 나타나는 삭제 버튼 */
+        /* 티어표에 있을 때만 삭제 버튼 활성화 (수정됨) */
         .del-btn {
-            position: absolute; top: -8px; right: -8px; width: 18px; height: 18px;
-            background: red; color: white; border-radius: 50%; display: none;
-            align-items: center; justify-content: center; font-size: 10px; border: 1px solid white;
+            position: absolute; top: -10px; right: -10px; width: 22px; height: 22px;
+            background: #ff4e50; color: white; border-radius: 50%; display: none;
+            align-items: center; justify-content: center; font-size: 14px; border: 2px solid white; z-index: 20;
         }
-        /* 드롭존(티어표) 안에 있을 때만 selected 상태에서 삭제 버튼 보임 */
         .tier-row .hero.selected .del-btn { display: flex; }
 
-        .hero.dragging { opacity: 0.5; transform: scale(0.9); }
+        .hero.dragging { opacity: 0.7; transform: scale(1.1); z-index: 9999 !important; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
 
-        /* 하단 로스터 */
+        /* 로스터 구역 */
         .roster-container { width: 100%; max-width: 1000px; margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .roster-group { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 5px; }
-        .roster-title { font-size: 0.8rem; text-align: center; margin-bottom: 8px; color: var(--ow-orange); }
+        .roster-group { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 5px; border-top: 2px solid #444; }
+        .roster-title { font-size: 0.8rem; text-align: center; margin-bottom: 8px; color: var(--ow-orange); font-weight: bold; }
 
-        .controls { width: 100%; max-width: 1000px; margin: 15px 0; display: flex; gap: 8px; }
-        .btn { padding: 10px; border: none; cursor: pointer; font-weight: bold; flex: 1; }
-        .btn-save { background: var(--ow-orange); }
+        .controls { width: 100%; max-width: 1000px; margin: 15px 0; display: flex; gap: 5px; flex-wrap: wrap; }
+        .btn-add-row { background: #444; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; flex: 1; }
+        .btn-save { background: var(--ow-orange); color: black; border: none; padding: 10px; cursor: pointer; border-radius: 4px; font-weight: bold; flex: 2; }
 
-        @media (max-width: 600px) { .roster-container { grid-template-columns: 1fr; } .row-remove { left: 5px; color: white; background: rgba(0,0,0,0.5); border-radius: 50%; width: 20px; height: 20px; line-height: 18px; text-align: center; } }
+        @media (max-width: 600px) { .row-remove { left: -5px; color: white; z-index: 30; text-shadow: 0 0 3px black; } }
     </style>
 </head>
 <body>
@@ -80,10 +79,10 @@
     </div>
 
     <div class="controls">
-        <input type="text" id="new-tier-name" placeholder="티어명" style="width:50px;">
-        <input type="color" id="new-tier-color" value="#666666">
-        <button onclick="createNewTier()">티어 추가</button>
-        <button class="btn-save" onclick="downloadImage()">이미지 저장</button>
+        <input type="text" id="new-tier-name" placeholder="티어명" style="width:60px; background:#222; border:1px solid #444; color:white; padding:5px;">
+        <input type="color" id="new-tier-color" value="#666666" style="width:40px; height:40px; border:none; background:none;">
+        <button class="btn-add-row" onclick="createNewTier()">티어 추가</button>
+        <button class="btn-save" onclick="downloadImage()">티어표 이미지로 저장</button>
     </div>
 
     <div class="roster-container">
@@ -100,7 +99,8 @@
         support: [{id:'ana', name:'아나'}, {id:'baptiste', name:'바티스트'}, {id:'brigitte', name:'브리기테'}, {id:'illari', name:'일리아리'}, {id:'kiriko', name:'키리코'}, {id:'lifeweaver', name:'라이프위버'}, {id:'lucio', name:'루시우'}, {id:'mercy', name:'메르시'}, {id:'moira', name:'모이라'}, {id:'zenyatta', name:'젠야타'}, {id:'juno', name:'유노'}]
     };
 
-    let dragItem = null;
+    let activeItem = null;
+    let initialX, initialY;
 
     function init() {
         Object.keys(heroData).forEach(role => {
@@ -112,71 +112,57 @@
                 div.dataset.role = role;
                 div.innerHTML = `<span>${h.name}</span><div class="del-btn" onclick="removeHero(event, this)">×</div>`;
                 
-                // 클릭 이벤트
                 div.addEventListener('click', (e) => {
                     e.stopPropagation();
                     document.querySelectorAll('.hero').forEach(el => el.classList.remove('selected'));
                     div.classList.add('selected');
                 });
 
-                // 드래그/터치 이벤트 통합
-                div.addEventListener('touchstart', touchStart, {passive: false});
-                div.addEventListener('touchmove', touchMove, {passive: false});
-                div.addEventListener('touchend', touchEnd);
-
-                div.draggable = true;
-                div.addEventListener('dragstart', () => { dragItem = div; div.classList.add('dragging'); });
-                div.addEventListener('dragend', () => { dragItem = null; div.classList.remove('dragging'); });
+                // 모바일 터치 이벤트 바인딩
+                div.addEventListener('touchstart', onTouchStart, {passive: false});
+                div.addEventListener('touchmove', onTouchMove, {passive: false});
+                div.addEventListener('touchend', onTouchEnd, {passive: false});
 
                 pool.appendChild(div);
             });
         });
-        document.querySelectorAll('.dropzone').forEach(setupDropzone);
     }
 
-    // --- 모바일 터치 드래그 로직 ---
-    function touchStart(e) {
-        dragItem = this;
-        this.classList.add('dragging');
-    }
-    function touchMove(e) {
-        e.preventDefault(); // 스크롤 방지
+    // --- 강력한 모바일 터치 드래그 로직 ---
+    function onTouchStart(e) {
+        activeItem = this;
         const touch = e.touches[0];
-        this.style.position = 'fixed';
-        this.style.left = touch.clientX - 25 + 'px';
-        this.style.top = touch.clientY - 32 + 'px';
-        this.style.zIndex = 1000;
+        initialX = touch.clientX - activeItem.offsetLeft;
+        initialY = touch.clientY - activeItem.offsetTop;
+        activeItem.classList.add('dragging');
     }
-    function touchEnd(e) {
-        this.style.position = 'static';
-        this.style.zIndex = 'auto';
-        this.classList.remove('dragging');
+
+    function onTouchMove(e) {
+        if (!activeItem) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        activeItem.style.position = 'fixed';
+        activeItem.style.left = (touch.clientX - 25) + 'px';
+        activeItem.style.top = (touch.clientY - 35) + 'px';
+    }
+
+    function onTouchEnd(e) {
+        if (!activeItem) return;
+        activeItem.classList.remove('dragging');
+        activeItem.style.position = 'static';
+
         const touch = e.changedTouches[0];
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        const zone = target?.closest('.dropzone');
-        if (zone) zone.appendChild(this);
-        dragItem = null;
+        // 손가락을 뗀 위치의 요소 찾기
+        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+        const zone = dropTarget?.closest('.dropzone');
+
+        if (zone) {
+            zone.appendChild(activeItem);
+        }
+        activeItem = null;
     }
 
-    function setupDropzone(zone) {
-        zone.addEventListener('dragover', e => e.preventDefault());
-        zone.addEventListener('drop', () => { if(dragItem) zone.appendChild(dragItem); });
-    }
-
-    function removeHero(e, btn) {
-        e.stopPropagation();
-        const hero = btn.parentElement;
-        document.getElementById(`pool-${hero.dataset.role}`).appendChild(hero);
-        hero.classList.remove('selected');
-    }
-
-    function removeRow(btn) {
-        const row = btn.parentElement;
-        const heroes = row.querySelectorAll('.hero');
-        heroes.forEach(h => document.getElementById(`pool-${h.dataset.role}`).appendChild(h));
-        row.remove();
-    }
-
+    // 티어 줄 추가
     function createNewTier() {
         const name = document.getElementById('new-tier-name').value || "N";
         const color = document.getElementById('new-tier-color').value;
@@ -184,21 +170,39 @@
         row.className = 'tier-row';
         row.innerHTML = `<button class="row-remove" onclick="removeRow(this)">×</button><div class="tier-label" style="background:${color}">${name}</div><div class="dropzone"></div>`;
         document.getElementById('tier-board').appendChild(row);
-        setupDropzone(row.querySelector('.dropzone'));
+    }
+
+    // 티어 줄 삭제 (줄 안의 영웅은 보관함으로 복구)
+    function removeRow(btn) {
+        const row = btn.parentElement;
+        const heroes = row.querySelectorAll('.hero');
+        heroes.forEach(h => document.getElementById(`pool-${h.dataset.role}`).appendChild(h));
+        row.remove();
+    }
+
+    // 영웅 삭제 (보관함 복구)
+    function removeHero(e, btn) {
+        e.stopPropagation();
+        const hero = btn.parentElement;
+        document.getElementById(`pool-${hero.dataset.role}`).appendChild(hero);
+        hero.classList.remove('selected');
     }
 
     function downloadImage() {
         document.querySelectorAll('.hero').forEach(h => h.classList.remove('selected'));
-        html2canvas(document.getElementById('capture-zone'), {backgroundColor:'#080a0e'}).then(canvas => {
+        const target = document.getElementById('capture-zone');
+        html2canvas(target, {backgroundColor:'#080a0e', useCORS: true}).then(canvas => {
             const link = document.createElement('a');
-            link.download = 'ow2-tierlist.png';
+            link.download = 'my-ow-tierlist.png';
             link.href = canvas.toDataURL();
             link.click();
         });
     }
 
     init();
-    document.addEventListener('click', () => document.querySelectorAll('.hero').forEach(h => h.classList.remove('selected')));
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.hero').forEach(h => h.classList.remove('selected'));
+    });
 </script>
 </body>
 </html>
