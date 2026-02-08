@@ -1,81 +1,43 @@
-import os
-import json
-import requests
-from datetime import datetime
+name: Update Overwatch News
 
-# 명단 (채널 ID)
-PRO_PLAYERS = {
-    "안스 (Ans)": "UC9ghJjR2aiuvhudqw8dM__g",
-    "학살 (Haksal)": "UC8f4_B985QvM_S3m5v7zW2g",
-    "류제홍 (Ryujehong)": "UC0h_uVqO_JInU6LzT_N6_NQ",
-    "립 (Lip)": "UC7-Q_vW1V06Y_X7V_S37N-A"
-}
+on:
+  schedule:
+    - cron: '0 0,12 * * *' # 하루 두 번 자동 실행
+  workflow_dispatch: # 수동 실행 버튼 활성화
 
-STREAMERS = {
-    "미라지": "UC69SOf9BovX2uS_vGId07Pw",
-    "빅헤드": "UCVp69S_pU6sgvS_uL5u-4_w"
-}
+permissions:
+  contents: write
 
-API_KEY = os.environ.get('YOUTUBE_API_KEY')
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-def get_latest_by_search(name, channel_id):
-    if not API_KEY: return None
-    # 'order=date'와 'type=video'를 사용하여 해당 채널의 가장 최신 영상을 검색
-    url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={channel_id}&maxResults=1&order=date&type=video&key={API_KEY}"
-    
-    try:
-        response = requests.get(url, timeout=10)
-        res = response.json()
-        
-        if 'items' in res and len(res['items']) > 0:
-            item = res['items'][0]
-            return {
-                "id": item['id']['videoId'],
-                "title": item['snippet']['title'],
-                "player": name
-            }
-        else:
-            print(f"정보 없음: {name}")
-    except Exception as e:
-        print(f"API 에러 ({name}): {e}")
-    return None
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-def get_category_videos(query, label):
-    # 일반 카테고리(공식 소식 등) 검색
-    url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={query}&maxResults=6&order=date&type=video&key={API_KEY}"
-    try:
-        res = requests.get(url).json()
-        return [{"id": i['id']['videoId'], "title": i['snippet']['title'], "player": label} for i in res.get('items', [])]
-    except:
-        return []
+      - name: Install dependencies
+        run: pip install requests
 
-def main():
-    print("🚀 검색 기반 데이터 수집 시작...")
-    data = {
-        "lastUpdated": datetime.now().strftime('%Y-%m-%d %H:%M'),
-        "pro": [], "streamer": [], "official": [], "trending": []
-    }
+      - name: Run Update Script
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python update_videos.py
 
-    # 1. 프로 선수 (채널 내 최신 영상 1개씩)
-    for name, cid in PRO_PLAYERS.items():
-        v = get_latest_by_search(name, cid)
-        if v: 
-            data["pro"].append(v)
-            print(f"✅ 추가됨: {name}")
-
-    # 2. 스트리머 (채널 내 최신 영상 1개씩)
-    for name, cid in STREAMERS.items():
-        v = get_latest_by_search(name, cid)
-        if v: data["streamer"].append(v)
-
-    # 3. 공식 및 인기 영상 (키워드 검색 결과 여러 개)
-    data["official"] = get_category_videos("오버워치2 공식 채널", "Official")
-    data["trending"] = get_category_videos("오버워치2 하이라이트 매드무비", "Trending")
-
-    # 결과 저장
-    with open('news.json', 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    print("🎉 모든 탭 데이터 저장 완료!")
-
-if __name__ == "__main__":
-    main()
+      - name: Commit and Push
+        run: |
+          git config --global user.name "GitHub-Actions-Bot"
+          git config --global user.email "jazzhjm@gmail.com"
+          git add news.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto Update: Latest Overwatch Videos"
+            git pull --rebase origin main
+            git push origin main
+          else
+            echo "No changes to commit"
+          fi
