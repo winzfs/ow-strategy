@@ -3,46 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오버워치 허브 - 실시간 뉴스 & 피드</title>
+    <title>OVERWATCH HUB - 실시간 뉴스</title>
     <style>
-        :root { --accent: #ff9c00; --bg-dark: #111; }
-        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
+        :root { --accent: #ff9c00; --bg-dark: #111; --card-bg: #1a1a1a; }
+        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
         
+        /* 상단 네비게이션 */
         nav { 
             background: #000; padding: 10px 15px; display: flex; align-items: center; 
-            border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; height: 50px;
+            border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; height: 50px;
         }
-        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; text-transform: uppercase; }
+        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
         
         .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
-        
-        /* 뉴스 헤더 스타일 */
+
+        /* 헤더 섹션 */
         .news-header { 
-            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%); 
+            background: linear-gradient(135deg, #222 0%, #000 100%); 
             padding: 30px 20px; border-radius: 15px; border: 1px solid #333; 
-            margin-bottom: 25px; border-left: 5px solid var(--accent);
+            margin-bottom: 25px; border-left: 6px solid var(--accent);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        /* 탭 메뉴 */
-        .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { 
-            background: #222; border: 1px solid #333; color: #888; padding: 8px 16px; 
-            border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; white-space: nowrap;
-        }
-        .tab-btn.active { background: var(--accent); color: black; border-color: var(--accent); }
-
-        /* 뉴스 카드 (X 임베드 컨테이너) */
+        /* 뉴스 카드 공통 */
         .feed-card { 
-            background: #1a1a1a; border-radius: 12px; border: 1px solid #333; 
-            overflow: hidden; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: var(--card-bg); border-radius: 12px; border: 1px solid #333; 
+            overflow: hidden; margin-bottom: 20px; transition: transform 0.2s;
         }
-        .feed-label { padding: 12px 15px; font-size: 12px; font-weight: 900; color: var(--accent); background: #000; display: flex; align-items: center; gap: 8px; }
+        .feed-label { padding: 12px 15px; font-size: 11px; font-weight: 900; color: var(--accent); background: #000; display: flex; align-items: center; justify-content: space-between; }
+        .live-dot { width: 8px; height: 8px; background: #00ff7b; border-radius: 50%; box-shadow: 0 0 8px #00ff7b; animation: pulse 1.5s infinite; }
 
-        /* 하단 플로팅 버튼 */
+        /* 트위터 위젯 컨테이너 */
+        #twitter-container { min-height: 400px; background: #000; }
+
+        /* 로딩/실패 안내 스타일 */
+        #fallback-ui { display: none; padding: 40px 20px; text-align: center; }
+        .action-btn { 
+            display: inline-block; background: var(--accent); color: black; padding: 12px 24px; 
+            border-radius: 8px; font-weight: bold; text-decoration: none; margin: 10px;
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        
+        /* 복귀 버튼 */
         .back-btn {
-            position: fixed; bottom: 20px; right: 20px; background: var(--accent); 
-            color: black; border: none; padding: 12px 20px; border-radius: 30px; 
-            font-weight: bold; box-shadow: 0 5px 15px rgba(255,156,0,0.3); cursor: pointer; z-index: 1000;
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+            background: #222; color: #fff; border: 1px solid #444; padding: 12px 30px; 
+            border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -54,45 +62,75 @@
 
 <div class="container">
     <div class="news-header">
-        <h1 style="margin:0; font-size: 24px;">🛰️ MISSION BRIEFING</h1>
-        <p style="margin: 8px 0 0 0; color: #888; font-size: 14px;">오버워치2 공식 뉴스 및 실시간 커뮤니티 피드</p>
-    </div>
-
-    <div class="tab-menu">
-        <button class="tab-btn active">전체 소식</button>
-        <button class="tab-btn" onclick="location.href='https://overwatch.blizzard.com/ko-kr/news/'">공식 홈페이지</button>
-        <button class="tab-btn">프로선수 피드</button>
+        <h1 style="margin:0; font-size: 26px; letter-spacing: -1px;">🛰️ FEED TERMINAL</h1>
+        <p style="margin: 8px 0 0 0; color: #aaa; font-size: 14px;">실시간 공식 업데이트 및 작전 브리핑</p>
     </div>
 
     <div class="feed-card">
         <div class="feed-label">
-            <img src="https://abs.twimg.com/favicons/twitter.ico" width="14"> OFFICIAL OVERWATCH X
+            <span>🔴 LATEST TRAILER</span>
+            <div class="live-dot"></div>
         </div>
-        <a class="twitter-timeline" 
-           data-height="600" 
-           data-theme="dark" 
-           data-chrome="noheader nofooter noborders transparent"
-           href="https://twitter.com/PlayOverwatch?ref_src=twsrc%5Etfw">
-           데이터 연결 중...
-        </a> 
+        <div style="position:relative; padding-top:56.25%;">
+            <iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" 
+                    src="https://www.youtube.com/embed?listType=user_uploads&list=PlayOverwatch" 
+                    allowfullscreen></iframe>
+        </div>
     </div>
 
-    <div class="feed-card" style="padding: 20px;">
-        <div style="font-size: 11px; color: var(--accent); font-weight: bold; margin-bottom: 5px;">RECENT PATCH</div>
-        <h3 style="margin: 0 0 10px 0;">오버워치2 최신 업데이트 내역</h3>
-        <p style="margin: 0; color: #bbb; font-size: 13px; line-height: 1.5;">
-            새로운 영웅 밸런스 조정 및 전장 업데이트가 적용되었습니다. 자세한 내용은 공식 홈페이지에서 확인하세요.
-        </p>
-        <button style="margin-top: 15px; background: transparent; border: 1px solid #444; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;"
-                onclick="window.open('https://overwatch.blizzard.com/ko-kr/news/patch-notes/')">
-            패치노트 보기 →
-        </button>
+    <div class="feed-card" id="twitter-section">
+        <div class="feed-label">
+            <span>🐦 OFFICIAL X FEED</span>
+            <span style="color:#555;">@PlayOverwatch</span>
+        </div>
+        <div id="twitter-container">
+            <a class="twitter-timeline" 
+               data-height="500" 
+               data-theme="dark" 
+               data-chrome="noheader nofooter noborders transparent"
+               href="https://twitter.com/PlayOverwatch?ref_src=twsrc%5Etfw">
+               데이터 스트림 연결 중...
+            </a>
+        </div>
+        
+        <div id="fallback-ui">
+            <p style="color:#888; font-size:14px;">보안 정책으로 인해 외부 피드를 직접 불러올 수 없습니다.</p>
+            <a href="https://twitter.com/PlayOverwatch" target="_blank" class="action-btn">공식 X(트위터) 열기</a>
+            <a href="https://overwatch.blizzard.com/ko-kr/news/" target="_blank" class="action-btn" style="background:#444; color:white;">패치노트 확인</a>
+        </div>
     </div>
 </div>
 
-<button class="back-btn" onclick="location.href='index.html'">🏠 파티찾기로 복귀</button>
+<button class="back-btn" onclick="location.href='index.html'">🏠 작전 본부로 돌아가기</button>
 
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<script>
+    // 1. 트위터 위젯 스크립트 로드
+    window.twttr = (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0], t = window.twttr || {};
+        if (d.getElementById(id)) return t;
+        js = d.createElement(s); js.id = id;
+        js.src = "https://platform.twitter.com/widgets.js";
+        fjs.parentNode.insertBefore(js, fjs);
+        t._e = []; t.ready = function(f) { t._e.push(f); };
+        return t;
+    }(document, "script", "twitter-wjs"));
+
+    // 2. 로딩 감시 시스템 (중요!)
+    window.onload = function() {
+        setTimeout(function() {
+            const twitterFrame = document.querySelector('#twitter-container iframe');
+            const fallbackUI = document.getElementById('fallback-ui');
+            const twitterTimeline = document.querySelector('.twitter-timeline');
+
+            // 위젯 로드 실패 판단 (iframe이 생성되지 않았거나 높이가 0일 때)
+            if (!twitterFrame || twitterFrame.offsetHeight === 0) {
+                console.log("트위터 로드 실패 - 대체 UI 전환");
+                if(twitterTimeline) twitterTimeline.style.display = 'none';
+                fallbackUI.style.display = 'block';
+            }
+        }, 3500); // 3.5초 대기 후 판단
+    };
+</script>
 
 </body>
 </html>
