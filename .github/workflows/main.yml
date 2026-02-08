@@ -24,10 +24,14 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python update_videos.py
 
-      - name: Commit and Push
+       - name: Commit and Push
         run: |
           git config --global user.name "GitHub-Actions-Bot"
           git config --global user.email "jazzhjm@gmail.com"
           git add news.json
+          # 변경사항이 있을 때만 커밋 (없으면 스킵해서 에러 방지)
           git commit -m "Auto Update: Latest Overwatch Videos" || exit 0
-          git push
+          # 서버의 최신 내용을 먼저 가져와서 합친 뒤 올림
+          git pull --rebase origin main
+          git push origin main
+
