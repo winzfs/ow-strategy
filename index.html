@@ -268,6 +268,29 @@
         }
 
         #search-title-area { margin-bottom: 15px; padding-left: 5px; border-left: 4px solid var(--accent); }
+
+         /* 기존 style 태그 마지막에 추가 */
+.pos-badge-inline {
+    cursor:pointer; 
+    display:inline-flex; 
+    align-items:center; 
+    padding:4px 10px; 
+    border-radius:6px; 
+    font-size:13px; 
+    font-weight:800; 
+    color:white; 
+    border:1px solid rgba(0,0,0,0.1);
+}
+.pos-badge-sup {
+    color: black !important;
+}
+.pos-badge-inline img {
+    width:16px; 
+    height:16px; 
+    margin-right:5px;
+}
+
+         
     </style>
 </head>
 <body>
@@ -823,6 +846,8 @@ window.showPageAndClose = function(id) {
                 const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
                 const isSent = mySentRequests.has(p.id);
                 const rateText = p.ownerRate ? `★ ${p.ownerRate}` : `★ 신규`;
+          const posColors = { '탱커': 'var(--tank)', '딜러': 'var(--dps)', '지원': 'var(--sup)' };
+        const isSup = p.pos === '지원';
                 
                 let btn = `<button class="btn-sub" style="background:var(--accent); color:black; font-weight:bold; white-space:nowrap;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
                 if (isMine || isAdmin) btn = `<button class="btn-danger" style="white-space:nowrap;" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "삭제" : "종료"}</button>`;
