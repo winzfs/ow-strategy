@@ -7,12 +7,12 @@ from datetime import datetime
 PRO_PLAYERS = {
     "안스 (Ans)": "UC7g2JNSc0SefzMTyc--Nn4w",
     "류제홍 (Ryujehong)": "UCtt0Hg9MhraTkzWwNQpplHg",
-    "학살 (Haksal)": "UC8f4_B985QvM_S3m5v7zW2g",
+    "쪼낙 (Jjonak)": "UCeq0Nrch5KY3VrZyn_BB32g",
     "립 (Lip)": "UC7-Q_vW1V06Y_X7V_S37N-A"
 }
 
 STREAMERS = {
-    "미라지": "UC69SOf9BovX2uS_vGId07Pw",
+    "일루전": "UCJmnOEp1-OITEU0mk4icM5A",
     "빅헤드": "UCVp69S_pU6sgvS_uL5u-4_w"
 }
 
