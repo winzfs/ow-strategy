@@ -61,12 +61,20 @@
             height: 50px;
         }
 
-        .nav-logo {
-            font-size: 18px;
-            font-weight: 900;
-            color: var(--accent);
-            letter-spacing: -0.5px;
-        }
+        /* 기존 .nav-logo 수정 및 추가 */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.nav-logo img {
+    height: 28px; /* 네비게이션 바 높이에 맞춰 조절 (기존 nav가 50px이므로 28~32px이 적당) */
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
 
         /* 햄버거 메뉴 아이콘 */
         .hamburger {
@@ -276,9 +284,14 @@
         <span></span>
         <span id="nav-new-badge" style="display:none; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: #ff3c3c; border-radius: 50%; border: 2px solid #000; z-index: 1002;"></span>
     </div>
-    <div class="nav-logo">OVERWATCH HUB</div>
-    <div style="width: 35px;"></div>
-</nav>
+    
+    <div class="nav-logo">
+        <a href="index.html" style="text-decoration: none;">
+            <img src="./img/logo.png" alt="OVERWATCH HUB">
+        </a>
+    </div>
+    
+    <div style="width: 35px;"></div> </nav>
 
 
 
