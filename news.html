@@ -3,88 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWHUB - 실시간 브리핑</title>
+    <title>OWHUB - 비디오 브리핑</title>
     <style>
         :root { --accent: #ff9c00; --bg: #0a0a0b; --card: #161618; }
-        body { background: var(--bg); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
+        body { background: var(--bg); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 80px; }
         
-        /* 헤더 */
-        nav { background: #000; padding: 15px; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 20px; font-weight: 900; color: var(--accent); cursor: pointer; text-decoration: none; }
-        
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        /* 네비게이션 */
+        nav { background: #000; padding: 15px; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 20px; font-weight: 900; color: var(--accent); text-decoration: none; cursor: pointer; }
 
-        /* 섹션 타이틀 */
-        .section-title { font-size: 14px; font-weight: 900; color: var(--accent); text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-        .section-title::before { content: ""; width: 4px; height: 14px; background: var(--accent); display: inline-block; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-        /* 유튜브 메인 브리핑 전용 */
-        .video-main { 
-            width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 15px; overflow: hidden; 
-            border: 1px solid #333; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        /* 탭 시스템 */
+        .tab-menu { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .tab-btn { 
+            background: none; border: none; color: #666; font-size: 16px; font-weight: bold; 
+            padding: 10px 20px; cursor: pointer; transition: 0.3s; position: relative;
+        }
+        .tab-btn.active { color: var(--accent); }
+        .tab-btn.active::after { 
+            content: ""; position: absolute; bottom: -11px; left: 0; width: 100%; height: 3px; background: var(--accent); 
         }
 
-        /* 구글 뉴스 검색 위젯 (우회 방식) */
-        .news-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .news-box { 
-            background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #222; 
-            text-align: center; transition: 0.3s; text-decoration: none; color: white;
-        }
-        .news-box:hover { border-color: var(--accent); background: #1f1f22; transform: translateY(-3px); }
-        .news-box i { font-size: 24px; margin-bottom: 10px; display: block; }
-        .news-box span { font-size: 15px; font-weight: bold; }
+        /* 영상 그리드 레이아웃 */
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .video-card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid #222; transition: 0.3s; }
+        .video-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+        
+        .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        
+        .video-info { padding: 15px; }
+        .video-title { font-size: 15px; font-weight: bold; line-height: 1.4; color: #eee; }
 
-        /* 하단 버튼 */
+        /* 탭 가리기/보이기 */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* 복귀 버튼 */
         .btn-home { 
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
             background: var(--accent); color: black; border: none; padding: 12px 40px; 
-            border-radius: 30px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(255,156,0,0.4);
+            border-radius: 30px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(255,156,0,0.4); z-index: 1000;
         }
 
-        @media (max-width: 600px) { .news-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) {
+            .video-grid { grid-template-columns: 1fr; }
+            .tab-btn { font-size: 14px; padding: 10px; }
+        }
     </style>
 </head>
 <body>
 
-<nav>
-    <a href="index.html" class="logo">OVERWATCH HUB</a>
-</nav>
+<nav><a href="index.html" class="logo">OVERWATCH HUB</a></nav>
 
 <div class="container">
-    <div class="section-title">Latest Video Briefing</div>
-    <div class="video-main">
-        <iframe 
-            width="100%" height="100%" 
-            src="https://www.youtube.com/embed?listType=user_uploads&list=PlayOverwatch" 
-            frameborder="0" allowfullscreen>
-        </iframe>
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="openTab(event, 'official')">📡 공식 브리핑 (최신)</button>
+        <button class="tab-btn" onclick="openTab(event, 'trending')">🔥 인기 트렌드 (조회수순)</button>
     </div>
 
-    <div class="section-title">Tactical Data Links</div>
-    <div class="news-grid">
-        <a href="https://overwatch.blizzard.com/ko-kr/news/patch-notes/" target="_blank" class="news-box">
-            <span>🛠️ 최신 패치노트 확인</span>
-            <small style="color:#666; font-size:11px;">블리자드 공식 서버 데이터</small>
-        </a>
-        
-        <a href="https://news.google.com/search?q=오버워치2%20뉴스&hl=ko&gl=KR&ceid=KR%3Ako" target="_blank" class="news-box">
-            <span>📰 실시간 오버워치 속보</span>
-            <small style="color:#666; font-size:11px;">구글 뉴스 검색망 연동</small>
-        </a>
+    <div id="official" class="tab-content active">
+        <div class="video-grid">
+            <div class="video-card" style="grid-column: 1 / -1;">
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed?listType=user_uploads&list=PlayOverwatch" allowfullscreen></iframe>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">PLAY OVERWATCH 공식 채널 실시간 스트림</div>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="video-container"><iframe src="https://www.youtube.com/embed?v=vV_T6zN9-D0" allowfullscreen></iframe></div>
+                <div class="video-info"><div class="video-title">시즌 20: 벤데타 공식 트레일러</div></div>
+            </div>
+            <div class="video-card">
+                <div class="video-container"><iframe src="https://www.youtube.com/embed?v=Nn_XfI7s8U0" allowfullscreen></iframe></div>
+                <div class="video-info"><div class="video-title">개발자 업데이트 | 신규 영웅 및 시스템 개편</div></div>
+            </div>
+        </div>
+    </div>
 
-        <a href="https://overwatch.blizzard.com/ko-kr/news/" target="_blank" class="news-box">
-            <span>🛰️ 공식 뉴스룸 바로가기</span>
-            <small style="color:#666; font-size:11px;">전체 아카이브 접속</small>
-        </a>
-
-        <a href="https://www.reddit.com/r/CompetitiveOverwatch/" target="_blank" class="news-box">
-            <span>🔥 프로/이스포츠 소식</span>
-            <small style="color:#666; font-size:11px;">레딧 글로벌 피드</small>
-        </a>
+    <div id="trending" class="tab-content">
+        <div class="video-grid">
+            <div class="video-card">
+                <div class="video-container"><iframe src="https://www.youtube.com/embed?v=uzDypKwMTco" allowfullscreen></iframe></div>
+                <div class="video-info"><div class="video-title">이번 주 오버워치 2 최고의 순간 (Most Viewed)</div></div>
+            </div>
+            <div class="video-card">
+                <div class="video-container"><iframe src="https://www.youtube.com/embed?v=sGxCggxQlow" allowfullscreen></iframe></div>
+                <div class="video-info"><div class="video-title">프로게이머가 분석하는 현재 메타 1티어 영웅</div></div>
+            </div>
+            <div class="video-card">
+                <div class="video-container"><iframe src="https://www.youtube.com/embed?v=rE2G8D9lWiM" allowfullscreen></iframe></div>
+                <div class="video-info"><div class="video-title">조회수 폭발! 해외 인기 스트리머 하이라이트</div></div>
+            </div>
+            <div class="video-card">
+                <div class="video-container"><iframe src="https://www.youtube.com/embed?v=Niandra-Recent" srcdoc="<style>body{background:#000;display:flex;justify-content:center;align-items:center;height:100vh;color:#555;font-family:sans-serif;margin:0}a{color:var(--accent);text-decoration:none}</style><div>검색어로 더 많은 영상 보기: <a href='https://www.youtube.com/results?search_query=overwatch+2+most+viewed&sp=CAMSAhAB' target='_blank'>유튜브 이동</a></div>" allowfullscreen></iframe></div>
+                <div class="video-info"><div class="video-title">더 많은 실시간 인기 영상 보기</div></div>
+            </div>
+        </div>
     </div>
 </div>
 
-<button class="btn-home" onclick="location.href='index.html'">본부로 복귀</button>
+<button class="btn-home" onclick="location.href='index.html'">BASE RETURN</button>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.className += " active";
+    }
+</script>
 
 </body>
 </html>
