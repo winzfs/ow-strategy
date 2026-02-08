@@ -13,37 +13,41 @@
         
         .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
 
-        /* 헤더 */
+        /* 헤더 섹션 */
         .news-header { 
             background: linear-gradient(135deg, #222 0%, #000 100%); 
             padding: 30px 20px; border-radius: 15px; border: 1px solid #333; 
             margin-bottom: 25px; border-left: 6px solid var(--accent);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        /* RSS 뉴스 카드 디자인 */
+        /* 뉴스 카드 디자인 */
         .news-card { 
             background: var(--card-bg); border-radius: 12px; border: 1px solid #333; 
             margin-bottom: 15px; overflow: hidden; transition: 0.3s;
             text-decoration: none; color: white; display: block;
         }
-        .news-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .news-card:hover { transform: translateY(-5px); border-color: var(--accent); }
         
-        .news-thumb { width: 100%; height: 180px; background-size: cover; background-position: center; border-bottom: 1px solid #333; }
+        .news-thumb { width: 100%; height: 200px; background-size: cover; background-position: center; border-bottom: 1px solid #333; }
         .news-body { padding: 15px; }
         .news-tag { font-size: 10px; font-weight: 900; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; display: block; }
         .news-title { font-size: 17px; font-weight: bold; margin: 0 0 10px 0; line-height: 1.4; color: #eee; }
         .news-date { font-size: 12px; color: #666; }
 
-        /* 로딩 애니메이션 */
-        .loader { text-align: center; padding: 50px; color: #888; font-weight: bold; }
-        .dot-ani { animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        /* 로딩 및 실패 UI */
+        .loader { text-align: center; padding: 50px; color: #888; }
+        .error-box { text-align: center; padding: 40px 20px; border: 1px dashed #444; border-radius: 12px; background: rgba(255,255,255,0.02); }
 
         .back-btn {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
             background: var(--accent); color: black; border: none; padding: 12px 30px; 
             border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
+
+        /* 유튜브 섹션 전용 */
+        .yt-card { background: #000; border-radius: 12px; border: 1px solid #333; overflow: hidden; margin-bottom: 30px; }
     </style>
 </head>
 <body>
@@ -52,12 +56,23 @@
 
 <div class="container">
     <div class="news-header">
-        <h1 style="margin:0; font-size: 24px;">🛰️ RSS FEED TERMINAL</h1>
-        <p style="margin: 8px 0 0 0; color: #aaa; font-size: 14px;">블리자드 공식 서버에서 수신된 최신 데이터</p>
+        <h1 style="margin:0; font-size: 24px;">🛰️ DATA TERMINAL</h1>
+        <p style="margin: 8px 0 0 0; color: #aaa; font-size: 14px;">블리자드 공식 서버 뉴스 수신 중</p>
+    </div>
+
+    <div class="yt-card">
+        <div style="padding: 10px 15px; font-size: 11px; font-weight: 900; color: #ff0000; background: #111; display: flex; align-items: center; gap: 8px;">
+            <span style="width: 8px; height: 8px; background: #ff0000; border-radius: 50%;"></span> LATEST VIDEO
+        </div>
+        <div style="position:relative; padding-top:56.25%;">
+            <iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" 
+                    src="https://www.youtube.com/embed?listType=user_uploads&list=PlayOverwatch" 
+                    allowfullscreen></iframe>
+        </div>
     </div>
 
     <div id="rss-feed-list">
-        <div class="loader">신호 수신 중<span class="dot-ani">...</span></div>
+        <div class="loader">신호 수신 중...</div>
     </div>
 </div>
 
@@ -65,25 +80,26 @@
 
 <script>
     async function loadRSS() {
-        // 블리자드 공식 뉴스 RSS 주소를 JSON으로 변환해주는 API 사용
-        // (참고: PlayOverwatch 공식 RSS 주소 활용)
+        const listDiv = document.getElementById('rss-feed-list');
+        // 공식 한국어 뉴스 RSS
         const RSS_URL = 'https://overwatch.blizzard.com/ko-kr/news/rss';
-        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
+        // 공개 API (rss2json) - 캐시 방지를 위해 랜덤 파라미터 추가
+        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}&t=${Date.now()}`;
 
         try {
             const response = await fetch(API_URL);
             const data = await response.json();
 
             if (data.status === 'ok') {
-                const listDiv = document.getElementById('rss-feed-list');
                 let html = "";
-
                 data.items.forEach(item => {
-                    // 날짜 형식 예쁘게 변경
                     const date = new Date(item.pubDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
                     
-                    // 이미지가 없는 경우 기본 이미지 처리
-                    const thumb = item.enclosure.link || item.thumbnail || 'https://images.blz-contentstack.com/v3/assets/blt088898833056f9f1/blt674258169e5d4408/628670868f08a1496a793a38/Overwatch2_ReleaseDate_Thumbnail.jpg';
+                    // 썸네일 처리 (이미지가 없으면 기본값)
+                    let thumb = item.thumbnail || item.enclosure.link;
+                    if (!thumb || thumb.includes('avatar')) {
+                        thumb = 'https://images.blz-contentstack.com/v3/assets/blt088898833056f9f1/blt674258169e5d4408/628670868f08a1496a793a38/Overwatch2_ReleaseDate_Thumbnail.jpg';
+                    }
 
                     html += `
                         <a href="${item.link}" target="_blank" class="news-card">
@@ -96,22 +112,25 @@
                         </a>
                     `;
                 });
-
                 listDiv.innerHTML = html;
             } else {
-                throw new Error('Feed error');
+                throw new Error('Data status not ok');
             }
         } catch (error) {
-            document.getElementById('rss-feed-list').innerHTML = `
-                <div style="text-align:center; padding:50px; color:#666;">
-                    <p>데이터 수신에 실패했습니다.</p>
-                    <button onclick="location.reload()" style="background:none; border:1px solid #444; color:#888; padding:8px 16px; border-radius:5px; cursor:pointer;">재시도</button>
+            console.error(error);
+            listDiv.innerHTML = `
+                <div class="error-box">
+                    <p style="color:#eee; font-weight:bold;">뉴스 피드를 불러올 수 없습니다.</p>
+                    <p style="color:#666; font-size:12px; margin-bottom:15px;">서버 연결이 원활하지 않습니다.</p>
+                    <button onclick="window.open('https://overwatch.blizzard.com/ko-kr/news/')" 
+                            style="background:var(--accent); color:black; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">
+                        공식 홈페이지에서 보기
+                    </button>
                 </div>
             `;
         }
     }
 
-    // 페이지 로드 시 RSS 불러오기 실행
     window.onload = loadRSS;
 </script>
 
