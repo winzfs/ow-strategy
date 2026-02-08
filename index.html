@@ -298,8 +298,12 @@
     <!-- 사이드바 메뉴 -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>⚔️ MENU</h2>
-        </div>
+    <h2>⚔️ MENU</h2>
+    <div id="sidebar-user-tag" style="margin-top: 8px; font-size: 14px; color: #fff; font-weight: bold; display: none;">
+        <span style="color: var(--accent);">Agent:</span> <span id="display-btag">로딩 중...</span>
+    </div>
+</div>
+
         
         <div class="sidebar-menu">
             <div class="sidebar-menu-item active" data-page="list" id="sidebar-list" onclick="showPageAndClose('list')">
@@ -677,11 +681,19 @@ window.showPageAndClose = function(id) {
         debugLog('✅ Firebase functions ready', 'success');
 
         const loadMyProfile = async (uid) => {
-            const snap = await getDoc(doc(db, "users", uid));
-            if (snap.exists()) {
-                const d = snap.data();
+    const snap = await getDoc(doc(db, "users", uid));
+    const sidebarUserTag = document.getElementById('sidebar-user-tag');
+    const displayBtag = document.getElementById('display-btag');
+
+    if (snap.exists()) {
+        const d = snap.data();
+        const btag = d.btag || "닉네임#0000";
                 document.getElementById('profile-btag').value = d.btag || "";
-                document.getElementById('post-btag').value = d.btag || "";
+        document.getElementById('post-btag').value = d.btag || "";
+        
+        // 사이드바 상단 배틀태그 업데이트
+        if(displayBtag) displayBtag.innerText = btag;
+        if(sidebarUserTag) sidebarUserTag.style.display = 'block';
                 if(d.탱커) { document.getElementById('tier-tank').value = d.탱커.tier; document.getElementById('num-tank').value = d.탱커.num; }
                 if(d.딜러) { document.getElementById('tier-dps').value = d.딜러.tier; document.getElementById('num-dps').value = d.딜러.num; }
                 if(d.지원) { document.getElementById('tier-sup').value = d.지원.tier; document.getElementById('num-sup').value = d.지원.num; }
@@ -689,8 +701,12 @@ window.showPageAndClose = function(id) {
                     document.getElementById('avg-rating-area').style.display = 'block';
                     document.getElementById('profile-avg-stars').innerText = `★ ${(d.rateTotal / d.rateCount).toFixed(1)}`;
                 }
-            }
-        };
+         } else {
+        // 데이터가 없는 신규 유저일 경우 처리
+        if(displayBtag) displayBtag.innerText = "프로필을 설정하세요";
+        if(sidebarUserTag) sidebarUserTag.style.display = 'block';
+    }
+};
 
         window.setFilter = (type, value) => {
             currentFilter = { pos: [], tier: [] };
@@ -864,6 +880,7 @@ window.showPageAndClose = function(id) {
         onAuthStateChanged(auth, async (user) => {
             const loginForm = document.getElementById('login-form-sidebar');
             const userInfo = document.getElementById('user-info-sidebar');
+            const sidebarUserTag = document.getElementById('sidebar-user-tag'); // 추가
 
             if (user) {
                 const isSpecialAccount = (user.email === ADMIN_EMAIL) || (CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === user.email.toLowerCase()));
@@ -907,8 +924,11 @@ onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap
 });
 
             } else {
-                loginForm.style.display = 'block'; userInfo.style.display = 'none';
-                mySentRequests = new Set(); lastMatchSnap = null;
+                 loginForm.style.display = 'block'; 
+             userInfo.style.display = 'none';
+             if(sidebarUserTag) sidebarUserTag.style.display = 'none'; // 배틀태그 숨김
+             mySentRequests = new Set(); 
+             lastMatchSnap = null;
             }
 
             onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
