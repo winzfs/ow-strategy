@@ -519,83 +519,78 @@
         // ========================================
         
         // 디버그 로그 함수
-        window.debugLog = function(msg, type) {
-            type = type || 'info';
-            const output = document.getElementById('debug-output');
-            if (output) {
-                const time = new Date().toLocaleTimeString();
-                const color = type === 'error' ? '#f00' : type === 'success' ? '#0f0' : '#0ff';
-                output.innerHTML += '<div style="color: ' + color + '; margin: 2px 0;">[' + time + '] ' + msg + '</div>';
-                output.scrollTop = output.scrollHeight;
-            }
-            console.log(msg);
-        };
-        
-        debugLog('🎬 Sidebar script loading...');
-        
-        // 사이드바 토글 함수
-        window.toggleSidebar = function() {
-            debugLog('🔄 toggleSidebar called');
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            const hamburger = document.querySelector('.hamburger');
-            
-            if (sidebar && overlay && hamburger) {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
-                hamburger.classList.toggle('active');
-                const isActive = sidebar.classList.contains('active');
-                debugLog('✅ Sidebar ' + (isActive ? 'OPENED' : 'CLOSED'), 'success');
-            } else {
-                debugLog('❌ Elements not found! sidebar:' + !!sidebar + ' overlay:' + !!overlay + ' hamburger:' + !!hamburger, 'error');
-            }
-        };
-        
-        // 페이지 전환 함수
-        window.showPage = function(id) {
-            debugLog('📄 Showing page: ' + id);
-            
-            var pages = document.querySelectorAll('.page');
-            for (var i = 0; i < pages.length; i++) {
-                pages[i].classList.remove('active');
-            }
-            
-            var menuItems = document.querySelectorAll('.sidebar-menu-item');
-            for (var i = 0; i < menuItems.length; i++) {
-                menuItems[i].classList.remove('active');
-            }
-            
-            var pageEl = document.getElementById('page-' + id);
-            var sidebarEl = document.getElementById('sidebar-' + id);
-            
-            if (pageEl) pageEl.classList.add('active');
-            if (sidebarEl) sidebarEl.classList.add('active');
-            
-            if (id === 'noti') {
-                var newTag = document.getElementById('sidebar-new-tag');
-                if (newTag) newTag.style.display = 'none';
-                if (typeof window.renderNotiUI === 'function') window.renderNotiUI();
-                if (typeof window.renderEvalList === 'function') window.renderEvalList();
-            }
+// ========================================
+// 사이드바 전용 스크립트 (수정본)
+// ========================================
 
+// 디버그 로그 함수
+window.debugLog = function(msg, type) {
+    type = type || 'info';
+    const output = document.getElementById('debug-output');
+    if (output) {
+        const time = new Date().toLocaleTimeString();
+        const color = type === 'error' ? '#f00' : type === 'success' ? '#0f0' : '#0ff';
+        output.innerHTML += '<div style="color: ' + color + '; margin: 2px 0;">[' + time + '] ' + msg + '</div>';
+        output.scrollTop = output.scrollHeight;
+    }
+    console.log(msg);
+};
 
-             // 추가: 알림 페이지 접속 시 외부 배지도 숨김
-        var navBadge = document.getElementById('nav-new-badge');
+// 사이드바 토글 함수
+window.toggleSidebar = function() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const hamburger = document.querySelector('.hamburger');
+    
+    if (sidebar && overlay && hamburger) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        hamburger.classList.toggle('active');
+        debugLog('✅ 사이드바 토글 완료');
+    } else {
+        debugLog('❌ 요소를 찾을 수 없음', 'error');
+    }
+};
+
+// 페이지 전환 함수
+window.showPage = function(id) {
+    debugLog('📄 페이지 전환 시도: ' + id);
+    
+    // 1. 모든 페이지 숨기기
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(p => p.classList.remove('active'));
+    
+    // 2. 모든 메뉴 아이템 비활성화
+    const menuItems = document.querySelectorAll('.sidebar-menu-item');
+    menuItems.forEach(m => m.classList.remove('active'));
+    
+    // 3. 선택한 페이지 및 메뉴 활성화
+    const targetPage = document.getElementById('page-' + id);
+    const targetMenu = document.getElementById('sidebar-' + id);
+    
+    if (targetPage) targetPage.classList.add('active');
+    if (targetMenu) targetMenu.classList.add('active');
+    
+    // 4. 알림 페이지 처리
+    if (id === 'noti') {
+        const sidebarTag = document.getElementById('sidebar-new-tag');
+        const navBadge = document.getElementById('nav-new-badge');
+        if (sidebarTag) sidebarTag.style.display = 'none';
         if (navBadge) navBadge.style.display = 'none';
-
+        
         if (typeof window.renderNotiUI === 'function') window.renderNotiUI();
         if (typeof window.renderEvalList === 'function') window.renderEvalList();
     }
     
-            debugLog('✅ Page switched to: ' + id, 'success');
-        };
-        
-        // 페이지 전환 후 사이드바 닫기
-        window.showPageAndClose = function(id) {
-            debugLog('🔀 showPageAndClose: ' + id);
-            window.showPage(id);
-            window.toggleSidebar();
-        };
+    debugLog('✅ ' + id + ' 페이지 활성화 완료', 'success');
+};
+
+// 페이지 전환 후 사이드바 자동으로 닫기
+window.showPageAndClose = function(id) {
+    window.showPage(id);
+    window.toggleSidebar();
+};
+
         
         debugLog('✅ Sidebar functions ready!', 'success');
         
