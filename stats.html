@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OW PRO ANALYTICS - Scrim Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f111a; color: #e5e7eb; }
+        .glass-card { background: rgba(22, 25, 37, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
+        .input-dark { background: #0a0c14; border: 1px solid #2d3748; padding: 0.5rem; border-radius: 0.5rem; width: 100%; color: white; outline: none; }
+        .input-dark:focus { border-color: #f97316; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 10px; }
+    </style>
+</head>
+<body class="pb-20 md:pb-0">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <aside class="hidden md:flex w-64 glass-card flex-col p-6 space-y-8">
+            <h1 class="text-2xl font-black text-orange-500 italic tracking-tighter">OW ANALYTICS</h1>
+            <nav class="space-y-4">
+                <button onclick="showTab('dashboard')" class="flex items-center space-x-3 text-orange-500 w-full font-bold">
+                    <i data-lucide="layout-dashboard"></i> <span>대시보드</span>
+                </button>
+                <button onclick="showTab('entry')" class="flex items-center space-x-3 text-gray-400 hover:text-white w-full">
+                    <i data-lucide="plus-circle"></i> <span>데이터 입력</span>
+                </button>
+                <button onclick="showTab('team')" class="flex items-center space-x-3 text-gray-400 hover:text-white w-full">
+                    <i data-lucide="users"></i> <span>선수 분석</span>
+                </button>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-4 md:p-10 overflow-y-auto">
+            
+            <div id="tab-dashboard" class="tab-content space-y-6">
+                <header class="flex justify-between items-end">
+                    <div>
+                        <p class="text-sm text-gray-500">Welcome back, Coach</p>
+                        <h2 class="text-3xl font-bold">스크림 요약</h2>
+                    </div>
+                    <div class="text-right">
+                        <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-xs font-bold">LIVE SESSION</span>
+                    </div>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <p class="text-gray-500 text-sm">최근 승률</p>
+                        <h3 class="text-4xl font-black mt-2">68.4%</h3>
+                        <p class="text-green-500 text-xs mt-2">▲ 4.2% from last week</p>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl">
+                        <p class="text-gray-500 text-sm">한타 승률</p>
+                        <h3 class="text-4xl font-black mt-2 text-blue-400">52.1%</h3>
+                        <canvas id="fightWinChart" class="mt-4" height="50"></canvas>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl">
+                        <p class="text-gray-500 text-sm">평균 첫 처치 시간</p>
+                        <h3 class="text-4xl font-black mt-2 text-orange-500">0:42</h3>
+                        <p class="text-gray-500 text-xs mt-2">League Avg: 0:38</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h4 class="font-bold mb-4">선수 기여도 분석 (Radar)</h4>
+                        <div class="h-64"><canvas id="radarChart"></canvas></div>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl overflow-x-auto">
+                        <h4 class="font-bold mb-4">최근 경기 히스토리</h4>
+                        <table class="w-full text-sm">
+                            <thead class="text-gray-500 border-b border-gray-800">
+                                <tr>
+                                    <th class="pb-3 text-left">MAP</th>
+                                    <th class="pb-3 text-center">RESULT</th>
+                                    <th class="pb-3 text-center">FK%</th>
+                                    <th class="pb-3 text-right">DATE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-entry" class="tab-content hidden space-y-6">
+                <h2 class="text-3xl font-bold">데이터 상세 입력</h2>
+                
+                <div class="glass-card p-6 rounded-2xl grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">전장 선택</label>
+                        <select id="mapName" class="input-dark">
+                            <option>왕의 길</option>
+                            <option>리알토</option>
+                            <option>뉴 정크 시티</option>
+                            <option>서킷 로얄</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">결과</label>
+                        <select id="matchResult" class="input-dark">
+                            <option value="WIN">승리 (WIN)</option>
+                            <option value="LOSS">패배 (LOSS)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">리플레이 코드</label>
+                        <input id="replayCode" type="text" class="input-dark" placeholder="CODE12">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">한타 승리 횟수</label>
+                        <input id="fightWins" type="number" class="input-dark" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-center">
+                            <thead class="bg-gray-800 text-gray-400">
+                                <tr>
+                                    <th class="p-3">Role/Name</th>
+                                    <th class="p-3">Hero</th>
+                                    <th class="p-3">Elim/Death</th>
+                                    <th class="p-3">Final Blows</th>
+                                    <th class="p-3">Damage</th>
+                                    <th class="p-3">Healing</th>
+                                    <th class="p-3">Ult Eff. (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="player-input-rows">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="saveData()" class="bg-orange-600 hover:bg-orange-500 text-white px-10 py-4 rounded-xl font-black text-lg shadow-lg shadow-orange-900/20 transition">
+                        데이터베이스에 저장
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-card border-t border-gray-800 flex justify-around p-4 z-50">
+            <button onclick="showTab('dashboard')" class="text-orange-500 flex flex-col items-center">
+                <i data-lucide="layout-dashboard"></i><span class="text-[10px] mt-1">대시보드</span>
+            </button>
+            <button onclick="showTab('entry')" class="text-gray-500 flex flex-col items-center">
+                <i data-lucide="plus-circle"></i><span class="text-[10px] mt-1">기록하기</span>
+            </button>
+            <button onclick="showTab('team')" class="text-gray-500 flex flex-col items-center">
+                <i data-lucide="users"></i><span class="text-[10px] mt-1">선수</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+
+    <script>
+        // 1. 초기화 및 아이콘 렌더링
+        lucide.createIcons();
+
+        // 2. Firebase 설정 (실제 사용 시 본인 설정값 입력)
+        // const firebaseConfig = { ... };
+        // firebase.initializeApp(firebaseConfig);
+        // const db = firebase.firestore();
+
+        // 3. 탭 전환 로직
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+        }
+
+        // 4. 선수 입력 줄 생성
+        const roles = ['TANK', 'DPS 1', 'DPS 2', 'SUPP 1', 'SUPP 2'];
+        const inputTbody = document.getElementById('player-input-rows');
+        roles.forEach(role => {
+            inputTbody.innerHTML += `
+                <tr class="border-b border-gray-800 hover:bg-gray-800/30 transition">
+                    <td class="p-3 font-bold text-left">${role}</td>
+                    <td class="p-3"><input type="text" class="input-dark text-xs w-20" placeholder="Hero"></td>
+                    <td class="p-3 flex items-center justify-center space-x-1">
+                        <input type="number" class="input-dark text-xs w-12 text-center" placeholder="K">
+                        <span class="text-gray-600">/</span>
+                        <input type="number" class="input-dark text-xs w-12 text-center" placeholder="D">
+                    </td>
+                    <td class="p-3"><input type="number" class="input-dark text-xs w-16 text-center" placeholder="FB"></td>
+                    <td class="p-3"><input type="number" class="input-dark text-xs w-24 text-center" placeholder="DMG"></td>
+                    <td class="p-3"><input type="number" class="input-dark text-xs w-24 text-center" placeholder="HEAL"></td>
+                    <td class="p-3"><input type="number" class="input-dark text-xs w-16 text-center text-orange-400" placeholder="%"></td>
+                </tr>
+            `;
+        });
+
+        // 5. 샘플 데이터 히스토리 렌더링
+        const samples = [
+            { map: '왕의 길', res: 'WIN', fk: '62%', date: '2026.02.08' },
+            { map: '리알토', res: 'LOSS', fk: '35%', date: '2026.02.07' },
+            { map: '뉴 정크 시티', res: 'WIN', fk: '78%', date: '2026.02.05' }
+        ];
+        const historyBody = document.getElementById('history-body');
+        samples.forEach(s => {
+            historyBody.innerHTML += `
+                <tr class="border-b border-gray-800/50">
+                    <td class="py-4 font-bold">${s.map}</td>
+                    <td class="py-4 text-center"><span class="${s.res === 'WIN' ? 'text-blue-500' : 'text-red-500'} font-black">${s.res}</span></td>
+                    <td class="py-4 text-center">${s.fk}</td>
+                    <td class="py-4 text-right text-gray-500 text-xs">${s.date}</td>
+                </tr>
+            `;
+        });
+
+        // 6. 차트 초기화
+        const ctxRadar = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['생존력', '결정력', '자원효율', '궁극기속도', '피지컬', '포지셔닝'],
+                datasets: [{
+                    label: '우리 팀 평균',
+                    data: [85, 70, 90, 65, 80, 75],
+                    backgroundColor: 'rgba(249, 115, 22, 0.2)',
+                    borderColor: '#f97316',
+                    pointBackgroundColor: '#f97316'
+                }]
+            },
+            options: { 
+                scales: { r: { grid: { color: '#2d3748' }, angleLines: { color: '#2d3748' }, ticks: { display: false } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // 7. 저장 알림 함수
+        function saveData() {
+            alert("Firebase 설정이 완료되면 실제 DB로 데이터가 전송됩니다!\n현재는 UI 시뮬레이션 모드입니다.");
+            showTab('dashboard');
+        }
+    </script>
+</body>
+</html>
