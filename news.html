@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오버워치 허브 - 실시간 뉴스 & 피드</title>
+    <style>
+        :root { --accent: #ff9c00; --bg-dark: #111; }
+        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
+        
+        nav { 
+            background: #000; padding: 10px 15px; display: flex; align-items: center; 
+            border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; height: 50px;
+        }
+        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; text-transform: uppercase; }
+        
+        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+        
+        /* 뉴스 헤더 스타일 */
+        .news-header { 
+            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%); 
+            padding: 30px 20px; border-radius: 15px; border: 1px solid #333; 
+            margin-bottom: 25px; border-left: 5px solid var(--accent);
+        }
+
+        /* 탭 메뉴 */
+        .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { 
+            background: #222; border: 1px solid #333; color: #888; padding: 8px 16px; 
+            border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; white-space: nowrap;
+        }
+        .tab-btn.active { background: var(--accent); color: black; border-color: var(--accent); }
+
+        /* 뉴스 카드 (X 임베드 컨테이너) */
+        .feed-card { 
+            background: #1a1a1a; border-radius: 12px; border: 1px solid #333; 
+            overflow: hidden; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .feed-label { padding: 12px 15px; font-size: 12px; font-weight: 900; color: var(--accent); background: #000; display: flex; align-items: center; gap: 8px; }
+
+        /* 하단 플로팅 버튼 */
+        .back-btn {
+            position: fixed; bottom: 20px; right: 20px; background: var(--accent); 
+            color: black; border: none; padding: 12px 20px; border-radius: 30px; 
+            font-weight: bold; box-shadow: 0 5px 15px rgba(255,156,0,0.3); cursor: pointer; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-logo" onclick="location.href='index.html'">OVERWATCH HUB</div>
+</nav>
+
+<div class="container">
+    <div class="news-header">
+        <h1 style="margin:0; font-size: 24px;">🛰️ MISSION BRIEFING</h1>
+        <p style="margin: 8px 0 0 0; color: #888; font-size: 14px;">오버워치2 공식 뉴스 및 실시간 커뮤니티 피드</p>
+    </div>
+
+    <div class="tab-menu">
+        <button class="tab-btn active">전체 소식</button>
+        <button class="tab-btn" onclick="location.href='https://overwatch.blizzard.com/ko-kr/news/'">공식 홈페이지</button>
+        <button class="tab-btn">프로선수 피드</button>
+    </div>
+
+    <div class="feed-card">
+        <div class="feed-label">
+            <img src="https://abs.twimg.com/favicons/twitter.ico" width="14"> OFFICIAL OVERWATCH X
+        </div>
+        <a class="twitter-timeline" 
+           data-height="600" 
+           data-theme="dark" 
+           data-chrome="noheader nofooter noborders transparent"
+           href="https://twitter.com/PlayOverwatch?ref_src=twsrc%5Etfw">
+           데이터 연결 중...
+        </a> 
+    </div>
+
+    <div class="feed-card" style="padding: 20px;">
+        <div style="font-size: 11px; color: var(--accent); font-weight: bold; margin-bottom: 5px;">RECENT PATCH</div>
+        <h3 style="margin: 0 0 10px 0;">오버워치2 최신 업데이트 내역</h3>
+        <p style="margin: 0; color: #bbb; font-size: 13px; line-height: 1.5;">
+            새로운 영웅 밸런스 조정 및 전장 업데이트가 적용되었습니다. 자세한 내용은 공식 홈페이지에서 확인하세요.
+        </p>
+        <button style="margin-top: 15px; background: transparent; border: 1px solid #444; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;"
+                onclick="window.open('https://overwatch.blizzard.com/ko-kr/news/patch-notes/')">
+            패치노트 보기 →
+        </button>
+    </div>
+</div>
+
+<button class="back-btn" onclick="location.href='index.html'">🏠 파티찾기로 복귀</button>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+</body>
+</html>
