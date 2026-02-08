@@ -3,133 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OVERWATCH HUB - 실시간 뉴스</title>
+    <title>OWHUB - 실시간 작전 브리핑</title>
     <style>
         :root { --accent: #ff9c00; --bg-dark: #111; --card-bg: #1a1a1a; }
-        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
+        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 80px; }
         
-        /* 상단 네비게이션 */
-        nav { 
-            background: #000; padding: 10px 15px; display: flex; align-items: center; 
-            border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; height: 50px;
-        }
-        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        nav { background: #000; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; height: 50px; }
+        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; text-transform: uppercase; }
         
         .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
 
-        /* 헤더 섹션 */
+        /* 헤더 */
         .news-header { 
             background: linear-gradient(135deg, #222 0%, #000 100%); 
             padding: 30px 20px; border-radius: 15px; border: 1px solid #333; 
             margin-bottom: 25px; border-left: 6px solid var(--accent);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        /* 뉴스 카드 공통 */
-        .feed-card { 
+        /* RSS 뉴스 카드 디자인 */
+        .news-card { 
             background: var(--card-bg); border-radius: 12px; border: 1px solid #333; 
-            overflow: hidden; margin-bottom: 20px; transition: transform 0.2s;
+            margin-bottom: 15px; overflow: hidden; transition: 0.3s;
+            text-decoration: none; color: white; display: block;
         }
-        .feed-label { padding: 12px 15px; font-size: 11px; font-weight: 900; color: var(--accent); background: #000; display: flex; align-items: center; justify-content: space-between; }
-        .live-dot { width: 8px; height: 8px; background: #00ff7b; border-radius: 50%; box-shadow: 0 0 8px #00ff7b; animation: pulse 1.5s infinite; }
-
-        /* 트위터 위젯 컨테이너 */
-        #twitter-container { min-height: 400px; background: #000; }
-
-        /* 로딩/실패 안내 스타일 */
-        #fallback-ui { display: none; padding: 40px 20px; text-align: center; }
-        .action-btn { 
-            display: inline-block; background: var(--accent); color: black; padding: 12px 24px; 
-            border-radius: 8px; font-weight: bold; text-decoration: none; margin: 10px;
-        }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .news-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         
-        /* 복귀 버튼 */
+        .news-thumb { width: 100%; height: 180px; background-size: cover; background-position: center; border-bottom: 1px solid #333; }
+        .news-body { padding: 15px; }
+        .news-tag { font-size: 10px; font-weight: 900; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .news-title { font-size: 17px; font-weight: bold; margin: 0 0 10px 0; line-height: 1.4; color: #eee; }
+        .news-date { font-size: 12px; color: #666; }
+
+        /* 로딩 애니메이션 */
+        .loader { text-align: center; padding: 50px; color: #888; font-weight: bold; }
+        .dot-ani { animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
         .back-btn {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
-            background: #222; color: #fff; border: 1px solid #444; padding: 12px 30px; 
+            background: var(--accent); color: black; border: none; padding: 12px 30px; 
             border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 <body>
 
-<nav>
-    <div class="nav-logo" onclick="location.href='index.html'">OVERWATCH HUB</div>
-</nav>
+<nav><div class="nav-logo" onclick="location.href='index.html'">OVERWATCH HUB</div></nav>
 
 <div class="container">
     <div class="news-header">
-        <h1 style="margin:0; font-size: 26px; letter-spacing: -1px;">🛰️ FEED TERMINAL</h1>
-        <p style="margin: 8px 0 0 0; color: #aaa; font-size: 14px;">실시간 공식 업데이트 및 작전 브리핑</p>
+        <h1 style="margin:0; font-size: 24px;">🛰️ RSS FEED TERMINAL</h1>
+        <p style="margin: 8px 0 0 0; color: #aaa; font-size: 14px;">블리자드 공식 서버에서 수신된 최신 데이터</p>
     </div>
 
-    <div class="feed-card">
-        <div class="feed-label">
-            <span>🔴 LATEST TRAILER</span>
-            <div class="live-dot"></div>
-        </div>
-        <div style="position:relative; padding-top:56.25%;">
-            <iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" 
-                    src="https://www.youtube.com/embed?listType=user_uploads&list=PlayOverwatch" 
-                    allowfullscreen></iframe>
-        </div>
-    </div>
-
-    <div class="feed-card" id="twitter-section">
-        <div class="feed-label">
-            <span>🐦 OFFICIAL X FEED</span>
-            <span style="color:#555;">@PlayOverwatch</span>
-        </div>
-        <div id="twitter-container">
-            <a class="twitter-timeline" 
-               data-height="500" 
-               data-theme="dark" 
-               data-chrome="noheader nofooter noborders transparent"
-               href="https://twitter.com/PlayOverwatch?ref_src=twsrc%5Etfw">
-               데이터 스트림 연결 중...
-            </a>
-        </div>
-        
-        <div id="fallback-ui">
-            <p style="color:#888; font-size:14px;">보안 정책으로 인해 외부 피드를 직접 불러올 수 없습니다.</p>
-            <a href="https://twitter.com/PlayOverwatch" target="_blank" class="action-btn">공식 X(트위터) 열기</a>
-            <a href="https://overwatch.blizzard.com/ko-kr/news/" target="_blank" class="action-btn" style="background:#444; color:white;">패치노트 확인</a>
-        </div>
+    <div id="rss-feed-list">
+        <div class="loader">신호 수신 중<span class="dot-ani">...</span></div>
     </div>
 </div>
 
-<button class="back-btn" onclick="location.href='index.html'">🏠 작전 본부로 돌아가기</button>
+<button class="back-btn" onclick="location.href='index.html'">🏠 본부로 돌아가기</button>
 
 <script>
-    // 1. 트위터 위젯 스크립트 로드
-    window.twttr = (function(d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0], t = window.twttr || {};
-        if (d.getElementById(id)) return t;
-        js = d.createElement(s); js.id = id;
-        js.src = "https://platform.twitter.com/widgets.js";
-        fjs.parentNode.insertBefore(js, fjs);
-        t._e = []; t.ready = function(f) { t._e.push(f); };
-        return t;
-    }(document, "script", "twitter-wjs"));
+    async function loadRSS() {
+        // 블리자드 공식 뉴스 RSS 주소를 JSON으로 변환해주는 API 사용
+        // (참고: PlayOverwatch 공식 RSS 주소 활용)
+        const RSS_URL = 'https://overwatch.blizzard.com/ko-kr/news/rss';
+        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
 
-    // 2. 로딩 감시 시스템 (중요!)
-    window.onload = function() {
-        setTimeout(function() {
-            const twitterFrame = document.querySelector('#twitter-container iframe');
-            const fallbackUI = document.getElementById('fallback-ui');
-            const twitterTimeline = document.querySelector('.twitter-timeline');
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
 
-            // 위젯 로드 실패 판단 (iframe이 생성되지 않았거나 높이가 0일 때)
-            if (!twitterFrame || twitterFrame.offsetHeight === 0) {
-                console.log("트위터 로드 실패 - 대체 UI 전환");
-                if(twitterTimeline) twitterTimeline.style.display = 'none';
-                fallbackUI.style.display = 'block';
+            if (data.status === 'ok') {
+                const listDiv = document.getElementById('rss-feed-list');
+                let html = "";
+
+                data.items.forEach(item => {
+                    // 날짜 형식 예쁘게 변경
+                    const date = new Date(item.pubDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+                    
+                    // 이미지가 없는 경우 기본 이미지 처리
+                    const thumb = item.enclosure.link || item.thumbnail || 'https://images.blz-contentstack.com/v3/assets/blt088898833056f9f1/blt674258169e5d4408/628670868f08a1496a793a38/Overwatch2_ReleaseDate_Thumbnail.jpg';
+
+                    html += `
+                        <a href="${item.link}" target="_blank" class="news-card">
+                            <div class="news-thumb" style="background-image: url('${thumb}')"></div>
+                            <div class="news-body">
+                                <span class="news-tag">Official Intelligence</span>
+                                <h3 class="news-title">${item.title}</h3>
+                                <div class="news-date">${date}</div>
+                            </div>
+                        </a>
+                    `;
+                });
+
+                listDiv.innerHTML = html;
+            } else {
+                throw new Error('Feed error');
             }
-        }, 3500); // 3.5초 대기 후 판단
-    };
+        } catch (error) {
+            document.getElementById('rss-feed-list').innerHTML = `
+                <div style="text-align:center; padding:50px; color:#666;">
+                    <p>데이터 수신에 실패했습니다.</p>
+                    <button onclick="location.reload()" style="background:none; border:1px solid #444; color:#888; padding:8px 16px; border-radius:5px; cursor:pointer;">재시도</button>
+                </div>
+            `;
+        }
+    }
+
+    // 페이지 로드 시 RSS 불러오기 실행
+    window.onload = loadRSS;
 </script>
 
 </body>
