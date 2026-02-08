@@ -2,14 +2,20 @@ name: Update Overwatch News
 
 on:
   schedule:
-    - cron: '0 0,12 * * *' # 매일 낮 12시, 밤 12시 (한국시간 기준 9시, 21시경) 두 번 실행
-  workflow_dispatch: # 직접 'Run workflow' 버튼을 눌러 업데이트할 수도 있습니다.
+    - cron: '0 0,12 * * *'
+  workflow_dispatch:
+
+# 봇에게 파일을 수정하고 올릴 수 있는 권한을 명시적으로 부여합니다.
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # 전체 히스토리를 가져와 꼬임을 방지합니다.
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -24,14 +30,18 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python update_videos.py
 
-       - name: Commit and Push
+      - name: Commit and Push
         run: |
           git config --global user.name "GitHub-Actions-Bot"
           git config --global user.email "jazzhjm@gmail.com"
           git add news.json
-          # 변경사항이 있을 때만 커밋 (없으면 스킵해서 에러 방지)
-          git commit -m "Auto Update: Latest Overwatch Videos" || exit 0
-          # 서버의 최신 내용을 먼저 가져와서 합친 뒤 올림
-          git pull --rebase origin main
-          git push origin main
-
+          
+          # 변경 사항이 있을 때만 진행
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto Update: Latest Overwatch Videos"
+            # 최신 상태를 강제로 가져와서 합치기
+            git pull --rebase origin main
+            git push origin main
+          else
+            echo "변경사항이 없어 스킵합니다."
+          fi
