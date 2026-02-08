@@ -3,104 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWHUB - 작전 브리핑</title>
+    <title>OWHUB - 실시간 브리핑</title>
     <style>
-        :root { --accent: #ff9c00; --bg: #0f1014; --card: #1e2026; }
-        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
-        nav { background: #000; padding: 15px; border-bottom: 2px solid var(--accent); font-weight: 900; color: var(--accent); }
-        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        :root { --accent: #ff9c00; --bg: #0a0a0b; --card: #161618; }
+        body { background: var(--bg); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
         
-        /* 뉴스 카드 */
-        .news-item { 
-            background: var(--card); border-radius: 10px; margin-bottom: 20px; 
-            text-decoration: none; color: white; display: block; overflow: hidden;
-            border: 1px solid #333; transition: 0.2s;
-        }
-        .news-item:hover { border-color: var(--accent); transform: scale(1.02); }
-        .news-img { width: 100%; height: 180px; background-size: cover; background-position: center; background-color: #333; }
-        .news-text { padding: 15px; }
-        .news-title { font-size: 17px; font-weight: bold; margin-bottom: 8px; line-height: 1.4; }
-        .news-date { font-size: 12px; color: #888; }
+        /* 헤더 */
+        nav { background: #000; padding: 15px; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 900; color: var(--accent); cursor: pointer; text-decoration: none; }
+        
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
 
-        .status-msg { text-align: center; padding: 50px; color: #666; }
-        .retry-btn { background: var(--accent); border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        /* 섹션 타이틀 */
+        .section-title { font-size: 14px; font-weight: 900; color: var(--accent); text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .section-title::before { content: ""; width: 4px; height: 14px; background: var(--accent); display: inline-block; }
+
+        /* 유튜브 메인 브리핑 전용 */
+        .video-main { 
+            width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 15px; overflow: hidden; 
+            border: 1px solid #333; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* 구글 뉴스 검색 위젯 (우회 방식) */
+        .news-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .news-box { 
+            background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #222; 
+            text-align: center; transition: 0.3s; text-decoration: none; color: white;
+        }
+        .news-box:hover { border-color: var(--accent); background: #1f1f22; transform: translateY(-3px); }
+        .news-box i { font-size: 24px; margin-bottom: 10px; display: block; }
+        .news-box span { font-size: 15px; font-weight: bold; }
+
+        /* 하단 버튼 */
+        .btn-home { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+            background: var(--accent); color: black; border: none; padding: 12px 40px; 
+            border-radius: 30px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(255,156,0,0.4);
+        }
+
+        @media (max-width: 600px) { .news-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<nav onclick="location.href='index.html'">OVERWATCH HUB</nav>
+<nav>
+    <a href="index.html" class="logo">OVERWATCH HUB</a>
+</nav>
 
 <div class="container">
-    <h2 style="margin-top:0;">🛰️ 실시간 뉴스 피드</h2>
-    <div id="feed-display">
-        <div class="status-msg">데이터 수신 터미널 접속 중...</div>
+    <div class="section-title">Latest Video Briefing</div>
+    <div class="video-main">
+        <iframe 
+            width="100%" height="100%" 
+            src="https://www.youtube.com/embed?listType=user_uploads&list=PlayOverwatch" 
+            frameborder="0" allowfullscreen>
+        </iframe>
+    </div>
+
+    <div class="section-title">Tactical Data Links</div>
+    <div class="news-grid">
+        <a href="https://overwatch.blizzard.com/ko-kr/news/patch-notes/" target="_blank" class="news-box">
+            <span>🛠️ 최신 패치노트 확인</span>
+            <small style="color:#666; font-size:11px;">블리자드 공식 서버 데이터</small>
+        </a>
+        
+        <a href="https://news.google.com/search?q=오버워치2%20뉴스&hl=ko&gl=KR&ceid=KR%3Ako" target="_blank" class="news-box">
+            <span>📰 실시간 오버워치 속보</span>
+            <small style="color:#666; font-size:11px;">구글 뉴스 검색망 연동</small>
+        </a>
+
+        <a href="https://overwatch.blizzard.com/ko-kr/news/" target="_blank" class="news-box">
+            <span>🛰️ 공식 뉴스룸 바로가기</span>
+            <small style="color:#666; font-size:11px;">전체 아카이브 접속</small>
+        </a>
+
+        <a href="https://www.reddit.com/r/CompetitiveOverwatch/" target="_blank" class="news-box">
+            <span>🔥 프로/이스포츠 소식</span>
+            <small style="color:#666; font-size:11px;">레딧 글로벌 피드</small>
+        </a>
     </div>
 </div>
 
-<script>
-    async function loadNews() {
-        const display = document.getElementById('feed-display');
-        const RSS_URL = 'https://overwatch.blizzard.com/ko-kr/news/rss';
-        
-        // 가장 강력한 프록시 서버 사용
-        const PROXY_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(RSS_URL)}`;
-
-        try {
-            console.log("뉴스 수신 시도...");
-            const response = await fetch(PROXY_URL);
-            if (!response.ok) throw new Error("네트워크 응답 없음");
-            
-            const data = await response.json();
-            const parser = new DOMParser();
-            // XML로 파싱
-            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-            const items = xmlDoc.querySelectorAll("item");
-
-            if (items.length === 0) throw new Error("데이터 항목 없음");
-
-            let html = "";
-            items.forEach((item, index) => {
-                if(index > 10) return; // 10개만 표시
-
-                const title = item.querySelector("title").textContent;
-                const link = item.querySelector("link").textContent;
-                const pubDate = new Date(item.querySelector("pubDate").textContent).toLocaleDateString();
-                
-                // 이미지 추출 시도 (없으면 기본 오버워치 로고)
-                let img = "https://images.blz-contentstack.com/v3/assets/blt088898833056f9f1/blt674258169e5d4408/628670868f08a1496a793a38/Overwatch2_ReleaseDate_Thumbnail.jpg";
-                const content = item.querySelector("description")?.textContent || "";
-                const imgMatch = content.match(/src="([^"]+)"/);
-                if (imgMatch) img = imgMatch[1];
-
-                html += `
-                    <a href="${link}" target="_blank" class="news-item">
-                        <div class="news-img" style="background-image: url('${img}')"></div>
-                        <div class="news-text">
-                            <div class="news-title">${title}</div>
-                            <div class="news-date">${pubDate}</div>
-                        </div>
-                    </a>
-                `;
-            });
-            display.innerHTML = html;
-            console.log("뉴스 수신 성공!");
-
-        } catch (error) {
-            console.error("뉴스 로드 실패:", error);
-            display.innerHTML = `
-                <div class="status-msg">
-                    <p>📡 신호가 약합니다. (데이터를 가져올 수 없음)</p>
-                    <button class="retry-btn" onclick="location.reload()">다시 시도</button>
-                    <p style="font-size:12px; margin-top:10px;">
-                        <a href="https://overwatch.blizzard.com/ko-kr/news/" target="_blank" style="color:#888;">공식 홈페이지 직접 가기</a>
-                    </p>
-                </div>
-            `;
-        }
-    }
-
-    window.onload = loadNews;
-</script>
+<button class="btn-home" onclick="location.href='index.html'">본부로 복귀</button>
 
 </body>
 </html>
