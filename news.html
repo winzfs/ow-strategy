@@ -9,7 +9,7 @@
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 80px; }
         
         nav { background: #000; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; height: 50px; }
-        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; }
+        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; text-transform: uppercase; }
 
         .container { max-width: 700px; margin: 0 auto; padding: 20px 15px; }
 
@@ -25,21 +25,19 @@
         }
         .reddit-card:hover { border-color: #444; transform: translateY(-2px); background: #222; }
 
-        .card-inner { padding: 16px; display: flex; gap: 15px; }
-        .score-box { display: flex; flex-direction: column; align-items: center; min-width: 40px; color: #888; font-weight: bold; font-size: 13px; }
-        
+        .card-inner { padding: 16px; }
         .content-box { flex-grow: 1; }
-        .flair { 
-            display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; 
-            font-weight: 900; text-transform: uppercase; margin-bottom: 8px;
-            background: #333; color: #ccc;
-        }
-        .title { font-size: 16px; font-weight: bold; line-height: 1.4; margin-bottom: 8px; color: #eee; }
-        .meta { font-size: 12px; color: #555; }
+        
+        .title { font-size: 16px; font-weight: bold; line-height: 1.4; margin-bottom: 12px; color: #eee; }
+        .meta { font-size: 12px; color: #666; display: flex; justify-content: space-between; align-items: center; }
         .author { color: var(--accent); font-weight: bold; }
 
-        .loader { text-align: center; padding: 50px; color: #555; font-size: 14px; }
-        .back-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: black; border: none; padding: 12px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000; }
+        /* 번역 링크 스타일 */
+        .translate-link { font-size: 11px; color: #555; text-decoration: underline; margin-top: 10px; display: inline-block; }
+        .translate-link:hover { color: var(--accent); }
+
+        .loader { text-align: center; padding: 100px 0; color: #555; font-size: 14px; }
+        .back-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: black; border: none; padding: 12px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -49,11 +47,11 @@
 <div class="container">
     <div class="header-box">
         <h1>r/CompetitiveOverwatch</h1>
-        <p>전 세계 프로게이머 소식 및 이스포츠 인텔리전스</p>
+        <p>전 세계 프로게이머 소식 및 이스포츠 실시간 피드</p>
     </div>
 
     <div id="reddit-list">
-        <div class="loader">위성 데이터 수신 중...</div>
+        <div class="loader">🛰️ 심우주 데이터 수신 중...</div>
     </div>
 </div>
 
@@ -62,57 +60,54 @@
 <script>
     async function fetchReddit() {
         const listDiv = document.getElementById('reddit-list');
-        // 레딧 JSON API (Hot 게시물 15개)
-        const API_URL = 'https://www.reddit.com/r/CompetitiveOverwatch/hot.json?limit=15';
+        // 레딧 RSS 주소를 JSON으로 변환해주는 API 사용 (보안 우회)
+        const REDDIT_RSS = 'https://www.reddit.com/r/CompetitiveOverwatch/hot.rss';
+        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(REDDIT_RSS)}&api_key=00000000000000000000000000000000`;
 
         try {
             const response = await fetch(API_URL);
-            const resData = await response.json();
-            const posts = resData.data.children;
+            const data = await response.json();
 
-            let html = "";
-            posts.forEach(post => {
-                const p = post.data;
-                
-                // 공지사항(Stickied) 글은 제외하고 싶다면 아래 주석 해제
-                // if (p.stickied) return;
+            if (data.status === 'ok') {
+                let html = "";
+                data.items.forEach(item => {
+                    // 작성자 추출 (RSS에서는 보통 'author' 필드에 들어있음)
+                    const author = item.author.split('/').pop() || 'Reddit User';
+                    const date = new Date(item.pubDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+                    
+                    // 구글 번역 링크 생성
+                    const transUrl = `https://translate.google.com/translate?sl=en&tl=ko&u=${encodeURIComponent(item.link)}`;
 
-                // 숫자가 크면 K 단위로 표시
-                const score = p.ups > 1000 ? (p.ups/1000).toFixed(1) + 'k' : p.ups;
-                const flair = p.link_flair_text || 'News';
-
-                html += `
-                    <a href="https://www.reddit.com${p.permalink}" target="_blank" class="reddit-card">
-                        <div class="card-inner">
-                            <div class="score-box">
-                                <span>▲</span>
-                                <span>${score}</span>
-                                <span>▼</span>
-                            </div>
-                            <div class="content-box">
-                                <span class="flair" style="background: ${getFlairColor(flair)}">${flair}</span>
-                                <div class="title">${p.title}</div>
-                                <div class="meta">
-                                    Posted by <span class="author">u/${p.author}</span>
+                    html += `
+                        <div class="reddit-card">
+                            <a href="${item.link}" target="_blank" style="text-decoration:none; color:inherit;">
+                                <div class="card-inner">
+                                    <div class="content-box">
+                                        <div class="title">${item.title}</div>
+                                        <div class="meta">
+                                            <span>Posted by <span class="author">${author}</span></span>
+                                            <span>${date}</span>
+                                        </div>
+                                    </div>
                                 </div>
+                            </a>
+                            <div style="padding: 0 16px 16px 16px;">
+                                <a href="${transUrl}" target="_blank" class="translate-link">🌐 한국어로 번역해서 보기</a>
                             </div>
                         </div>
-                    </a>
-                `;
-            });
-            listDiv.innerHTML = html;
+                    `;
+                });
+                listDiv.innerHTML = html;
+            } else {
+                throw new Error();
+            }
         } catch (error) {
-            listDiv.innerHTML = `<div class="loader">데이터 수신 실패. 레딧 서버를 확인하세요.</div>`;
+            listDiv.innerHTML = `
+                <div class="loader">
+                    데이터 신호가 약합니다.<br><br>
+                    <button onclick="location.reload()" style="background:var(--accent); border:none; padding:8px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">재접속 시도</button>
+                </div>`;
         }
-    }
-
-    // 태그(Flair)별 색상 지정 함수 (더 '있어 보이게')
-    function getFlairColor(text) {
-        if (text.includes('Roster')) return '#d43f3f'; // 이적 소식은 빨간색
-        if (text.includes('Official')) return '#ff9c00'; // 오피셜은 주황색
-        if (text.includes('Discussion')) return '#3498db'; // 토론은 파란색
-        if (text.includes('Guide')) return '#2ecc71'; // 가이드는 녹색
-        return '#333';
     }
 
     window.onload = fetchReddit;
