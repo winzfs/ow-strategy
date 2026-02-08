@@ -269,14 +269,16 @@
      
     <!-- 상단 네비게이션 (햄버거 메뉴만) -->
     <nav>
-        <div class="hamburger" id="hamburger-btn" onclick="toggleSidebar()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <div class="nav-logo">OVERWATCH HUB</div>
-        <div style="width: 35px;"></div> <!-- 중앙 정렬용 빈 공간 -->
-    </nav>
+    <div class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" style="position: relative;">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span id="nav-new-badge" style="display:none; position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #ff3c3c; border-radius: 50%; border: 2px solid #000;"></span>
+    </div>
+    <div class="nav-logo">OVERWATCH HUB</div>
+    <div style="width: 35px;"></div>
+</nav>
+
 
     <!-- 디버그 콘솔 (모바일용 - 자동 표시) -->
     <div id="debug-console" style="position: fixed; bottom: 0; left: 0; right: 0; background: #000; color: #0f0; font-family: monospace; font-size: 10px; padding: 10px; max-height: 150px; overflow-y: auto; z-index: 9999; border-top: 2px solid #0f0; display: block;">
@@ -573,7 +575,16 @@
                 if (typeof window.renderNotiUI === 'function') window.renderNotiUI();
                 if (typeof window.renderEvalList === 'function') window.renderEvalList();
             }
-            
+
+
+             // 추가: 알림 페이지 접속 시 외부 배지도 숨김
+        var navBadge = document.getElementById('nav-new-badge');
+        if (navBadge) navBadge.style.display = 'none';
+
+        if (typeof window.renderNotiUI === 'function') window.renderNotiUI();
+        if (typeof window.renderEvalList === 'function') window.renderEvalList();
+    }
+    
             debugLog('✅ Page switched to: ' + id, 'success');
         };
         
@@ -866,16 +877,32 @@
                 loginForm.style.display = 'none'; userInfo.style.display = 'block';
                 loadMyProfile(user.uid);
 
-                onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
-                    lastMatchSnap = snap;
-                    const newSentSet = new Set();
-                    snap.docs.forEach(doc => { if (doc.data().fromUid === user.uid) newSentSet.add(doc.data().postId); });
-                    mySentRequests = newSentSet;
-                    const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
-                    const newTag = document.getElementById('sidebar-new-tag');
-                    if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
-                    renderList(); renderNotiUI(); 
-                });
+                // 기존 matches 스냅샷 리스너 부분을 아래 내용으로 교체
+onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
+    lastMatchSnap = snap;
+    const newSentSet = new Set();
+    
+    // 내가 보낸 신청글 목록 업데이트
+    snap.docs.forEach(doc => { 
+        if (doc.data().fromUid === user.uid) newSentSet.add(doc.data().postId); 
+    });
+    mySentRequests = newSentSet;
+
+    // 수락 대기 중인(나에게 온) 새로운 알림이 있는지 확인
+    const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
+    
+    // 1. 사이드바 내부의 "N" 태그 제어
+    const newTag = document.getElementById('sidebar-new-tag');
+    if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
+
+    // 2. 사이드바 바깥(햄버거 버튼)의 빨간 점 배지 제어
+    const navBadge = document.getElementById('nav-new-badge');
+    if(navBadge) navBadge.style.display = hasNew ? 'block' : 'none';
+
+    renderList(); 
+    renderNotiUI(); 
+});
+
             } else {
                 loginForm.style.display = 'block'; userInfo.style.display = 'none';
                 mySentRequests = new Set(); lastMatchSnap = null;
