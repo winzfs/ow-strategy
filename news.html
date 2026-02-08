@@ -3,39 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWHUB - 실시간 프로 피드</title>
+    <title>OWHUB - 공식 작전 브리핑</title>
     <style>
-        :root { --accent: #ff9c00; --bg-dark: #0f0f0f; --card-bg: #1a1a1a; --reddit: #ff4500; }
-        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 80px; }
+        :root { --accent: #ff9c00; --bg-dark: #0f1014; --card-bg: #1e2026; --text-muted: #9ea0a5; }
+        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 80px; line-height: 1.6; }
         
-        nav { background: #000; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; height: 50px; }
-        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; text-transform: uppercase; }
+        /* 네비게이션 */
+        nav { background: #000; padding: 10px 15px; display: flex; align-items: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
+        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; letter-spacing: 1px; }
 
-        .container { max-width: 700px; margin: 0 auto; padding: 20px 15px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px 15px; }
 
-        .header-box { margin-bottom: 25px; border-left: 5px solid var(--reddit); padding-left: 15px; }
-        .header-box h1 { margin: 0; font-size: 20px; letter-spacing: -0.5px; }
-        .header-box p { margin: 5px 0 0 0; color: #777; font-size: 13px; }
+        /* 헤더 섹션 */
+        .page-header { margin-bottom: 30px; }
+        .page-header h1 { font-size: 28px; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: -1px; }
+        .page-header p { color: var(--text-muted); margin: 5px 0 0 0; font-size: 14px; }
 
-        /* 뉴스 카드 스타일 */
-        .news-card { 
-            background: var(--card-bg); border: 1px solid #222; border-radius: 12px; 
-            margin-bottom: 15px; display: block; text-decoration: none; color: white;
-            transition: 0.2s ease;
+        /* 뉴스 카드 리스트 */
+        #news-list { display: grid; gap: 20px; }
+        .news-item { 
+            background: var(--card-bg); border-radius: 12px; overflow: hidden; 
+            text-decoration: none; color: white; transition: 0.3s;
+            border: 1px solid #2d3037; display: flex; flex-direction: column;
         }
-        .news-card:hover { border-color: #555; background: #222; }
+        .news-item:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* 카드 이미지 공간 */
+        .news-thumb { width: 100%; height: 200px; background-size: cover; background-position: center; background-color: #333; }
+        
+        /* 카드 텍스트 */
+        .news-content { padding: 20px; }
+        .news-category { font-size: 11px; font-weight: 900; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .news-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #fff; word-break: keep-all; }
+        .news-date { font-size: 13px; color: var(--text-muted); }
 
-        .card-inner { padding: 16px; }
-        .title { font-size: 16px; font-weight: bold; line-height: 1.4; margin-bottom: 12px; color: #eee; word-break: keep-all; }
-        .meta { font-size: 12px; color: #666; display: flex; justify-content: space-between; }
-        .author { color: var(--accent); font-weight: bold; }
+        /* 로딩 애니메이션 */
+        .loader { text-align: center; padding: 60px 0; color: var(--text-muted); font-weight: bold; }
+        .dot-pulse { display: inline-block; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        .btn-group { display: flex; gap: 10px; padding: 0 16px 16px 16px; }
-        .sub-btn { font-size: 11px; color: #888; text-decoration: none; padding: 5px 10px; border: 1px solid #333; border-radius: 4px; background: #111; }
-        .sub-btn:hover { border-color: var(--accent); color: var(--accent); }
+        /* 하단 복귀 버튼 */
+        .back-btn { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+            background: var(--accent); color: #000; border: none; padding: 12px 35px; 
+            border-radius: 50px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 20px rgba(255,156,0,0.3);
+            transition: 0.2s; z-index: 1000;
+        }
+        .back-btn:hover { background: #fff; transform: translateX(-50%) scale(1.05); }
 
-        .loader { text-align: center; padding: 100px 0; color: #555; font-size: 14px; }
-        .back-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: black; border: none; padding: 12px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        @media (max-width: 600px) {
+            .news-thumb { height: 160px; }
+            .news-title { font-size: 16px; }
+        }
     </style>
 </head>
 <body>
@@ -43,81 +62,78 @@
 <nav><div class="nav-logo" onclick="location.href='index.html'">OVERWATCH HUB</div></nav>
 
 <div class="container">
-    <div class="header-box">
-        <h1>PRO INTELLIGENCE</h1>
-        <p>r/CompetitiveOverwatch 실시간 데이터 스트림</p>
-    </div>
+    <header class="page-header">
+        <h1>Official Briefing</h1>
+        <p>오버워치 공식 뉴스 및 패치노트 데이터 스트림</p>
+    </header>
 
-    <div id="feed-container">
-        <div class="loader">🛰️ 심우주 신호 수신 중...</div>
+    <div id="news-list">
+        <div class="loader">🛰️ 데이터 동기화 중<span class="dot-pulse">...</span></div>
     </div>
 </div>
 
-<button class="back-btn" onclick="location.href='index.html'">🏠 본부로 돌아가기</button>
+<button class="back-btn" onclick="location.href='index.html'">RETURN TO BASE</button>
 
 <script>
-    async function loadReddit() {
-        const container = document.getElementById('feed-container');
-        const REDDIT_RSS = 'https://www.reddit.com/r/CompetitiveOverwatch/hot.rss';
-        
-        // CORS 문제를 해결하기 위한 AllOrigins 프록시 사용
-        const PROXY_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(REDDIT_RSS)}`;
+    async function fetchOfficialNews() {
+        const listContainer = document.getElementById('news-list');
+        // 블리자드 공식 RSS 주소
+        const RSS_URL = 'https://overwatch.blizzard.com/ko-kr/news/rss';
+        // RSS를 JSON으로 바꿔주는 신뢰도 높은 API
+        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}&t=${Date.now()}`;
 
         try {
-            const response = await fetch(PROXY_URL);
-            if (!response.ok) throw new Error('Network response was not ok');
-            
+            const response = await fetch(API_URL);
             const data = await response.json();
-            const parser = new DOMParser();
-            // XML 형태로 파싱
-            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-            const entries = xmlDoc.querySelectorAll("entry");
 
-            if (entries.length === 0) throw new Error('No entries found');
+            if (data.status === 'ok') {
+                let html = "";
+                data.items.forEach(item => {
+                    // 날짜 형식 예쁘게 (2026. 02. 09.)
+                    const date = new Date(item.pubDate).toLocaleDateString('ko-KR', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    });
 
-            let html = "";
-            // 최신 15개만 표시
-            for (let i = 0; i < Math.min(entries.length, 15); i++) {
-                const entry = entries[i];
-                const title = entry.querySelector("title").textContent;
-                const link = entry.querySelector("link").getAttribute("href");
-                const author = entry.querySelector("author name").textContent;
-                const updated = new Date(entry.querySelector("updated").textContent).toLocaleDateString('ko-KR', {month:'short', day:'numeric'});
-                
-                const transUrl = `https://translate.google.com/translate?sl=en&tl=ko&u=${encodeURIComponent(link)}`;
+                    // 썸네일 이미지 추출 (없을 경우 기본 이미지)
+                    let thumb = item.thumbnail || item.enclosure.link;
+                    if (!thumb || thumb.includes('avatar')) {
+                        thumb = 'https://images.blz-contentstack.com/v3/assets/blt088898833056f9f1/blt674258169e5d4408/628670868f08a1496a793a38/Overwatch2_ReleaseDate_Thumbnail.jpg';
+                    }
 
-                html += `
-                    <div class="news-card">
-                        <a href="${link}" target="_blank" style="text-decoration:none; color:inherit;">
-                            <div class="card-inner">
-                                <div class="title">${title}</div>
-                                <div class="meta">
-                                    <span>By <span class="author">${author}</span></span>
-                                    <span>${updated}</span>
-                                </div>
+                    // 카테고리 판별 (패치노트가 제목에 있으면 강조)
+                    const isPatch = item.title.includes('패치') ? 'PATCH NOTES' : 'OFFICIAL NEWS';
+
+                    html += `
+                        <a href="${item.link}" target="_blank" class="news-item">
+                            <div class="news-thumb" style="background-image: url('${thumb}')"></div>
+                            <div class="news-content">
+                                <span class="news-category">${isPatch}</span>
+                                <div class="news-title">${item.title}</div>
+                                <div class="news-date">${date}</div>
                             </div>
                         </a>
-                        <div class="btn-group">
-                            <a href="${transUrl}" target="_blank" class="sub-btn">🌐 한국어 번역</a>
-                            <a href="${link}" target="_blank" class="sub-btn">💬 원문 보기</a>
-                        </div>
-                    </div>
-                `;
+                    `;
+                });
+                listContainer.innerHTML = html;
+            } else {
+                throw new Error('API Response Error');
             }
-            container.innerHTML = html;
-
         } catch (error) {
-            console.error("Error fetching reddit:", error);
-            container.innerHTML = `
-                <div class="loader">
-                    <p style="color:#eee;">데이터 수신 터미널 오류</p>
-                    <p style="font-size:12px; margin-bottom:20px;">레딧 서버와의 통신이 지연되고 있습니다.</p>
-                    <button onclick="location.reload()" style="background:var(--accent); border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">채널 재설정</button>
-                </div>`;
+            console.error("News Load Error:", error);
+            listContainer.innerHTML = `
+                <div style="text-align:center; padding:50px; border:1px dashed #333; border-radius:15px;">
+                    <p style="color:#666;">통신 노이즈 발생: 일시적으로 뉴스 데이터를 가져올 수 없습니다.</p>
+                    <a href="https://overwatch.blizzard.com/ko-kr/news/" target="_blank" 
+                       style="color:var(--accent); text-decoration:none; font-weight:bold; font-size:14px;">
+                       [ 공식 사이트에서 직접 확인하기 ]
+                    </a>
+                </div>
+            `;
         }
     }
 
-    window.onload = loadReddit;
+    // 페이지 로드 시 즉시 실행
+    window.onload = fetchOfficialNews;
 </script>
 
 </body>
