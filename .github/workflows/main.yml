@@ -1,0 +1,33 @@
+name: Update Overwatch News
+
+on:
+  schedule:
+    - cron: '0 0,12 * * *' # 매일 낮 12시, 밤 12시 (한국시간 기준 9시, 21시경) 두 번 실행
+  workflow_dispatch: # 직접 'Run workflow' 버튼을 눌러 업데이트할 수도 있습니다.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Update Script
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python update_videos.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "GitHub-Actions-Bot"
+          git config --global user.email "jazzhjm@gmail.com"
+          git add news.json
+          git commit -m "Auto Update: Latest Overwatch Videos" || exit 0
+          git push
