@@ -3,137 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWHUB - 전술 비디오 데이터베이스</title>
+    <title>Overwatch 2 Live News</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #ff9c00; --bg: #0a0a0b; --card: #161618; --text-dim: #888; }
-        body { background: var(--bg); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
-        
-        nav { background: #000; padding: 15px; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 20px; font-weight: 900; color: var(--accent); text-decoration: none; cursor: pointer; }
-
-        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
-
-        /* 탭 디자인 */
-        .tab-menu { display: flex; gap: 5px; margin-bottom: 25px; background: #000; padding: 5px; border-radius: 10px; border: 1px solid #222; }
-        .tab-btn { 
-            flex: 1; background: none; border: none; color: var(--text-dim); font-size: 14px; font-weight: bold; 
-            padding: 12px; cursor: pointer; transition: 0.3s; border-radius: 8px;
+        :root {
+            --ow-orange: #f06414;
+            --ow-blue: #00aeff;
+            --ow-dark: #282e3e;
+            --ow-bg: #12161d;
+            --card-bg: #1e242d;
         }
-        .tab-btn.active { background: var(--accent); color: #000; }
+
+        body {
+            background-color: var(--ow-bg);
+            color: white;
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* 헤더 스타일 */
+        header {
+            background: linear-gradient(135deg, var(--ow-dark) 0%, #000 100%);
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--ow-orange);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            font-style: italic;
+        }
+
+        .update-time {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 10px;
+        }
+
+        /* 탭 메뉴 */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            background: var(--ow-dark);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .tab-btn {
+            padding: 15px 25px;
+            border: none;
+            background: none;
+            color: #ccc;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--ow-orange);
+            border-bottom: 3px solid var(--ow-orange);
+            background: rgba(240, 100, 20, 0.1);
+        }
 
         /* 비디오 그리드 */
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .v-card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid #222; transition: 0.3s; cursor: pointer; }
-        .v-card:hover { border-color: var(--accent); transform: translateY(-5px); }
-        
-        .thumb { width: 100%; aspect-ratio: 16/9; background-size: cover; background-position: center; position: relative; }
-        .thumb::after { content: "▶"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; color: rgba(255,255,255,0.7); opacity: 0; transition: 0.3s; }
-        .v-card:hover .thumb::after { opacity: 1; }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
 
-        .info { padding: 15px; }
-        .v-title { font-size: 15px; font-weight: bold; line-height: 1.4; height: 2.8em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 10px; }
-        .v-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); }
+        .video-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
 
-        /* 로딩 애니메이션 */
-        .loader { text-align: center; padding: 50px; font-size: 14px; color: var(--accent); }
+        .video-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: var(--ow-orange);
+        }
 
-        /* 모달창 */
-        #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:2000; justify-content:center; align-items:center; }
-        .modal-body { width: 90%; max-width: 900px; aspect-ratio: 16/9; position: relative; }
-        .close-modal { position: absolute; top: -40px; right: 0; color: white; font-size: 30px; cursor: pointer; }
+        .thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .play-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px; height: 50px;
+            background: rgba(240, 100, 20, 0.8);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; transition: 0.3s;
+        }
+
+        .video-card:hover .play-btn { opacity: 1; }
+
+        .video-info { padding: 15px; }
+
+        .video-player {
+            font-size: 0.8rem;
+            color: var(--ow-blue);
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .video-title {
+            font-size: 1rem;
+            line-height: 1.4;
+            height: 2.8em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        /* 모달 (팝업) 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+
+        .modal-content {
+            width: 90%; max-width: 1000px;
+            aspect-ratio: 16/9;
+        }
+
+        .close-modal {
+            position: absolute; top: 20px; right: 30px;
+            font-size: 40px; color: white; cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-<nav><a href="index.html" class="logo">OVERWATCH HUB</a></nav>
+<header>
+    <h1>Overwatch 2 Feed</h1>
+    <div id="update-time" class="update-time">Loading updates...</div>
+</header>
 
-<div class="container">
-    <div class="tab-menu">
-        <button class="tab-btn active" onclick="changeTab(this, 'official')">📡 공식 브리핑</button>
-        <button class="tab-btn" onclick="changeTab(this, 'viewCount')">🔥 인기 영상</button>
-        <button class="tab-btn" onclick="changeTab(this, 'date')">🆕 최신 팁 & 정보</button>
+<nav class="tabs">
+    <button class="tab-btn active" onclick="switchTab('pro')">PROS</button>
+    <button class="tab-btn" onclick="switchTab('streamer')">STREAMERS</button>
+    <button class="tab-btn" onclick="switchTab('official')">OFFICIAL</button>
+    <button class="tab-btn" onclick="switchTab('trending')">TRENDING</button>
+</nav>
+
+<div id="video-container" class="container">
     </div>
 
-    <div id="video-display" class="video-grid">
-        <div class="loader">데이터 수신 중...</div>
-    </div>
-</div>
-
-<div id="modal" onclick="closeVideo()">
-    <div class="modal-body">
-        <span class="close-modal">&times;</span>
-        <div id="player" style="width:100%; height:100%;"></div>
+<div id="videoModal" class="modal" onclick="closeVideo()">
+    <span class="close-modal">&times;</span>
+    <div class="modal-content">
+        <iframe id="videoPlayer" width="100%" height="100%" src="" frameborder="0" allowfullscreen></iframe>
     </div>
 </div>
 
 <script>
-    const API_KEY = 'AIzaSyDGOlUJZ4jNatx0omTHruKoKrDMHWJG0Tc';
-    let currentTab = 'official';
+    let currentData = null;
 
-    // 탭별 검색 조건 설정
-    const tabConfigs = {
-        'official': { q: '오버워치2 공식', order: 'date' },
-        'viewCount': { q: '오버워치2 인기', order: 'viewCount' },
-        'date': { q: '오버워치2 팁 강의 가이드', order: 'date' }
-    };
-
-    async function loadVideos(tab) {
-        const display = document.getElementById('video-display');
-        display.innerHTML = '<div class="loader">신호 증폭 중...</div>';
-        
-        const config = tabConfigs[tab];
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=9&q=${encodeURIComponent(config.q)}&order=${config.order}&type=video&key=${API_KEY}`;
-
+    // JSON 데이터 불러오기
+    async function loadData() {
         try {
-            const res = await fetch(url);
-            const data = await res.json();
-
-            if (!data.items) throw new Error();
-
-            let html = "";
-            data.items.forEach(item => {
-                const vid = item.id.videoId;
-                const title = item.snippet.title;
-                const thumb = item.snippet.thumbnails.high.url;
-                const channel = item.snippet.channelTitle;
-
-                html += `
-                    <div class="v-card" onclick="playVideo('${vid}')">
-                        <div class="thumb" style="background-image: url('${thumb}')"></div>
-                        <div class="info">
-                            <div class="v-title">${title}</div>
-                            <div class="v-meta">
-                                <span>${channel}</span>
-                                <span>상세 보기</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            display.innerHTML = html;
-        } catch (e) {
-            display.innerHTML = '<div class="loader">데이터 할당량 초과 또는 통신 오류입니다.</div>';
+            const response = await fetch('news.json');
+            currentData = await response.json();
+            
+            document.getElementById('update-time').innerText = `Last Updated: ${currentData.lastUpdated}`;
+            switchTab('pro'); // 처음에 프로 탭 보여주기
+        } catch (error) {
+            console.error("Data load error:", error);
+            document.getElementById('video-container').innerHTML = "<p>데이터를 불러오는 중 오류가 발생했습니다.</p>";
         }
     }
 
-    function changeTab(btn, tab) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        loadVideos(tab);
+    // 탭 전환 함수
+    function switchTab(category) {
+        // 버튼 활성화 표시
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if(btn.innerText.toLowerCase().includes(category)) btn.classList.add('active');
+        });
+
+        const container = document.getElementById('video-container');
+        container.innerHTML = ""; // 기존 내용 비우기
+
+        const videos = currentData[category];
+        
+        videos.forEach(v => {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.onclick = () => openVideo(v.id);
+            
+            card.innerHTML = `
+                <div class="thumb" style="background-image: url('https://img.youtube.com/vi/${v.id}/mqdefault.jpg')">
+                    <div class="play-btn">▶</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-player">${v.player}</div>
+                    <div class="video-title">${v.title}</div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
     }
 
-    function playVideo(id) {
-        document.getElementById('modal').style.display = 'flex';
-        document.getElementById('player').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${id}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
+    // 비디오 열기/닫기
+    function openVideo(id) {
+        const modal = document.getElementById('videoModal');
+        const iframe = document.getElementById('videoPlayer');
+        iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+        modal.style.display = 'flex';
     }
 
     function closeVideo() {
-        document.getElementById('modal').style.display = 'none';
-        document.getElementById('player').innerHTML = '';
+        const modal = document.getElementById('videoModal');
+        const iframe = document.getElementById('videoPlayer');
+        iframe.src = "";
+        modal.style.display = 'none';
     }
 
-    // 초기 실행
-    window.onload = () => loadVideos('official');
+    // 시작
+    loadData();
 </script>
 
 </body>
