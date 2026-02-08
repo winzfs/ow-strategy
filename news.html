@@ -3,34 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWHUB - 실시간 X 브리핑</title>
+    <title>OWHUB - 프로 인텔리전스</title>
     <style>
-        :root { --accent: #ff9c00; --bg-dark: #111; --card-bg: #1a1a1a; --x-blue: #1DA1F2; }
+        :root { --accent: #ff9c00; --bg-dark: #0f0f0f; --card-bg: #1a1a1a; --reddit-orange: #FF4500; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 80px; }
         
         nav { background: #000; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; height: 50px; }
         .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; }
-        
-        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
 
-        /* 트위터 스타일 카드 */
-        .x-card { 
-            background: var(--card-bg); border-radius: 12px; border: 1px solid #333; 
-            margin-bottom: 12px; padding: 15px; text-decoration: none; color: white; display: block;
-            transition: 0.2s;
+        .container { max-width: 700px; margin: 0 auto; padding: 20px 15px; }
+
+        .header-box { margin-bottom: 30px; border-left: 5px solid var(--reddit-orange); padding-left: 15px; }
+        .header-box h1 { margin: 0; font-size: 22px; letter-spacing: -0.5px; }
+        .header-box p { margin: 5px 0 0 0; color: #777; font-size: 13px; }
+
+        /* 레딧 카드 스타일 */
+        .reddit-card { 
+            background: var(--card-bg); border: 1px solid #222; border-radius: 12px; 
+            margin-bottom: 15px; display: block; text-decoration: none; color: white;
+            transition: 0.2s ease; overflow: hidden;
         }
-        .x-card:hover { border-color: var(--x-blue); background: #222; }
-        
-        .x-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .x-avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; }
-        .x-name { font-weight: bold; font-size: 15px; }
-        .x-handle { color: #666; font-size: 13px; margin-left: 4px; }
-        
-        .x-content { font-size: 14px; line-height: 1.5; color: #ddd; word-break: break-all; }
-        .x-date { font-size: 12px; color: #555; margin-top: 10px; }
+        .reddit-card:hover { border-color: #444; transform: translateY(-2px); background: #222; }
 
-        /* 로딩/실패 UI */
-        .loader { text-align: center; padding: 50px; color: #888; }
+        .card-inner { padding: 16px; display: flex; gap: 15px; }
+        .score-box { display: flex; flex-direction: column; align-items: center; min-width: 40px; color: #888; font-weight: bold; font-size: 13px; }
+        
+        .content-box { flex-grow: 1; }
+        .flair { 
+            display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; 
+            font-weight: 900; text-transform: uppercase; margin-bottom: 8px;
+            background: #333; color: #ccc;
+        }
+        .title { font-size: 16px; font-weight: bold; line-height: 1.4; margin-bottom: 8px; color: #eee; }
+        .meta { font-size: 12px; color: #555; }
+        .author { color: var(--accent); font-weight: bold; }
+
+        .loader { text-align: center; padding: 50px; color: #555; font-size: 14px; }
         .back-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: black; border: none; padding: 12px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000; }
     </style>
 </head>
@@ -39,66 +47,75 @@
 <nav><div class="nav-logo" onclick="location.href='index.html'">OVERWATCH HUB</div></nav>
 
 <div class="container">
-    <div style="margin-bottom: 25px;">
-        <h1 style="margin:0; font-size: 22px; color: var(--x-blue);">🐦 REAL-TIME X FEED</h1>
-        <p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">@PlayOverwatch 공식 실시간 데이터 수신</p>
+    <div class="header-box">
+        <h1>r/CompetitiveOverwatch</h1>
+        <p>전 세계 프로게이머 소식 및 이스포츠 인텔리전스</p>
     </div>
 
-    <div id="x-feed-list">
-        <div class="loader">X 서버 응답 대기 중...</div>
+    <div id="reddit-list">
+        <div class="loader">위성 데이터 수신 중...</div>
     </div>
 </div>
 
 <button class="back-btn" onclick="location.href='index.html'">🏠 본부로 돌아가기</button>
 
 <script>
-    async function loadXFeed() {
-        const listDiv = document.getElementById('x-feed-list');
-        
-        // Nitter 또는 RSS.app 등의 브릿지 주소를 활용 (공식 X 주소를 RSS로 변환)
-        // 여기서는 RSS2JSON을 통해 안정적으로 변환합니다.
-        const X_RSS_URL = 'https://nitter.net/PlayOverwatch/rss'; 
-        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(X_RSS_URL)}`;
+    async function fetchReddit() {
+        const listDiv = document.getElementById('reddit-list');
+        // 레딧 JSON API (Hot 게시물 15개)
+        const API_URL = 'https://www.reddit.com/r/CompetitiveOverwatch/hot.json?limit=15';
 
         try {
             const response = await fetch(API_URL);
-            const data = await response.json();
+            const resData = await response.json();
+            const posts = resData.data.children;
 
-            if (data.status === 'ok') {
-                let html = "";
-                data.items.forEach(item => {
-                    // 트윗 내용에서 불필요한 HTML 태그 제거 및 정리
-                    let content = item.description.replace(/<[^>]*>?/gm, '').substring(0, 200);
-                    const date = new Date(item.pubDate).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            let html = "";
+            posts.forEach(post => {
+                const p = post.data;
+                
+                // 공지사항(Stickied) 글은 제외하고 싶다면 아래 주석 해제
+                // if (p.stickied) return;
 
-                    html += `
-                        <a href="${item.link}" target="_blank" class="x-card">
-                            <div class="x-header">
-                                <img class="x-avatar" src="https://unavatar.io/twitter/PlayOverwatch" alt="ovw">
-                                <div>
-                                    <span class="x-name">Overwatch</span>
-                                    <span class="x-handle">@PlayOverwatch</span>
+                // 숫자가 크면 K 단위로 표시
+                const score = p.ups > 1000 ? (p.ups/1000).toFixed(1) + 'k' : p.ups;
+                const flair = p.link_flair_text || 'News';
+
+                html += `
+                    <a href="https://www.reddit.com${p.permalink}" target="_blank" class="reddit-card">
+                        <div class="card-inner">
+                            <div class="score-box">
+                                <span>▲</span>
+                                <span>${score}</span>
+                                <span>▼</span>
+                            </div>
+                            <div class="content-box">
+                                <span class="flair" style="background: ${getFlairColor(flair)}">${flair}</span>
+                                <div class="title">${p.title}</div>
+                                <div class="meta">
+                                    Posted by <span class="author">u/${p.author}</span>
                                 </div>
                             </div>
-                            <div class="x-content">${content}...</div>
-                            <div class="x-date">${date}</div>
-                        </a>
-                    `;
-                });
-                listDiv.innerHTML = html;
-            } else {
-                throw new Error();
-            }
-        } catch (e) {
-            listDiv.innerHTML = `
-                <div style="text-align:center; padding:40px; border:1px solid #333; border-radius:12px;">
-                    <p style="color:#888;">X 피드 브릿지 연결이 원활하지 않습니다.</p>
-                    <a href="https://twitter.com/PlayOverwatch" target="_blank" style="color:var(--x-blue); font-size:14px;">X 공식 페이지에서 직접 보기</a>
-                </div>`;
+                        </div>
+                    </a>
+                `;
+            });
+            listDiv.innerHTML = html;
+        } catch (error) {
+            listDiv.innerHTML = `<div class="loader">데이터 수신 실패. 레딧 서버를 확인하세요.</div>`;
         }
     }
 
-    window.onload = loadXFeed;
+    // 태그(Flair)별 색상 지정 함수 (더 '있어 보이게')
+    function getFlairColor(text) {
+        if (text.includes('Roster')) return '#d43f3f'; // 이적 소식은 빨간색
+        if (text.includes('Official')) return '#ff9c00'; // 오피셜은 주황색
+        if (text.includes('Discussion')) return '#3498db'; // 토론은 파란색
+        if (text.includes('Guide')) return '#2ecc71'; // 가이드는 녹색
+        return '#333';
+    }
+
+    window.onload = fetchReddit;
 </script>
 
 </body>
