@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWHUB - 프로 인텔리전스</title>
+    <title>OWHUB - 실시간 프로 피드</title>
     <style>
-        :root { --accent: #ff9c00; --bg-dark: #0f0f0f; --card-bg: #1a1a1a; --reddit-orange: #FF4500; }
+        :root { --accent: #ff9c00; --bg-dark: #0f0f0f; --card-bg: #1a1a1a; --reddit: #ff4500; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 80px; }
         
         nav { background: #000; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; height: 50px; }
@@ -13,28 +13,26 @@
 
         .container { max-width: 700px; margin: 0 auto; padding: 20px 15px; }
 
-        .header-box { margin-bottom: 30px; border-left: 5px solid var(--reddit-orange); padding-left: 15px; }
-        .header-box h1 { margin: 0; font-size: 22px; letter-spacing: -0.5px; }
+        .header-box { margin-bottom: 25px; border-left: 5px solid var(--reddit); padding-left: 15px; }
+        .header-box h1 { margin: 0; font-size: 20px; letter-spacing: -0.5px; }
         .header-box p { margin: 5px 0 0 0; color: #777; font-size: 13px; }
 
-        /* 레딧 카드 스타일 */
-        .reddit-card { 
+        /* 뉴스 카드 스타일 */
+        .news-card { 
             background: var(--card-bg); border: 1px solid #222; border-radius: 12px; 
             margin-bottom: 15px; display: block; text-decoration: none; color: white;
-            transition: 0.2s ease; overflow: hidden;
+            transition: 0.2s ease;
         }
-        .reddit-card:hover { border-color: #444; transform: translateY(-2px); background: #222; }
+        .news-card:hover { border-color: #555; background: #222; }
 
         .card-inner { padding: 16px; }
-        .content-box { flex-grow: 1; }
-        
-        .title { font-size: 16px; font-weight: bold; line-height: 1.4; margin-bottom: 12px; color: #eee; }
-        .meta { font-size: 12px; color: #666; display: flex; justify-content: space-between; align-items: center; }
+        .title { font-size: 16px; font-weight: bold; line-height: 1.4; margin-bottom: 12px; color: #eee; word-break: keep-all; }
+        .meta { font-size: 12px; color: #666; display: flex; justify-content: space-between; }
         .author { color: var(--accent); font-weight: bold; }
 
-        /* 번역 링크 스타일 */
-        .translate-link { font-size: 11px; color: #555; text-decoration: underline; margin-top: 10px; display: inline-block; }
-        .translate-link:hover { color: var(--accent); }
+        .btn-group { display: flex; gap: 10px; padding: 0 16px 16px 16px; }
+        .sub-btn { font-size: 11px; color: #888; text-decoration: none; padding: 5px 10px; border: 1px solid #333; border-radius: 4px; background: #111; }
+        .sub-btn:hover { border-color: var(--accent); color: var(--accent); }
 
         .loader { text-align: center; padding: 100px 0; color: #555; font-size: 14px; }
         .back-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: black; border: none; padding: 12px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
@@ -46,71 +44,80 @@
 
 <div class="container">
     <div class="header-box">
-        <h1>r/CompetitiveOverwatch</h1>
-        <p>전 세계 프로게이머 소식 및 이스포츠 실시간 피드</p>
+        <h1>PRO INTELLIGENCE</h1>
+        <p>r/CompetitiveOverwatch 실시간 데이터 스트림</p>
     </div>
 
-    <div id="reddit-list">
-        <div class="loader">🛰️ 심우주 데이터 수신 중...</div>
+    <div id="feed-container">
+        <div class="loader">🛰️ 심우주 신호 수신 중...</div>
     </div>
 </div>
 
 <button class="back-btn" onclick="location.href='index.html'">🏠 본부로 돌아가기</button>
 
 <script>
-    async function fetchReddit() {
-        const listDiv = document.getElementById('reddit-list');
-        // 레딧 RSS 주소를 JSON으로 변환해주는 API 사용 (보안 우회)
+    async function loadReddit() {
+        const container = document.getElementById('feed-container');
         const REDDIT_RSS = 'https://www.reddit.com/r/CompetitiveOverwatch/hot.rss';
-        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(REDDIT_RSS)}&api_key=00000000000000000000000000000000`;
+        
+        // CORS 문제를 해결하기 위한 AllOrigins 프록시 사용
+        const PROXY_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(REDDIT_RSS)}`;
 
         try {
-            const response = await fetch(API_URL);
+            const response = await fetch(PROXY_URL);
+            if (!response.ok) throw new Error('Network response was not ok');
+            
             const data = await response.json();
+            const parser = new DOMParser();
+            // XML 형태로 파싱
+            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+            const entries = xmlDoc.querySelectorAll("entry");
 
-            if (data.status === 'ok') {
-                let html = "";
-                data.items.forEach(item => {
-                    // 작성자 추출 (RSS에서는 보통 'author' 필드에 들어있음)
-                    const author = item.author.split('/').pop() || 'Reddit User';
-                    const date = new Date(item.pubDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-                    
-                    // 구글 번역 링크 생성
-                    const transUrl = `https://translate.google.com/translate?sl=en&tl=ko&u=${encodeURIComponent(item.link)}`;
+            if (entries.length === 0) throw new Error('No entries found');
 
-                    html += `
-                        <div class="reddit-card">
-                            <a href="${item.link}" target="_blank" style="text-decoration:none; color:inherit;">
-                                <div class="card-inner">
-                                    <div class="content-box">
-                                        <div class="title">${item.title}</div>
-                                        <div class="meta">
-                                            <span>Posted by <span class="author">${author}</span></span>
-                                            <span>${date}</span>
-                                        </div>
-                                    </div>
+            let html = "";
+            // 최신 15개만 표시
+            for (let i = 0; i < Math.min(entries.length, 15); i++) {
+                const entry = entries[i];
+                const title = entry.querySelector("title").textContent;
+                const link = entry.querySelector("link").getAttribute("href");
+                const author = entry.querySelector("author name").textContent;
+                const updated = new Date(entry.querySelector("updated").textContent).toLocaleDateString('ko-KR', {month:'short', day:'numeric'});
+                
+                const transUrl = `https://translate.google.com/translate?sl=en&tl=ko&u=${encodeURIComponent(link)}`;
+
+                html += `
+                    <div class="news-card">
+                        <a href="${link}" target="_blank" style="text-decoration:none; color:inherit;">
+                            <div class="card-inner">
+                                <div class="title">${title}</div>
+                                <div class="meta">
+                                    <span>By <span class="author">${author}</span></span>
+                                    <span>${updated}</span>
                                 </div>
-                            </a>
-                            <div style="padding: 0 16px 16px 16px;">
-                                <a href="${transUrl}" target="_blank" class="translate-link">🌐 한국어로 번역해서 보기</a>
                             </div>
+                        </a>
+                        <div class="btn-group">
+                            <a href="${transUrl}" target="_blank" class="sub-btn">🌐 한국어 번역</a>
+                            <a href="${link}" target="_blank" class="sub-btn">💬 원문 보기</a>
                         </div>
-                    `;
-                });
-                listDiv.innerHTML = html;
-            } else {
-                throw new Error();
+                    </div>
+                `;
             }
+            container.innerHTML = html;
+
         } catch (error) {
-            listDiv.innerHTML = `
+            console.error("Error fetching reddit:", error);
+            container.innerHTML = `
                 <div class="loader">
-                    데이터 신호가 약합니다.<br><br>
-                    <button onclick="location.reload()" style="background:var(--accent); border:none; padding:8px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">재접속 시도</button>
+                    <p style="color:#eee;">데이터 수신 터미널 오류</p>
+                    <p style="font-size:12px; margin-bottom:20px;">레딧 서버와의 통신이 지연되고 있습니다.</p>
+                    <button onclick="location.reload()" style="background:var(--accent); border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">채널 재설정</button>
                 </div>`;
         }
     }
 
-    window.onload = fetchReddit;
+    window.onload = loadReddit;
 </script>
 
 </body>
