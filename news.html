@@ -3,51 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWHUB - 실시간 작전 브리핑</title>
+    <title>OWHUB - 실시간 X 브리핑</title>
     <style>
-        :root { --accent: #ff9c00; --bg-dark: #111; --card-bg: #1a1a1a; }
+        :root { --accent: #ff9c00; --bg-dark: #111; --card-bg: #1a1a1a; --x-blue: #1DA1F2; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 80px; }
         
         nav { background: #000; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; height: 50px; }
-        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; text-transform: uppercase; }
+        .nav-logo { font-size: 18px; font-weight: 900; color: var(--accent); cursor: pointer; }
         
         .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
 
-        /* 헤더 섹션 */
-        .news-header { 
-            background: linear-gradient(135deg, #222 0%, #000 100%); 
-            padding: 30px 20px; border-radius: 15px; border: 1px solid #333; 
-            margin-bottom: 25px; border-left: 6px solid var(--accent);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
-
-        /* 뉴스 카드 디자인 */
-        .news-card { 
+        /* 트위터 스타일 카드 */
+        .x-card { 
             background: var(--card-bg); border-radius: 12px; border: 1px solid #333; 
-            margin-bottom: 15px; overflow: hidden; transition: 0.3s;
-            text-decoration: none; color: white; display: block;
+            margin-bottom: 12px; padding: 15px; text-decoration: none; color: white; display: block;
+            transition: 0.2s;
         }
-        .news-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .x-card:hover { border-color: var(--x-blue); background: #222; }
         
-        .news-thumb { width: 100%; height: 200px; background-size: cover; background-position: center; border-bottom: 1px solid #333; }
-        .news-body { padding: 15px; }
-        .news-tag { font-size: 10px; font-weight: 900; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; display: block; }
-        .news-title { font-size: 17px; font-weight: bold; margin: 0 0 10px 0; line-height: 1.4; color: #eee; }
-        .news-date { font-size: 12px; color: #666; }
+        .x-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .x-avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; }
+        .x-name { font-weight: bold; font-size: 15px; }
+        .x-handle { color: #666; font-size: 13px; margin-left: 4px; }
+        
+        .x-content { font-size: 14px; line-height: 1.5; color: #ddd; word-break: break-all; }
+        .x-date { font-size: 12px; color: #555; margin-top: 10px; }
 
-        /* 로딩 및 실패 UI */
+        /* 로딩/실패 UI */
         .loader { text-align: center; padding: 50px; color: #888; }
-        .error-box { text-align: center; padding: 40px 20px; border: 1px dashed #444; border-radius: 12px; background: rgba(255,255,255,0.02); }
-
-        .back-btn {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
-            background: var(--accent); color: black; border: none; padding: 12px 30px; 
-            border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-        }
-
-        /* 유튜브 섹션 전용 */
-        .yt-card { background: #000; border-radius: 12px; border: 1px solid #333; overflow: hidden; margin-bottom: 30px; }
+        .back-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: black; border: none; padding: 12px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000; }
     </style>
 </head>
 <body>
@@ -55,36 +39,26 @@
 <nav><div class="nav-logo" onclick="location.href='index.html'">OVERWATCH HUB</div></nav>
 
 <div class="container">
-    <div class="news-header">
-        <h1 style="margin:0; font-size: 24px;">🛰️ DATA TERMINAL</h1>
-        <p style="margin: 8px 0 0 0; color: #aaa; font-size: 14px;">블리자드 공식 서버 뉴스 수신 중</p>
+    <div style="margin-bottom: 25px;">
+        <h1 style="margin:0; font-size: 22px; color: var(--x-blue);">🐦 REAL-TIME X FEED</h1>
+        <p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">@PlayOverwatch 공식 실시간 데이터 수신</p>
     </div>
 
-    <div class="yt-card">
-        <div style="padding: 10px 15px; font-size: 11px; font-weight: 900; color: #ff0000; background: #111; display: flex; align-items: center; gap: 8px;">
-            <span style="width: 8px; height: 8px; background: #ff0000; border-radius: 50%;"></span> LATEST VIDEO
-        </div>
-        <div style="position:relative; padding-top:56.25%;">
-            <iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" 
-                    src="https://www.youtube.com/embed?listType=user_uploads&list=PlayOverwatch" 
-                    allowfullscreen></iframe>
-        </div>
-    </div>
-
-    <div id="rss-feed-list">
-        <div class="loader">신호 수신 중...</div>
+    <div id="x-feed-list">
+        <div class="loader">X 서버 응답 대기 중...</div>
     </div>
 </div>
 
 <button class="back-btn" onclick="location.href='index.html'">🏠 본부로 돌아가기</button>
 
 <script>
-    async function loadRSS() {
-        const listDiv = document.getElementById('rss-feed-list');
-        // 공식 한국어 뉴스 RSS
-        const RSS_URL = 'https://overwatch.blizzard.com/ko-kr/news/rss';
-        // 공개 API (rss2json) - 캐시 방지를 위해 랜덤 파라미터 추가
-        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}&t=${Date.now()}`;
+    async function loadXFeed() {
+        const listDiv = document.getElementById('x-feed-list');
+        
+        // Nitter 또는 RSS.app 등의 브릿지 주소를 활용 (공식 X 주소를 RSS로 변환)
+        // 여기서는 RSS2JSON을 통해 안정적으로 변환합니다.
+        const X_RSS_URL = 'https://nitter.net/PlayOverwatch/rss'; 
+        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(X_RSS_URL)}`;
 
         try {
             const response = await fetch(API_URL);
@@ -93,45 +67,38 @@
             if (data.status === 'ok') {
                 let html = "";
                 data.items.forEach(item => {
-                    const date = new Date(item.pubDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
-                    
-                    // 썸네일 처리 (이미지가 없으면 기본값)
-                    let thumb = item.thumbnail || item.enclosure.link;
-                    if (!thumb || thumb.includes('avatar')) {
-                        thumb = 'https://images.blz-contentstack.com/v3/assets/blt088898833056f9f1/blt674258169e5d4408/628670868f08a1496a793a38/Overwatch2_ReleaseDate_Thumbnail.jpg';
-                    }
+                    // 트윗 내용에서 불필요한 HTML 태그 제거 및 정리
+                    let content = item.description.replace(/<[^>]*>?/gm, '').substring(0, 200);
+                    const date = new Date(item.pubDate).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
                     html += `
-                        <a href="${item.link}" target="_blank" class="news-card">
-                            <div class="news-thumb" style="background-image: url('${thumb}')"></div>
-                            <div class="news-body">
-                                <span class="news-tag">Official Intelligence</span>
-                                <h3 class="news-title">${item.title}</h3>
-                                <div class="news-date">${date}</div>
+                        <a href="${item.link}" target="_blank" class="x-card">
+                            <div class="x-header">
+                                <img class="x-avatar" src="https://unavatar.io/twitter/PlayOverwatch" alt="ovw">
+                                <div>
+                                    <span class="x-name">Overwatch</span>
+                                    <span class="x-handle">@PlayOverwatch</span>
+                                </div>
                             </div>
+                            <div class="x-content">${content}...</div>
+                            <div class="x-date">${date}</div>
                         </a>
                     `;
                 });
                 listDiv.innerHTML = html;
             } else {
-                throw new Error('Data status not ok');
+                throw new Error();
             }
-        } catch (error) {
-            console.error(error);
+        } catch (e) {
             listDiv.innerHTML = `
-                <div class="error-box">
-                    <p style="color:#eee; font-weight:bold;">뉴스 피드를 불러올 수 없습니다.</p>
-                    <p style="color:#666; font-size:12px; margin-bottom:15px;">서버 연결이 원활하지 않습니다.</p>
-                    <button onclick="window.open('https://overwatch.blizzard.com/ko-kr/news/')" 
-                            style="background:var(--accent); color:black; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">
-                        공식 홈페이지에서 보기
-                    </button>
-                </div>
-            `;
+                <div style="text-align:center; padding:40px; border:1px solid #333; border-radius:12px;">
+                    <p style="color:#888;">X 피드 브릿지 연결이 원활하지 않습니다.</p>
+                    <a href="https://twitter.com/PlayOverwatch" target="_blank" style="color:var(--x-blue); font-size:14px;">X 공식 페이지에서 직접 보기</a>
+                </div>`;
         }
     }
 
-    window.onload = loadRSS;
+    window.onload = loadXFeed;
 </script>
 
 </body>
