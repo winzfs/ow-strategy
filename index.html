@@ -833,35 +833,39 @@ window.showPageAndClose = function(id) {
                 const tierImg = `<img src="${ICON_URLS[p.tier]}" style="width:28px; height:28px; vertical-align:middle; margin-right:2px;">`;
 
                 html += `
-                <div class="box" style="padding: 15px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-                        <div style="flex-grow:1; min-width:0;">
-                            <div style="display:flex; align-items:center; margin-bottom:8px; flex-wrap:nowrap; overflow:hidden;">
-                                <b style="font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.btag ? p.btag.split('#')[0] : '익명'}</b> 
-                                <span style="color:var(--accent); font-size:11px; margin-left:6px; font-weight:bold; white-space:nowrap;">${rateText}</span>
-                                <small style="color:#666; margin-left:8px; white-space:nowrap;">${timeSince(p.createdAt)}</small>
-                            </div>
-                            
-                            <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
-                                <span onclick="setFilter('pos', '${p.pos}')" style="cursor:pointer; display:inline-flex; align-items:center; background:#000; padding:3px 8px; border-radius:6px; font-size:14px; font-weight:bold; color:white; border:1px solid #333;">
-                                    ${posImg}${p.pos}
-                                </span>
-                                <span onclick="setFilter('tier', '${p.tier}')" style="cursor:pointer; display:inline-flex; align-items:center; font-size:14px; font-weight:900; color:var(--accent);">
-                                    ${tierImg} ${p.tier} ${p.tier !== '배치' ? p.tierNum : ''}
-                                </span>
-                                <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; font-size:12px; font-weight:bold;">
-                                    ● ${count}/${p.maxp}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="flex-shrink:0;">
-                            ${btn}
-                        </div>
-                    </div>
-                    <p style="margin-top:12px; margin-bottom:0; color:#bbb; font-size:13px; line-height:1.4; background:#222; padding:8px 12px; border-radius:8px;">
-                        ${p.desc || '모집 내용이 없습니다.'}
-                    </p>
-                </div>`;
+<div class="box" style="padding: 15px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div style="flex-grow:1; min-width:0;">
+            <div style="display:flex; align-items:center; margin-bottom:8px; flex-wrap:nowrap; overflow:hidden;">
+                <b style="font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.btag ? p.btag.split('#')[0] : '익명'}</b> 
+                <span style="color:var(--accent); font-size:11px; margin-left:6px; font-weight:bold; white-space:nowrap;">${rateText}</span>
+                <small style="color:#666; margin-left:8px; white-space:nowrap;">${timeSince(p.createdAt)}</small>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
+                <span onclick="setFilter('pos', '${p.pos}')" 
+                      class="pos-badge-inline ${isSup ? 'pos-badge-sup' : ''}" 
+                      style="background: ${posColors[p.pos] || '#555'};">
+                    <img src="${ICON_URLS[p.pos]}">
+                    ${p.pos}
+                </span>
+
+                <span onclick="setFilter('tier', '${p.tier}')" style="cursor:pointer; display:inline-flex; align-items:center; font-size:14px; font-weight:900; color:var(--accent);">
+                    ${tierImg} ${p.tier} ${p.tier !== '배치' ? p.tierNum : ''}
+                </span>
+                <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; font-size:12px; font-weight:bold;">
+                    ● ${count}/${p.maxp}
+                </span>
+            </div>
+        </div>
+        <div style="flex-shrink:0;">
+            ${btn}
+        </div>
+    </div>
+    <p style="margin-top:12px; margin-bottom:0; color:#bbb; font-size:13px; line-height:1.4; background:#222; padding:8px 12px; border-radius:8px;">
+        ${p.desc || '모집 내용이 없습니다.'}
+    </p>
+</div>`;
             });
             listDiv.innerHTML = html || `<div style="text-align:center; color:#444; padding:40px;">조건에 맞는 파티가 없습니다.<br><button onclick="resetFilter()" style="margin-top:10px; color:var(--accent); background:none; border:none; cursor:pointer;">전체 보기로 돌아가기</button></div>`;
         };
