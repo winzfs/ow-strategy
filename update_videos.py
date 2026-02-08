@@ -12,8 +12,8 @@ PRO_PLAYERS = {
 }
 
 STREAMERS = {
-    "일루전": "UCJmnOEp1-OITEU0mk4icM5A",
-    "빅헤드": "UCVp69S_pU6sgvS_uL5u-4_w"
+    "일루전 (Illusion)": "UCJmnOEp1-OITEU0mk4icM5A",
+    "아이치 (Ichi)": "UCbFLnCfOet-u_kFyA7uX-9Q"
 }
 
 API_KEY = os.environ.get('YOUTUBE_API_KEY')
