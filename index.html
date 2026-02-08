@@ -268,16 +268,18 @@
     <h1 style="display:none;">오버워치 허브 - 실시간 그룹찾기/파티 매칭 커뮤니티</h1>
      
     <!-- 상단 네비게이션 (햄버거 메뉴만) -->
-    <nav>
-    <div class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" style="position: relative;">
+    
+<nav>
+    <div class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" style="position: relative; z-index: 1001;">
         <span></span>
         <span></span>
         <span></span>
-        <span id="nav-new-badge" style="display:none; position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #ff3c3c; border-radius: 50%; border: 2px solid #000;"></span>
+        <span id="nav-new-badge" style="display:none; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: #ff3c3c; border-radius: 50%; border: 2px solid #000; z-index: 1002;"></span>
     </div>
     <div class="nav-logo">OVERWATCH HUB</div>
     <div style="width: 35px;"></div>
 </nav>
+
 
 
     <!-- 디버그 콘솔 (모바일용 - 자동 표시) -->
@@ -882,22 +884,28 @@ onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap
     lastMatchSnap = snap;
     const newSentSet = new Set();
     
-    // 내가 보낸 신청글 목록 업데이트
-    snap.docs.forEach(doc => { 
-        if (doc.data().fromUid === user.uid) newSentSet.add(doc.data().postId); 
-    });
+    // 1. 내가 보낸 신청 데이터 업데이트
+    if (auth.currentUser) {
+        snap.docs.forEach(doc => { 
+            if (doc.data().fromUid === auth.currentUser.uid) newSentSet.add(doc.data().postId); 
+        });
+    }
     mySentRequests = newSentSet;
 
-    // 수락 대기 중인(나에게 온) 새로운 알림이 있는지 확인
-    const hasNew = snap.docs.some(d => d.data().toUid === user.uid && d.data().status === 'pending');
+    // 2. 나에게 온 새로운 'pending' 신청이 있는지 확인
+    const hasNew = auth.currentUser ? snap.docs.some(d => d.data().toUid === auth.currentUser.uid && d.data().status === 'pending') : false;
     
-    // 1. 사이드바 내부의 "N" 태그 제어
-    const newTag = document.getElementById('sidebar-new-tag');
-    if(newTag) newTag.style.display = hasNew ? 'inline-block' : 'none';
+    // 3. 사이드바 내부 "N" 태그 제어
+    const sidebarTag = document.getElementById('sidebar-new-tag');
+    if(sidebarTag) {
+        sidebarTag.style.display = hasNew ? 'inline-block' : 'none';
+    }
 
-    // 2. 사이드바 바깥(햄버거 버튼)의 빨간 점 배지 제어
+    // 4. 외부 햄버거 버튼 빨간 배지 제어
     const navBadge = document.getElementById('nav-new-badge');
-    if(navBadge) navBadge.style.display = hasNew ? 'block' : 'none';
+    if(navBadge) {
+        navBadge.style.display = hasNew ? 'block' : 'none';
+    }
 
     renderList(); 
     renderNotiUI(); 
