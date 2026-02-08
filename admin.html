@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWHUB - 관리자 시스템</title>
+    <style>
+        :root { --accent: #ff9c00; --bg-dark: #0a0a0a; --card-bg: #1a1a1a; --danger: #ff3c3c; --success: #00ff7b; }
+        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #000; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; }
+        .nav-buttons { display: flex; gap: 10px; }
+        
+        /* 통계 영역 */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #333; text-align: center; transition: 0.3s; }
+        .stat-card:hover { border-color: var(--accent); }
+        .stat-card h3 { margin: 0; font-size: 13px; color: #888; text-transform: uppercase; }
+        .stat-card p { margin: 10px 0 0; font-size: 28px; font-weight: 900; color: var(--accent); }
+
+        /* 테이블 영역 */
+        .table-container { background: var(--card-bg); border-radius: 12px; border: 1px solid #333; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        th { background: #222; padding: 15px; color: #888; font-weight: 600; border-bottom: 1px solid #333; }
+        td { padding: 15px; border-bottom: 1px solid #222; vertical-align: middle; }
+        tr:hover { background: rgba(255,156,0,0.05); }
+
+        /* 버튼 스타일 */
+        .btn { padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; }
+        .btn-home { background: transparent; border: 1px solid #444; color: #ccc; }
+        .btn-ban { background: #444; color: white; }
+        .btn-perma { background: var(--danger); color: white; }
+        .btn-reset { background: #00a2ff; color: white; }
+        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+
+        /* 상태 배지 */
+        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .status-banned { background: var(--danger); color: white; }
+        .status-active { background: var(--success); color: black; }
+
+        /* 로딩/잠금 화면 */
+        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="lock-screen">
+    <div class="spinner"></div>
+    <h2 id="lock-text">관리자 권한 확인 중...</h2>
+</div>
+
+<div class="container">
+    <header>
+        <div>
+            <h2 style="margin:0; color:var(--accent);">OWHUB COMMAND CENTER</h2>
+            <p id="admin-info" style="margin:5px 0 0; font-size:12px; color:#666;">접속 계정: 로딩 중...</p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn btn-home" onclick="location.href='index.html'">메인 피드로 이동</button>
+            <button class="btn btn-perma" onclick="auth.signOut().then(()=>location.href='index.html')">로그아웃</button>
+        </div>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card"><h3>등록 유원</h3><p id="stat-users">0</p></div>
+        <div class="stat-card"><h3>활성 모집</h3><p id="stat-parties">0</p></div>
+        <div class="stat-card"><h3>신고 누적</h3><p id="stat-reports">0</p></div>
+        <div class="stat-card"><h3>정지 요원</h3><p id="stat-banned">0</p></div>
+    </div>
+
+    <div class="table-container">
+        <div style="padding:20px; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">👥 유저 매니지먼트</h3>
+            <span style="font-size:12px; color:#888;">정지된 유저는 로그인 시 즉시 차단됩니다.</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>사용자 정보 (UID)</th>
+                    <th>상태</th>
+                    <th>매너 별점</th>
+                    <th>제재 및 관리</th>
+                </tr>
+            </thead>
+            <tbody id="user-table-body">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", 
+        authDomain: "ow-party-97936.firebaseapp.com", 
+        projectId: "ow-party-97936", 
+        appId: "1:15782204013:web:5c74ef2e603c311fc82564" 
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const ADMIN_EMAIL = 'jazzhjm@gmail.com';
+
+    // 보안 및 권한 체크
+    onAuthStateChanged(auth, async (user) => {
+        const lockText = document.getElementById('lock-text');
+        if (!user) {
+            lockText.innerText = "로그인이 필요합니다. 메인 페이지로 이동합니다.";
+            setTimeout(() => location.href = 'index.html', 1500);
+            return;
+        }
+        if (user.email !== ADMIN_EMAIL) {
+            lockText.innerText = "경고: 관리자 권한이 없습니다.";
+            setTimeout(() => location.href = 'index.html', 1500);
+            return;
+        }
+
+        document.getElementById('admin-info').innerText = `관리자: ${user.email}`;
+        document.getElementById('lock-screen').style.display = 'none';
+        
+        initDashboard();
+    });
+
+    function initDashboard() {
+        // 실시간 리스너 연결
+        onSnapshot(collection(db, "users"), (snap) => {
+            renderUserTable(snap);
+            updateStats(snap);
+        });
+        
+        onSnapshot(query(collection(db, "parties"), where("deleted", "==", false)), (snap) => {
+            document.getElementById('stat-parties').innerText = snap.size;
+        });
+    }
+
+    function updateStats(usersSnap) {
+        let bannedCount = 0;
+        usersSnap.forEach(d => {
+            if (d.data().banUntil && d.data().banUntil > Date.now()) bannedCount++;
+        });
+        document.getElementById('stat-users').innerText = usersSnap.size;
+        document.getElementById('stat-banned').innerText = bannedCount;
+        document.getElementById('stat-reports').innerText = "관리중";
+    }
+
+    function renderUserTable(snap) {
+        const body = document.getElementById('user-table-body');
+        let html = "";
+
+        snap.forEach(docSnap => {
+            const u = docSnap.data();
+            const uid = docSnap.id;
+            const isBanned = u.banUntil && u.banUntil > Date.now();
+            const avgRate = u.rateCount > 0 ? (u.rateTotal / u.rateCount).toFixed(1) : "0.0";
+            
+            html += `
+                <tr>
+                    <td>
+                        <div style="font-weight:bold; font-size:15px;">${u.btag || '미설정 요원'}</div>
+                        <div style="font-size:11px; color:#555; margin-top:2px;">${uid}</div>
+                    </td>
+                    <td>
+                        <span class="status-badge ${isBanned ? 'status-banned' : 'status-active'}">
+                            ${isBanned ? '접근 제한' : '정상 요원'}
+                        </span>
+                    </td>
+                    <td><b style="color:var(--accent);">★ ${avgRate}</b> <small style="color:#666;">(${u.rateCount || 0}회)</small></td>
+                    <td>
+                        <button class="btn btn-ban" onclick="controlBan('${uid}', 7)">7일 정지</button>
+                        <button class="btn btn-perma" onclick="controlBan('${uid}', -1)">영구 정지</button>
+                        <button class="btn btn-reset" onclick="resetRate('${uid}')">리셋</button>
+                        ${isBanned ? `<button class="btn btn-home" onclick="controlBan('${uid}', 0)" style="border-color:var(--success); color:var(--success);">해제</button>` : ''}
+                    </td>
+                </tr>
+            `;
+        });
+        body.innerHTML = html;
+    }
+
+    // 관리자 기능 함수들
+    window.controlBan = async (uid, days) => {
+        let banDate;
+        let reason = "운영 정책 위반 및 커뮤니티 매너 준수 위반";
+
+        if (days === 0) {
+            if(!confirm("해당 유저의 정지를 해제하시겠습니까?")) return;
+            banDate = null;
+        } else if (days === -1) {
+            if(!confirm("⚠️ [영구 정지] 정말로 이 계정을 영구 제명하시겠습니까?")) return;
+            banDate = 253370764800000; // 9999년
+        } else {
+            if(!confirm(`${days}일간 정지 처리를 진행하시겠습니까?`)) return;
+            banDate = Date.now() + (days * 24 * 60 * 60 * 1000);
+        }
+
+        await updateDoc(doc(db, "users", uid), {
+            banUntil: banDate,
+            banReason: reason
+        });
+        alert("처리가 완료되었습니다.");
+    };
+
+    window.resetRate = async (uid) => {
+        if(confirm("이 유저의 모든 별점 데이터를 초기화할까요?")) {
+            await updateDoc(doc(db, "users", uid), {
+                rateCount: 0,
+                rateTotal: 0
+            });
+            alert("초기화 완료");
+        }
+    };
+</script>
+
+</body>
+</html>
