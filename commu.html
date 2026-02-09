@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오버워치 허브 커뮤니티 - 자유게시판</title>
-    <meta name="description" content="오버워치 유저들과 소통하는 자유 게시판입니다.">
-    <link rel="canonical" href="https://owhub.vercel.app/commu.html">
+    <title>오버워치 허브 커뮤니티 - 통합 최종본</title>
     <style>
         :root { --accent: #ff9c00; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
@@ -19,17 +17,16 @@
         .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
         .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; position: relative; }
         
-        /* 버튼 및 입력 */
+        /* 버튼 및 입력창 */
         .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
         .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
         input, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; font-family: inherit; }
         
-        /* 사이드바 */
+        /* 사이드바 (마이페이지) */
         #sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100%; background: #1a1a1a; z-index: 1000; transition: 0.3s; box-shadow: 5px 0 15px rgba(0,0,0,0.5); padding: 20px; box-sizing: border-box; }
         #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; }
         
         .post-info { font-size: 12px; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .author-name { color: var(--accent); font-weight: bold; }
         .comment-item { margin-bottom: 8px; padding: 8px; background: #111; border-radius: 6px; font-size: 13px; border-left: 3px solid var(--accent); }
     </style>
 </head>
@@ -85,17 +82,10 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    // 관리자 이메일 설정
     const ADMIN_EMAILS = ["jazzhjm@gmail.com", "jazzhjm@gmaol.com"];
     let myBtag = "익명";
-    let commentListeners = {};
-
-    const timeSince = (date) => {
-        const seconds = Math.floor((Date.now() - date) / 1000);
-        if (seconds < 60) return "방금 전";
-        if (seconds < 3600) return Math.floor(seconds/60) + "분 전";
-        if (seconds < 86400) return Math.floor(seconds/3600) + "시간 전";
-        return Math.floor(seconds/86400) + "일 전";
-    };
+    let openCommentId = null; // 현재 열려있는 댓글창 추적용
 
     onAuthStateChanged(auth, async (user) => {
         const authUI = document.getElementById('auth-ui');
@@ -113,6 +103,7 @@
         startListing();
     });
 
+    // 게시글 실시간 리스팅
     function startListing() {
         const q = query(collection(db, "community"), orderBy("createdAt", "desc"));
         onSnapshot(q, (snap) => {
@@ -124,22 +115,20 @@
                 const d = docSnap.data();
                 const id = docSnap.id;
                 const likes = d.likes || [];
-                const hasLiked = user && likes.includes(user.uid);
+                const isOpened = (openCommentId === id);
                 return `
                     <div class="box" id="post-${id}">
                         <div class="post-info">
-                            <span><span class="author-name">${d.author}</span> • ${timeSince(d.createdAt)}</span>
+                            <span><b style="color:var(--accent)">${d.author}</b> • 방금 전</span>
                             ${(user && user.uid === d.uid || isAdmin) ? `<button onclick="window.delPost('${id}')" style="background:none;border:none;color:#ff3c3c;cursor:pointer;font-size:11px;">삭제</button>` : ''}
                         </div>
-                        <h4 style="margin:5px 0 10px 0;">${d.title}</h4>
-                        <p style="font-size:14px;color:#ccc;white-space:pre-wrap;line-height:1.6;">${d.content}</p>
+                        <h4 style="margin:5px 0;">${d.title}</h4>
+                        <p style="font-size:14px;color:#ccc;white-space:pre-wrap;">${d.content}</p>
                         <div style="display:flex; gap:18px; margin-top:15px; padding-top:15px; border-top:1px solid #222;">
-                            <span onclick="window.toggleLike('${id}', '${d.uid}')" style="cursor:pointer; font-size:13px; color:${hasLiked ? 'var(--accent)' : '#666'}">
-                                ${hasLiked ? '🧡' : '🤍'} 추천 ${likes.length}
-                            </span>
+                            <span onclick="window.toggleLike('${id}', '${d.uid}')" style="cursor:pointer; font-size:13px; color:#666">🧡 추천 ${likes.length}</span>
                             <span onclick="window.toggleComments('${id}')" style="cursor:pointer; font-size:13px; color:#666;">💬 댓글 ${d.commentCount || 0}</span>
                         </div>
-                        <div id="cmt-sec-${id}" style="display:none; margin-top:15px; background:#111; padding:12px; border-radius:10px;">
+                        <div id="cmt-sec-${id}" style="display:${isOpened ? 'block' : 'none'}; margin-top:15px; background:#111; padding:12px; border-radius:10px;">
                             <div id="cmt-list-${id}"></div>
                             <div style="display:flex; gap:8px; margin-top:10px;">
                                 <input type="text" id="cmt-in-${id}" placeholder="댓글 입력..." style="margin:0; font-size:12px; height:35px;">
@@ -148,40 +137,53 @@
                         </div>
                     </div>`;
             }).join('');
+            
+            // 리렌더링 시 열려있던 댓글창은 즉시 목록 갱신
+            if(openCommentId) window.loadCommentList(openCommentId);
         });
     }
 
+    // 댓글 목록 로딩 함수 (별도 분리)
+    window.loadCommentList = async (postId) => {
+        const cmtList = document.getElementById(`cmt-list-${postId}`);
+        if(!cmtList) return;
+        const q = query(collection(db, "comments"), where("postId", "==", postId));
+        const snap = await getDocs(q);
+        const docs = snap.docs.map(d => d.data()).sort((a,b) => a.createdAt - b.createdAt);
+        cmtList.innerHTML = docs.length ? docs.map(c => `
+            <div class="comment-item"><b>${c.author}</b>: ${c.content}</div>
+        `).join('') : "<p style='font-size:11px;color:#444;text-align:center;'>댓글이 없습니다.</p>";
+    };
+
     window.toggleComments = (id) => {
         const sec = document.getElementById(`cmt-sec-${id}`);
-        const isOpening = sec.style.display === 'none';
-        sec.style.display = isOpening ? 'block' : 'none';
-        if(isOpening && !commentListeners[id]) {
-            const cmtList = document.getElementById(`cmt-list-${id}`);
-            const q = query(collection(db, "comments"), where("postId", "==", id));
-            commentListeners[id] = onSnapshot(q, (snap) => {
-                const docs = snap.docs.map(d => d.data()).sort((a,b) => a.createdAt - b.createdAt);
-                cmtList.innerHTML = docs.length ? docs.map(c => `<div class="comment-item"><b>${c.author}</b>: ${c.content}</div>`).join('') : "<p style='font-size:11px;color:#444;text-align:center;'>댓글이 없습니다.</p>";
-            });
+        if(sec.style.display === 'none') {
+            openCommentId = id;
+            sec.style.display = 'block';
+            window.loadCommentList(id);
+        } else {
+            openCommentId = null;
+            sec.style.display = 'none';
         }
     };
 
     window.addComment = async (id) => {
         const user = auth.currentUser;
         const input = document.getElementById(`cmt-in-${id}`);
-        if(!user || !input.value.trim()) return alert("로그인 후 내용을 입력해주세요.");
+        if(!user || !input.value.trim()) return alert("내용을 입력해주세요.");
         try {
             await addDoc(collection(db, "comments"), { postId: id, uid: user.uid, author: myBtag.split('#')[0], content: input.value, createdAt: Date.now() });
             const ref = doc(db, "community", id);
             const snap = await getDoc(ref);
             await updateDoc(ref, { commentCount: (snap.data().commentCount || 0) + 1 });
             input.value = "";
+            window.loadCommentList(id); // 즉시 갱신
         } catch(e) { alert("댓글 등록 실패!"); }
     };
 
     window.toggleLike = async (postId, authorUid) => {
         const user = auth.currentUser;
         if (!user) return alert("로그인 필요!");
-        if (user.uid === authorUid) return alert("본인 글은 추천 불가!");
         const ref = doc(db, "community", postId);
         const snap = await getDoc(ref);
         const likes = snap.data().likes || [];
@@ -194,12 +196,13 @@
         sb.style.left = isOpen ? '-300px' : '0px';
         document.getElementById('sidebar-overlay').style.display = isOpen ? 'none' : 'block';
         if(!isOpen && auth.currentUser) {
-            const list = document.getElementById('my-posts-list');
-            list.innerHTML = "<p style='font-size:12px;color:#555;text-align:center;'>로딩 중...</p>";
             const q = query(collection(db, "community"), where("uid", "==", auth.currentUser.uid));
             const snap = await getDocs(q);
             const docs = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => b.createdAt - a.createdAt);
-            list.innerHTML = docs.length ? docs.map(d => `<div style="background:#222; padding:12px; border-radius:8px; margin-bottom:8px; font-size:12px; cursor:pointer; border:1px solid #333;" onclick="location.href='#post-${d.id}'; toggleSidebar();"><div style="font-weight:600;color:#eee;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.title}</div><div style="color:#555;margin-top:4px;">🧡 ${d.likes?.length || 0} 💬 ${d.commentCount || 0}</div></div>`).join('') : "<p style='font-size:12px;color:#444;text-align:center;'>작성한 글이 없습니다.</p>";
+            document.getElementById('my-posts-list').innerHTML = docs.length ? docs.map(d => `
+                <div style="background:#222; padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px; cursor:pointer;" onclick="location.href='#post-${d.id}'; toggleSidebar();">
+                    ${d.title}
+                </div>`).join('') : "<p style='font-size:12px;color:#444;text-align:center;'>작성한 글이 없습니다.</p>";
         }
     };
 
@@ -207,13 +210,9 @@
         const user = auth.currentUser;
         const title = document.getElementById('comm-title').value.trim();
         const content = document.getElementById('comm-content').value.trim();
-        if(!user) return alert("로그인 후 이용 가능합니다.");
-        if(!title || !content) return alert("제목과 내용을 입력하세요.");
-        try {
-            await addDoc(collection(db, "community"), { uid: user.uid, author: myBtag.split('#')[0], title, content, createdAt: Date.now(), likes: [], commentCount: 0 });
-            document.getElementById('comm-title').value = ""; document.getElementById('comm-content').value = "";
-            alert("게시글이 등록되었습니다.");
-        } catch(e) { alert("등록 실패!"); }
+        if(!user || !title || !content) return alert("모든 내용을 입력하세요.");
+        await addDoc(collection(db, "community"), { uid: user.uid, author: myBtag.split('#')[0], title, content, createdAt: Date.now(), likes: [], commentCount: 0 });
+        document.getElementById('comm-title').value = ""; document.getElementById('comm-content').value = "";
     };
 
     window.delPost = async (id) => { if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "community", id)); };
