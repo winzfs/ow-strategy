@@ -26,6 +26,17 @@
         #sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100%; background: #1a1a1a; z-index: 1000; transition: 0.3s; box-shadow: 5px 0 15px rgba(0,0,0,0.5); padding: 20px; box-sizing: border-box; }
         #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; }
         
+        /* 마이페이지 아코디언 스타일 */
+        .my-posts-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; padding: 10px 0; border-bottom: 1px solid #333; margin-top: 10px;
+        }
+        .my-posts-header:hover { color: var(--accent); }
+        #my-posts-list { 
+            overflow-y: auto; max-height: calc(100% - 280px); 
+            margin-top: 10px; display: none; /* 처음엔 숨김 처리 */
+        }
+
         .post-info { font-size: 12px; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; }
         .comment-item { margin-bottom: 8px; padding: 8px; background: #111; border-radius: 6px; font-size: 13px; border-left: 3px solid var(--accent); }
     </style>
@@ -49,8 +60,12 @@
         <h2 id="my-btag-display" style="font-size:16px;">-</h2>
         <div id="sidebar-logout-container"></div>
     </div>
-    <h4 style="font-size:14px; color:#888;">📝 내가 쓴 게시글</h4>
-    <div id="my-posts-list" style="overflow-y:auto; max-height:calc(100% - 250px);"></div>
+    
+    <div class="my-posts-header" onclick="toggleMyPosts()">
+        <h4 style="font-size:14px; color:#888; margin:0;">📝 내가 쓴 게시글</h4>
+        <span id="my-posts-arrow" style="font-size:10px;">▶</span>
+    </div>
+    <div id="my-posts-list"></div>
 </div>
 <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
@@ -82,10 +97,9 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // 관리자 이메일 설정
     const ADMIN_EMAILS = ["jazzhjm@gmail.com", "jazzhjm@gmaol.com"];
     let myBtag = "익명";
-    let openCommentId = null; // 현재 열려있는 댓글창 추적용
+    let openCommentId = null;
 
     onAuthStateChanged(auth, async (user) => {
         const authUI = document.getElementById('auth-ui');
@@ -96,6 +110,7 @@
             document.getElementById('my-btag-display').innerText = myBtag;
             authUI.innerHTML = `<button onclick="auth.signOut().then(()=>location.reload())" class="btn-sub">로그아웃</button>`;
             sidebarLogout.innerHTML = `<button class="btn-sub" style="width:100%;" onclick="auth.signOut().then(()=>location.reload())">로그아웃</button>`;
+            loadMyPosts();
         } else {
             authUI.innerHTML = `<button onclick="location.href='index.html'" class="btn-sub">로그인</button>`;
             sidebarLogout.innerHTML = `<button class="btn-main" onclick="location.href='index.html'">로그인</button>`;
@@ -103,7 +118,7 @@
         startListing();
     });
 
-    // 게시글 실시간 리스팅
+    // 1. 게시글 실시간 리스팅
     function startListing() {
         const q = query(collection(db, "community"), orderBy("createdAt", "desc"));
         onSnapshot(q, (snap) => {
@@ -137,24 +152,59 @@
                         </div>
                     </div>`;
             }).join('');
-            
-            // 리렌더링 시 열려있던 댓글창은 즉시 목록 갱신
             if(openCommentId) window.loadCommentList(openCommentId);
         });
     }
 
-    // 댓글 목록 로딩 함수 (별도 분리)
+    // 2. 내 글 목록 로드 (사이드바 - 통계 포함)
+    async function loadMyPosts() {
+        const user = auth.currentUser;
+        if(!user) return;
+        const list = document.getElementById('my-posts-list');
+        const q = query(collection(db, "community"), where("uid", "==", user.uid));
+        const snap = await getDocs(q);
+        const docs = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => b.createdAt - a.createdAt);
+        
+        list.innerHTML = docs.length ? docs.map(d => `
+            <div style="background:#222; padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px; cursor:pointer; border:1px solid #333;" onclick="location.href='#post-${d.id}'; toggleSidebar();">
+                <div style="font-weight:600; color:#eee; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.title}</div>
+                <div style="color:#666; font-size:10px; margin-top:4px;">🧡 ${d.likes?.length || 0}  💬 ${d.commentCount || 0}</div>
+            </div>`).join('') : "<p style='font-size:11px;color:#444;text-align:center;'>작성한 글이 없습니다.</p>";
+    }
+
+    // 3. 내 글 아코디언 토글 (처음엔 닫힘 상태에서 시작)
+    window.toggleMyPosts = () => {
+        const list = document.getElementById('my-posts-list');
+        const arrow = document.getElementById('my-posts-arrow');
+        if(list.style.display === 'none' || list.style.display === '') {
+            list.style.display = 'block';
+            arrow.innerText = '▼';
+        } else {
+            list.style.display = 'none';
+            arrow.innerText = '▶';
+        }
+    };
+
+    // 4. 사이드바 전체 토글
+    window.toggleSidebar = () => {
+        const sb = document.getElementById('sidebar');
+        const isOpen = sb.style.left === '0px';
+        sb.style.left = isOpen ? '-300px' : '0px';
+        document.getElementById('sidebar-overlay').style.display = isOpen ? 'none' : 'block';
+        if(!isOpen) loadMyPosts();
+    };
+
+    // 5. 댓글 목록 로딩 (상태 유지용)
     window.loadCommentList = async (postId) => {
         const cmtList = document.getElementById(`cmt-list-${postId}`);
         if(!cmtList) return;
         const q = query(collection(db, "comments"), where("postId", "==", postId));
         const snap = await getDocs(q);
         const docs = snap.docs.map(d => d.data()).sort((a,b) => a.createdAt - b.createdAt);
-        cmtList.innerHTML = docs.length ? docs.map(c => `
-            <div class="comment-item"><b>${c.author}</b>: ${c.content}</div>
-        `).join('') : "<p style='font-size:11px;color:#444;text-align:center;'>댓글이 없습니다.</p>";
+        cmtList.innerHTML = docs.length ? docs.map(c => `<div class="comment-item"><b>${c.author}</b>: ${c.content}</div>`).join('') : "<p style='font-size:11px;color:#444;text-align:center;'>댓글이 없습니다.</p>";
     };
 
+    // 6. 댓글창 토글
     window.toggleComments = (id) => {
         const sec = document.getElementById(`cmt-sec-${id}`);
         if(sec.style.display === 'none') {
@@ -167,6 +217,7 @@
         }
     };
 
+    // 7. 댓글 등록 (게시글 통계 업데이트 포함)
     window.addComment = async (id) => {
         const user = auth.currentUser;
         const input = document.getElementById(`cmt-in-${id}`);
@@ -177,45 +228,37 @@
             const snap = await getDoc(ref);
             await updateDoc(ref, { commentCount: (snap.data().commentCount || 0) + 1 });
             input.value = "";
-            window.loadCommentList(id); // 즉시 갱신
+            window.loadCommentList(id);
         } catch(e) { alert("댓글 등록 실패!"); }
     };
 
+    // 8. 추천(좋아요) 토글
     window.toggleLike = async (postId, authorUid) => {
         const user = auth.currentUser;
         if (!user) return alert("로그인 필요!");
+        if (user.uid === authorUid) return alert("본인 글은 추천할 수 없습니다.");
         const ref = doc(db, "community", postId);
         const snap = await getDoc(ref);
         const likes = snap.data().likes || [];
         await updateDoc(ref, { likes: likes.includes(user.uid) ? arrayRemove(user.uid) : arrayUnion(user.uid) });
     };
 
-    window.toggleSidebar = async () => {
-        const sb = document.getElementById('sidebar');
-        const isOpen = sb.style.left === '0px';
-        sb.style.left = isOpen ? '-300px' : '0px';
-        document.getElementById('sidebar-overlay').style.display = isOpen ? 'none' : 'block';
-        if(!isOpen && auth.currentUser) {
-            const q = query(collection(db, "community"), where("uid", "==", auth.currentUser.uid));
-            const snap = await getDocs(q);
-            const docs = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => b.createdAt - a.createdAt);
-            document.getElementById('my-posts-list').innerHTML = docs.length ? docs.map(d => `
-                <div style="background:#222; padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px; cursor:pointer;" onclick="location.href='#post-${d.id}'; toggleSidebar();">
-                    ${d.title}
-                </div>`).join('') : "<p style='font-size:12px;color:#444;text-align:center;'>작성한 글이 없습니다.</p>";
-        }
-    };
-
+    // 9. 게시글 등록
     document.getElementById('btn-comm-post').onclick = async () => {
         const user = auth.currentUser;
         const title = document.getElementById('comm-title').value.trim();
         const content = document.getElementById('comm-content').value.trim();
-        if(!user || !title || !content) return alert("모든 내용을 입력하세요.");
-        await addDoc(collection(db, "community"), { uid: user.uid, author: myBtag.split('#')[0], title, content, createdAt: Date.now(), likes: [], commentCount: 0 });
-        document.getElementById('comm-title').value = ""; document.getElementById('comm-content').value = "";
+        if(!user || !title || !content) return alert("제목과 내용을 모두 입력하세요.");
+        try {
+            await addDoc(collection(db, "community"), { uid: user.uid, author: myBtag.split('#')[0], title, content, createdAt: Date.now(), likes: [], commentCount: 0 });
+            document.getElementById('comm-title').value = "";
+            document.getElementById('comm-content').value = "";
+            alert("게시글이 등록되었습니다.");
+        } catch(e) { alert("등록 실패!"); }
     };
 
-    window.delPost = async (id) => { if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "community", id)); };
+    // 10. 게시글 삭제 (본인 혹은 관리자)
+    window.delPost = async (id) => { if(confirm("정말로 삭제하시겠습니까?")) await deleteDoc(doc(db, "community", id)); };
 </script>
 </body>
 </html>
