@@ -225,9 +225,19 @@
         .page { display: none; }
         .page.active { display: block; }
         .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
-        .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
-        .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; transition: 0.2s; }
-        .btn-danger { background: #ff3c3c; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+        .btn-main, .btn-sub, .btn-danger, .filter-tag {
+    border-radius: 0 !important; /* 각진 사각형 */
+    transform: skewX(-12deg);    /* OWCS 스타일 기울임 */
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    cursor: pointer;
+    font-weight: 800;
+    text-transform: uppercase;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
         input, select, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
         .stars { color: #444; font-size: 24px; cursor: pointer; text-align: center; margin: 10px 0; }
@@ -238,15 +248,50 @@
         .badge-dps { background: var(--dps); color: white; }
         .badge-sup { background: var(--sup); color: black; }
 
-        .filter-tag { 
-            cursor: pointer; 
-            transition: background 0.2s, border 0.2s, box-shadow 0.2s; 
-            border: 2px solid transparent; 
-            display: inline-flex;
-            align-items: center;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+
+        /* 메인 버튼 (오렌지) */
+.btn-main {
+    background: #ff9c00;
+    color: black;
+    box-shadow: 4px 4px 0px #000;
+}
+
+.btn-main:hover {
+    background: #fff;
+    transform: skewX(-12deg) translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #ff9c00;
+}
+
+.btn-main:active {
+    transform: skewX(-12deg) translate(2px, 2px); /* 클릭 시 들어가는 효과 */
+    box-shadow: 0px 0px 0px #000;
+}
+
+/* 서브 버튼 (다크 그레이) */
+.btn-sub {
+    background: #222;
+    color: #eee;
+    border: 1px solid #444;
+}
+
+.btn-sub:hover:not(:disabled) {
+    background: #333;
+    border-color: #ff9c00;
+}
+
+.btn-sub:active:not(:disabled) {
+    transform: skewX(-12deg) scale(0.95);
+}
+
+/* --- 반응형 최적화 (style 태그 하단에 추가) --- */
+@media (max-width: 768px) {
+    .btn-main, .btn-sub {
+        width: 100%; /* 모바일에서 클릭하기 쉽게 너비 확장 */
+        padding: 15px;
+        margin: 5px 0;
+    }
+}
+         
 
         @media (hover: hover) {
             .filter-tag:hover:not(.active) { 
