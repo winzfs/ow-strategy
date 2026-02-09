@@ -3,95 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오버워치 허브 커뮤니티 - 자유게시판 & 파티모집 후기</title>
-    <meta name="description" content="오버워치 유저들과 소통하는 자유 게시판입니다. 파티 후기, 팁 공유, 질문 답변 등 다양한 이야기를 나누어보세요.">
-    <meta name="keywords" content="오버워치 커뮤니티, 오버워치 게시판, 오버워치 자유게시판, 오버워치 팁, owhub 커뮤니티">
-    <link rel="canonical" href="https://owhub.vercel.app/commu.html">
-    <meta property="og:title" content="Overwatch Hub - 커뮤니티">
-    <meta property="og:description" content="오버워치 요원들의 실시간 소통 공간!">
-    <meta property="og:url" content="https://owhub.vercel.app/commu.html">
-    
+    <title>오버워치 허브 커뮤니티</title>
     <style>
         :root { --accent: #ff9c00; --bg-dark: #111; }
-        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
-        
-        /* 상단 네비게이션 */
+        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
         nav { background: #000; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
         .nav-left { display: flex; gap: 20px; align-items: center; }
         .nav-tabs { display: flex; gap: 20px; align-items: center; }
-        .nav-tabs a, .nav-tabs div { cursor: pointer; font-weight: 600; font-size: 14px; text-decoration: none; }
-        
+        .nav-tabs a { color:#888; text-decoration: none; font-weight: 600; font-size: 14px; }
         .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
         .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; position: relative; }
-        
-        /* 버튼 및 입력창 */
-        .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; }
-        .btn-main:hover { opacity: 0.9; }
+        .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
         .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
         input, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; font-family: inherit; }
         
-        .post-info { font-size: 12px; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .author-name { color: var(--accent); font-weight: bold; }
-        
-        /* 왼쪽 사이드바 (마이페이지) */
+        /* 사이드바 스타일 */
         #sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100%; background: #1a1a1a; z-index: 1000; transition: 0.3s; box-shadow: 5px 0 15px rgba(0,0,0,0.5); padding: 20px; box-sizing: border-box; }
         #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; }
         
-        /* 댓글창 스타일 */
-        .comment-item { margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 8px; }
-        
-        @media (max-width: 600px) {
-            .container { margin-top: 15px; }
-            #sidebar { width: 250px; }
-        }
+        .comment-item { margin-bottom: 8px; padding: 8px; background: #111; border-radius: 6px; font-size: 13px; border-left: 3px solid var(--accent); }
     </style>
 </head>
 <body>
 
 <nav>
     <div class="nav-left">
-        <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer; padding:0; margin-right:5px;">☰</button>
+        <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">☰</button>
         <div class="nav-tabs">
-            <a href="index.html" style="color:#888;">파티찾기</a>
-            <div style="color:var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px;">커뮤니티</div>
+            <a href="index.html">파티찾기</a>
+            <div style="color:var(--accent); border-bottom: 2px solid var(--accent);">커뮤니티</div>
         </div>
     </div>
     <div id="auth-ui"></div>
 </nav>
 
 <div id="sidebar">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-        <h3 style="margin:0; color:var(--accent);">MY PAGE</h3>
-        <button onclick="toggleSidebar()" style="background:none; border:none; color:#888; font-size:24px; cursor:pointer;">&times;</button>
-    </div>
-    <div id="my-info" style="margin-bottom:30px; border-bottom:1px solid #333; padding-bottom:20px;">
-        <p style="font-size:12px; color:#666; margin:0;">접속 중인 요원</p>
-        <h2 id="my-btag-display" style="margin:8px 0; font-size:18px; color:var(--accent);">-</h2>
+    <h3 style="color:var(--accent);">MY PAGE</h3>
+    <div id="my-info" style="margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:15px;">
+        <h2 id="my-btag-display" style="font-size:16px;">-</h2>
         <div id="sidebar-logout-container"></div>
     </div>
-    <h4 style="font-size:14px; color:#888; margin-bottom:15px;">📝 내가 쓴 게시글</h4>
-    <div id="my-posts-list" style="overflow-y:auto; max-height:calc(100% - 250px);"></div>
+    <h4 style="font-size:14px; color:#888;">📝 내가 쓴 게시글</h4>
+    <div id="my-posts-list"></div>
 </div>
 <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <div class="container">
     <div class="box">
-        <h4 style="margin:0 0 10px 0; color:var(--accent); font-size: 16px;">💬 자유게시판</h4>
+        <h4 style="color:var(--accent); margin:0 0 10px 0;">💬 자유게시판</h4>
         <input type="text" id="comm-title" placeholder="제목">
-        <textarea id="comm-content" placeholder="오버워치 이야기를 나누어보세요!" rows="4"></textarea>
+        <textarea id="comm-content" placeholder="내용을 입력하세요" rows="4"></textarea>
         <button class="btn-main" id="btn-comm-post">글 등록하기</button>
     </div>
     <div id="comm-list"></div>
 </div>
 
-<footer style="text-align: center; padding: 50px 20px; color: #444; font-size: 12px; border-top: 1px solid #222;">
-    <p>© 2026 Overwatch Hub (OWHUB). All rights reserved.</p>
-</footer>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDoc, getDocs, deleteDoc, updateDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = { 
         apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", 
@@ -106,67 +76,44 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    const ADMIN_EMAILS = ["jazzhjm@gmail.com", "jazzhjm@gmaol.com"];
     let myBtag = "익명";
-
-    const timeSince = (date) => {
-        const seconds = Math.floor((Date.now() - date) / 1000);
-        if (seconds < 60) return "방금 전";
-        if (seconds < 3600) return Math.floor(seconds/60) + "분 전";
-        if (seconds < 86400) return Math.floor(seconds/3600) + "시간 전";
-        return Math.floor(seconds/86400) + "일 전";
-    };
 
     onAuthStateChanged(auth, async (user) => {
         const authUI = document.getElementById('auth-ui');
         const sidebarLogout = document.getElementById('sidebar-logout-container');
         if (user) {
             const userSnap = await getDoc(doc(db, "users", user.uid));
-            myBtag = userSnap.exists() ? userSnap.data().btag : "익명 요원";
+            myBtag = userSnap.exists() ? userSnap.data().btag : "익명";
             document.getElementById('my-btag-display').innerText = myBtag;
-            authUI.innerHTML = `<button onclick="auth.signOut()" class="btn-sub">로그아웃</button>`;
+            authUI.innerHTML = `<button onclick="auth.signOut().then(()=>location.reload())" class="btn-sub">로그아웃</button>`;
             sidebarLogout.innerHTML = `<button class="btn-sub" style="width:100%;" onclick="auth.signOut().then(()=>location.reload())">로그아웃</button>`;
         } else {
             authUI.innerHTML = `<button onclick="location.href='index.html'" class="btn-sub">로그인</button>`;
-            sidebarLogout.innerHTML = `<button class="btn-main" onclick="location.href='index.html'">로그인</button>`;
         }
         startListing();
     });
 
-    // 전체 게시글 실시간 리스팅
     function startListing() {
         const q = query(collection(db, "community"), orderBy("createdAt", "desc"));
         onSnapshot(q, (snap) => {
             const list = document.getElementById('comm-list');
-            const user = auth.currentUser;
-            const isAdmin = user && ADMIN_EMAILS.includes(user.email);
-
             list.innerHTML = snap.docs.map(docSnap => {
                 const d = docSnap.data();
                 const id = docSnap.id;
-                const likes = d.likes || [];
-                const hasLiked = user && likes.includes(user.uid);
                 return `
                     <div class="box" id="post-${id}">
-                        <div class="post-info">
-                            <span><span class="author-name">${d.author}</span> • ${timeSince(d.createdAt)}</span>
-                            ${(user && user.uid === d.uid || isAdmin) ? `<button onclick="delPost('${id}')" style="background:none;border:none;color:red;cursor:pointer;">삭제</button>` : ''}
-                        </div>
-                        <h4 style="margin:5px 0;">${d.title}</h4>
-                        <p style="font-size:14px;color:#ccc;white-space:pre-wrap;">${d.content}</p>
-                        <div style="display:flex; gap:15px; margin-top:10px; padding-top:10px; border-top:1px solid #222;">
-                            <span onclick="toggleLike('${id}', '${d.uid}')" style="cursor:pointer; font-size:13px; color:${hasLiked ? 'var(--accent)' : '#888'}">
-                                ${hasLiked ? '🧡' : '🤍'} 추천 ${likes.length}
-                            </span>
-                            <span onclick="toggleComments('${id}')" style="cursor:pointer; font-size:13px; color:#888;">
-                                💬 댓글 ${d.commentCount || 0}
-                            </span>
+                        <div style="font-size:12px; color:#888;">${d.author}</div>
+                        <h4 style="margin:8px 0;">${d.title}</h4>
+                        <p style="font-size:14px; color:#ccc; white-space:pre-wrap;">${d.content}</p>
+                        <div style="display:flex; gap:15px; margin-top:10px; border-top:1px solid #222; padding-top:10px;">
+                            <span onclick="window.toggleLike('${id}', '${d.uid}')" style="cursor:pointer; font-size:13px; color:#ff9c00;">🧡 추천 ${(d.likes || []).length}</span>
+                            <span onclick="window.toggleComments('${id}')" style="cursor:pointer; font-size:13px; color:#888;">💬 댓글 ${d.commentCount || 0}</span>
                         </div>
                         <div id="cmt-sec-${id}" style="display:none; margin-top:10px;">
-                            <div id="cmt-list-${id}" style="font-size:12px; margin-bottom:10px;"></div>
-                            <div style="display:flex; gap:5px;">
-                                <input type="text" id="cmt-in-${id}" placeholder="댓글 입력..." style="margin:0;">
-                                <button onclick="addComment('${id}')" class="btn-main" style="width:60px; margin:0; padding:5px;">등록</button>
+                            <div id="cmt-list-${id}"></div>
+                            <div style="display:flex; gap:5px; margin-top:10px;">
+                                <input type="text" id="cmt-in-${id}" placeholder="댓글 입력..." style="margin:0; font-size:12px;">
+                                <button onclick="window.addComment('${id}')" class="btn-main" style="width:60px; margin:0; padding:5px; font-size:12px;">등록</button>
                             </div>
                         </div>
                     </div>`;
@@ -174,46 +121,28 @@
         });
     }
 
-    // 마이페이지 열기 및 내가 쓴 글 로드
-    window.toggleSidebar = async () => {
-        const sb = document.getElementById('sidebar');
-        const ov = document.getElementById('sidebar-overlay');
-        const isOpen = sb.style.left === '0px';
-        sb.style.left = isOpen ? '-300px' : '0px';
-        ov.style.display = isOpen ? 'none' : 'block';
-        
-        if(!isOpen && auth.currentUser) {
-            const q = query(collection(db, "community"), where("uid", "==", auth.currentUser.uid));
-            const snap = await getDocs(q);
-            const myDocs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => b.createdAt - a.createdAt);
-            document.getElementById('my-posts-list').innerHTML = myDocs.map(d => `
-                <div style="background:#222; padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px; cursor:pointer;" onclick="location.href='#post-${d.id}'; toggleSidebar();">
-                    ${d.title}
-                </div>`).join('');
-        }
-    };
-
-    // 기능 함수들
-    window.toggleLike = async (postId, authorUid) => {
-        const user = auth.currentUser;
-        if (!user) return alert("로그인 필요!");
-        if (user.uid === authorUid) return alert("본인 글은 추천 불가!");
-        const ref = doc(db, "community", postId);
-        const snap = await getDoc(ref);
-        const likes = snap.data().likes || [];
-        await updateDoc(ref, { likes: likes.includes(user.uid) ? arrayRemove(user.uid) : arrayUnion(user.uid) });
-    };
-
-    window.toggleComments = (id) => {
+    // 댓글 목록 불러오기 (색인 오류 해결 버전)
+    window.toggleComments = async (id) => {
         const sec = document.getElementById(`cmt-sec-${id}`);
         sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+        
         if(sec.style.display === 'block') {
-            const q = query(collection(db, "comments"), where("postId", "==", id), orderBy("createdAt", "asc"));
+            const cmtList = document.getElementById(`cmt-list-${id}`);
+            cmtList.innerHTML = "<p style='font-size:11px; color:#555;'>불러오는 중...</p>";
+            
+            // orderBy를 제거하여 색인 오류를 피함
+            const q = query(collection(db, "comments"), where("postId", "==", id));
             onSnapshot(q, (snap) => {
-                document.getElementById(`cmt-list-${id}`).innerHTML = snap.docs.map(doc => {
-                    const c = doc.data();
-                    return `<div class="comment-item"><b>${c.author}</b>: ${c.content}</div>`;
-                }).join('');
+                if(snap.empty) {
+                    cmtList.innerHTML = "<p style='font-size:11px; color:#555;'>첫 댓글을 남겨보세요!</p>";
+                    return;
+                }
+                // 자바스크립트에서 수동 정렬 (시간순)
+                const docs = snap.docs.map(d => d.data()).sort((a,b) => a.createdAt - b.createdAt);
+                cmtList.innerHTML = docs.map(c => `
+                    <div class="comment-item">
+                        <b style="color:var(--accent);">${c.author}</b>: ${c.content}
+                    </div>`).join('');
             });
         }
     };
@@ -221,25 +150,70 @@
     window.addComment = async (id) => {
         const user = auth.currentUser;
         const input = document.getElementById(`cmt-in-${id}`);
-        if(!user || !input.value.trim()) return;
-        await addDoc(collection(db, "comments"), { postId: id, uid: user.uid, author: myBtag.split('#')[0], content: input.value, createdAt: Date.now() });
-        const ref = doc(db, "community", id);
-        const snap = await getDoc(ref);
-        await updateDoc(ref, { commentCount: (snap.data().commentCount || 0) + 1 });
-        input.value = "";
+        if(!user) return alert("로그인 필요!");
+        if(!input.value.trim()) return;
+
+        try {
+            await addDoc(collection(db, "comments"), {
+                postId: id,
+                uid: user.uid,
+                author: myBtag.split('#')[0],
+                content: input.value,
+                createdAt: Date.now()
+            });
+            const postRef = doc(db, "community", id);
+            const postSnap = await getDoc(postRef);
+            await updateDoc(postRef, { commentCount: (postSnap.data().commentCount || 0) + 1 });
+            input.value = "";
+        } catch(e) { alert("댓글 등록 실패: " + e.message); }
+    };
+
+    // 사이드바 - 내가 쓴 글 (색인 오류 해결 버전)
+    window.toggleSidebar = async () => {
+        const sb = document.getElementById('sidebar');
+        const isOpen = sb.style.left === '0px';
+        sb.style.left = isOpen ? '-300px' : '0px';
+        document.getElementById('sidebar-overlay').style.display = isOpen ? 'none' : 'block';
+        
+        if(!isOpen && auth.currentUser) {
+            const listContainer = document.getElementById('my-posts-list');
+            listContainer.innerHTML = "<p style='font-size:11px; color:#555;'>불러오는 중...</p>";
+            const q = query(collection(db, "community"), where("uid", "==", auth.currentUser.uid));
+            const snap = await getDocs(q);
+            if(snap.empty) {
+                listContainer.innerHTML = "작성한 글이 없습니다.";
+                return;
+            }
+            const myDocs = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => b.createdAt - a.createdAt);
+            listContainer.innerHTML = myDocs.map(d => `
+                <div style="background:#222; padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px; cursor:pointer;" onclick="location.href='#post-${d.id}'; toggleSidebar();">
+                    ${d.title}
+                </div>`).join('');
+        }
     };
 
     document.getElementById('btn-comm-post').onclick = async () => {
         const user = auth.currentUser;
-        if (!user) return alert("로그인 필요!");
+        if(!user) return alert("로그인 필요!");
         const title = document.getElementById('comm-title').value;
         const content = document.getElementById('comm-content').value;
         if(!title || !content) return;
-        await addDoc(collection(db, "community"), { uid: user.uid, author: myBtag.split('#')[0], title, content, createdAt: Date.now(), likes: [], commentCount: 0 });
+        await addDoc(collection(db, "community"), {
+            uid: user.uid, author: myBtag.split('#')[0], title, content,
+            createdAt: Date.now(), likes: [], commentCount: 0
+        });
         document.getElementById('comm-title').value = ""; document.getElementById('comm-content').value = "";
     };
 
-    window.delPost = async (id) => { if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "community", id)); };
+    window.toggleLike = async (postId, authorUid) => {
+        const user = auth.currentUser;
+        if (!user) return alert("로그인 필요!");
+        if (user.uid === authorUid) return alert("본인 글 추천 불가!");
+        const ref = doc(db, "community", postId);
+        const snap = await getDoc(ref);
+        const likes = snap.data().likes || [];
+        await updateDoc(ref, { likes: likes.includes(user.uid) ? arrayRemove(user.uid) : arrayUnion(user.uid) });
+    };
 </script>
 </body>
 </html>
