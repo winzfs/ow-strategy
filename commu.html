@@ -14,98 +14,98 @@
     <style>
         :root { --accent: #ff9c00; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
+        
+        /* 상단 네비게이션 */
         nav { background: #000; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
+        .nav-left { display: flex; gap: 20px; align-items: center; }
         .nav-tabs { display: flex; gap: 20px; align-items: center; }
         .nav-tabs a, .nav-tabs div { cursor: pointer; font-weight: 600; font-size: 14px; text-decoration: none; }
+        
         .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
         .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; position: relative; }
-        .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
+        
+        /* 버튼 및 입력창 */
+        .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; }
+        .btn-main:hover { opacity: 0.9; }
         .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
-        input, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+        input, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; font-family: inherit; }
+        
         .post-info { font-size: 12px; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; }
         .author-name { color: var(--accent); font-weight: bold; }
         
-        /* 사이드바 스타일 */
-        #sidebar { position: fixed; right: -300px; top: 0; width: 280px; height: 100%; background: #1a1a1a; z-index: 1000; transition: 0.3s; box-shadow: -5px 0 15px rgba(0,0,0,0.5); padding: 20px; box-sizing: border-box; }
+        /* 왼쪽 사이드바 스타일 */
+        #sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100%; background: #1a1a1a; z-index: 1000; transition: 0.3s; box-shadow: 5px 0 15px rgba(0,0,0,0.5); padding: 20px; box-sizing: border-box; }
         #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; }
+        
+        /* 반응형 */
+        @media (max-width: 600px) {
+            .container { margin-top: 15px; }
+            #sidebar { width: 250px; }
+        }
     </style>
 </head>
 <body>
 
 <nav>
-    <div class="nav-tabs">
-        <a href="index.html" style="color:#888;">파티찾기</a>
-        <div style="color:var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px;">커뮤니티</div>
+    <div class="nav-left">
+        <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer; padding:0; margin-right:5px;">☰</button>
+        <div class="nav-tabs">
+            <a href="index.html" style="color:#888;">파티찾기</a>
+            <div style="color:var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px;">커뮤니티</div>
+        </div>
     </div>
-    <div id="auth-ui" style="display: flex; gap: 10px; align-items: center;">
-        <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">☰</button>
-    </div>
+    <div id="auth-ui"></div>
 </nav>
 
 <div id="sidebar">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-        <h3 style="margin:0; color:var(--accent);">MY PAGE</h3>
+        <h3 style="margin:0; color:var(--accent); letter-spacing: 1px;">MY PAGE</h3>
         <button onclick="toggleSidebar()" style="background:none; border:none; color:#888; font-size:24px; cursor:pointer;">&times;</button>
     </div>
     <div id="my-info" style="margin-bottom:30px; border-bottom:1px solid #333; padding-bottom:20px;">
-        <p style="font-size:12px; color:#888; margin:0;">접속 중인 요원</p>
-        <h2 id="my-btag-display" style="margin:5px 0; font-size:18px; color:var(--accent);">-</h2>
+        <p style="font-size:12px; color:#666; margin:0;">접속 중인 요원</p>
+        <h2 id="my-btag-display" style="margin:8px 0; font-size:18px; color:var(--accent);">-</h2>
         <div id="sidebar-logout-container"></div>
     </div>
-    <h4 style="font-size:14px; color:#666; margin-bottom:15px;">내가 쓴 게시글</h4>
-    <div id="my-posts-list" style="overflow-y:auto; max-height:calc(100% - 250px);"></div>
+    <h4 style="font-size:14px; color:#888; margin-bottom:15px; display: flex; align-items: center; gap: 5px;">📝 내가 쓴 게시글</h4>
+    <div id="my-posts-list" style="overflow-y:auto; max-height:calc(100% - 250px);">
+        <p style="font-size: 12px; color:#444; text-align: center; margin-top: 20px;">글 목록을 불러오는 중...</p>
+    </div>
 </div>
 <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <div class="container">
     <div class="box">
-        <h4 style="margin:0 0 10px 0; color:var(--accent);">💬 자유게시판</h4>
+        <h4 style="margin:0 0 10px 0; color:var(--accent); font-size: 16px;">💬 자유게시판</h4>
         <input type="text" id="comm-title" placeholder="제목">
-        <textarea id="comm-content" placeholder="내용을 입력하세요 (비속어 사용 시 제재될 수 있습니다)" rows="4"></textarea>
-        <button class="btn-main" id="btn-comm-post">글 등록</button>
+        <textarea id="comm-content" placeholder="오버워치에 대한 이야기를 자유롭게 나누어보세요! (비속어 사용 시 제재될 수 있습니다)" rows="4"></textarea>
+        <button class="btn-main" id="btn-comm-post">글 등록하기</button>
     </div>
     <div id="comm-list"></div>
 </div>
 
-<section class="container" style="margin-top: 50px; margin-bottom: 20px;">
+<section class="container" style="margin-top: 50px;">
     <details style="background: #1a1a1a; border-radius: 12px; border: 1px solid #333; overflow: hidden; transition: 0.3s;">
-        <summary style="padding: 18px; color: var(--accent); font-size: 15px; font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; background: #222;">
-            <span>💡 커뮤니티 이용 가이드 & FAQ</span>
+        <summary style="padding: 18px; color: var(--accent); font-size: 14px; font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; background: #222;">
+            <span>💡 커뮤니티 가이드라인</span>
             <span style="font-size: 12px; color: #666;">펼쳐보기 ▼</span>
         </summary>
-        <div style="padding: 10px 20px 25px 20px; background: #151515;">
-            <div style="margin-top: 15px; padding-bottom: 15px; border-bottom: 1px solid #222;">
-                <strong style="display: block; color: #fff; margin-bottom: 8px; font-size: 14px;">❓ 커뮤니티 게시판은 어떻게 이용하나요?</strong>
-                <p style="margin: 0; color: #888; font-size: 13px; line-height: 1.6;">
-                    오버워치 허브 커뮤니티는 요원들의 자유로운 소통을 위한 공간입니다. 파티 후기, 게임 팁 공유 등 자유롭게 이야기를 나누세요.
-                </p>
-            </div>
-            <div style="margin-top: 15px; padding-bottom: 15px; border-bottom: 1px solid #222;">
-                <strong style="display: block; color: #fff; margin-bottom: 8px; font-size: 14px;">🚨 게시글 삭제 기준이 있나요?</strong>
-                <p style="margin: 0; color: #888; font-size: 13px; line-height: 1.6;">
-                    타인 비방, 욕설, 광고글은 관리자에 의해 예고 없이 삭제될 수 있습니다. 쾌적한 커뮤니티를 위해 매너를 지켜주세요.
-                </p>
-            </div>
-            <div style="margin-top: 15px;">
-                <strong style="display: block; color: #fff; margin-bottom: 8px; font-size: 14px;">✉️ 관리자 문의</strong>
-                <p style="margin: 0; color: #888; font-size: 13px; line-height: 1.6;">
-                    버그 제보나 비매너 신고는 <strong>jazzhjm@gmail.com</strong>으로 문의 바랍니다.
-                </p>
-            </div>
+        <div style="padding: 20px; background: #151515; font-size: 13px; color: #888; line-height: 1.7;">
+            <strong>• 클린 커뮤니티:</strong> 욕설, 비방, 정치적 발언 등은 사전 경고 없이 삭제됩니다.<br>
+            <strong>• 추천 시스템:</strong> 유익한 글에는 '추천'을 눌러 격려해주세요. 본인 글은 추천이 불가능합니다.<br>
+            <strong>• 문의/신고:</strong> 서비스 이용 중 불편함은 <strong>jazzhjm@gmail.com</strong>으로 제보해주세요.
         </div>
     </details>
 </section>
 
-<footer style="text-align: center; padding: 40px 20px; color: #555; font-size: 12px; border-top: 1px solid #222; background: #000;">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <div style="margin-bottom: 15px;">
-            <a href="index.html" style="color: #888; text-decoration: none; margin-right: 15px;">파티찾기</a>
-            <a href="commu.html" style="color: var(--accent); text-decoration: none; margin-right: 15px; font-weight: bold;">커뮤니티</a>
-            <a href="terms.html" style="color: #888; text-decoration: none; margin-right: 15px;">이용약관</a>
-            <a href="privacy.html" style="color: #888; text-decoration: none;">개인정보 처리방침</a>
-        </div>
-        <p style="margin: 5px 0;">© 2026 Overwatch Hub (OWHUB). All rights reserved.</p>
+<footer style="text-align: center; padding: 50px 20px; color: #444; font-size: 12px; border-top: 1px solid #222; margin-top: 40px;">
+    <div style="margin-bottom: 20px; display: flex; justify-content: center; gap: 20px;">
+        <a href="index.html" style="color: #666; text-decoration: none;">파티찾기</a>
+        <a href="commu.html" style="color: var(--accent); text-decoration: none; font-weight: bold;">커뮤니티</a>
+        <a href="terms.html" style="color: #666; text-decoration: none;">이용약관</a>
+        <a href="privacy.html" style="color: #666; text-decoration: none;">개인정보 처리방침</a>
     </div>
+    <p>© 2026 Overwatch Hub (OWHUB). All rights reserved.</p>
 </footer>
 
 <script type="module">
@@ -128,43 +128,41 @@
 
     const ADMIN_EMAILS = ["jazzhjm@gmail.com", "jazzhjm@gmaol.com"];
     let myBtag = "익명";
-    let unsubscribe = null;
+    let unsubscribePosts = null;
 
     const timeSince = (date) => {
         const seconds = Math.floor((Date.now() - date) / 1000);
         if (seconds < 60) return "방금 전";
-        const mins = Math.floor(seconds / 60);
-        if (mins < 60) return mins + "분 전";
-        const hours = Math.floor(mins / 60);
-        if (hours < 24) return hours + "시간 전";
-        return Math.floor(hours / 24) + "일 전";
+        if (seconds < 3600) return Math.floor(seconds/60) + "분 전";
+        if (seconds < 86400) return Math.floor(seconds/3600) + "시간 전";
+        return Math.floor(seconds/86400) + "일 전";
     };
 
     onAuthStateChanged(auth, async (user) => {
         const authUI = document.getElementById('auth-ui');
         const sidebarLogout = document.getElementById('sidebar-logout-container');
+        
         if (user) {
             const userSnap = await getDoc(doc(db, "users", user.uid));
             myBtag = userSnap.exists() ? userSnap.data().btag : "익명 요원";
             document.getElementById('my-btag-display').innerText = myBtag;
             
-            const logoutBtn = `<button id="btn-logout" class="btn-sub">로그아웃</button>`;
-            authUI.innerHTML = `<button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">☰</button>` + logoutBtn;
-            sidebarLogout.innerHTML = `<button class="btn-sub" style="width:100%; margin-top:10px;" onclick="auth.signOut().then(()=>location.reload())">로그아웃</button>`;
+            authUI.innerHTML = `<button id="btn-logout" class="btn-sub">로그아웃</button>`;
+            sidebarLogout.innerHTML = `<button class="btn-sub" style="width:100%; margin-top:15px; background: #444;" onclick="auth.signOut().then(()=>location.reload())">로그아웃</button>`;
             
             document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
         } else {
             myBtag = "익명";
             authUI.innerHTML = `<button onclick="location.href='index.html'" class="btn-sub">로그인</button>`;
-            sidebarLogout.innerHTML = `<p style="font-size:12px; color:#555; text-align:center;">로그인이 필요합니다.</p>`;
+            sidebarLogout.innerHTML = `<button class="btn-main" onclick="location.href='index.html'" style="padding:8px; font-size:12px;">로그인하고 시작하기</button>`;
         }
         startListing();
     });
 
     function startListing() {
-        if (unsubscribe) unsubscribe();
+        if (unsubscribePosts) unsubscribePosts();
         const q = query(collection(db, "community"), orderBy("createdAt", "desc"));
-        unsubscribe = onSnapshot(q, (snap) => {
+        unsubscribePosts = onSnapshot(q, (snap) => {
             const list = document.getElementById('comm-list');
             const user = auth.currentUser;
             const isAdmin = user && ADMIN_EMAILS.includes(user.email);
@@ -182,21 +180,23 @@
                             <span><span class="author-name">${d.author || '익명'}</span> • ${timeSince(d.createdAt)}</span>
                             ${(isMine || isAdmin) ? `<button onclick="window.delCommPost('${id}')" style="background:none; border:none; color:#ff3c3c; cursor:pointer; font-size:11px;">삭제</button>` : ''}
                         </div>
-                        <h4 style="margin:5px 0 10px 0;">${d.title}</h4>
-                        <p style="font-size:14px; color:#ccc; line-height:1.5; white-space:pre-wrap;">${d.content}</p>
-                        <div style="display:flex; gap:15px; border-top:1px solid #222; padding-top:12px; margin-top:10px;">
-                            <span onclick="window.toggleLike('${id}', '${d.uid}')" style="cursor:pointer; font-size:13px; color:${hasLiked ? 'var(--accent)' : '#888'}">
+                        <h4 style="margin:5px 0 12px 0; line-height:1.4;">${d.title}</h4>
+                        <p style="font-size:14px; color:#ccc; line-height:1.6; white-space:pre-wrap; margin-bottom:15px;">${d.content}</p>
+                        
+                        <div style="display:flex; gap:18px; border-top:1px solid #222; padding-top:15px; margin-top:10px;">
+                            <span onclick="window.toggleLike('${id}', '${d.uid}')" style="cursor:pointer; font-size:13px; display:flex; align-items:center; gap:5px; color:${hasLiked ? 'var(--accent)' : '#666'}">
                                 ${hasLiked ? '🧡' : '🤍'} 추천 ${likes.length}
                             </span>
-                            <span onclick="window.toggleComments('${id}')" style="cursor:pointer; font-size:13px; color:#888;">
+                            <span onclick="window.toggleComments('${id}')" style="cursor:pointer; font-size:13px; display:flex; align-items:center; gap:5px; color:#666;">
                                 💬 댓글 ${d.commentCount || 0}
                             </span>
                         </div>
-                        <div id="comment-section-${id}" style="display:none; margin-top:15px; background:#111; padding:10px; border-radius:8px;">
-                            <div id="comment-list-${id}" style="font-size:13px; margin-bottom:10px;"></div>
-                            <div style="display:flex; gap:5px;">
-                                <input type="text" id="cmt-input-${id}" placeholder="댓글 입력..." style="margin:0; font-size:12px;">
-                                <button onclick="window.addComment('${id}')" class="btn-main" style="width:60px; margin:0; padding:5px; font-size:12px;">등록</button>
+                        
+                        <div id="comment-section-${id}" style="display:none; margin-top:15px; background:#111; padding:12px; border-radius:10px; border: 1px solid #222;">
+                            <div id="comment-list-${id}" style="font-size:13px; margin-bottom:12px; max-height:200px; overflow-y:auto;"></div>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="cmt-input-${id}" placeholder="댓글을 입력하세요..." style="margin:0; font-size:12px; height:35px;">
+                                <button onclick="window.addComment('${id}')" class="btn-main" style="width:65px; margin:0; height:35px; padding:0; font-size:12px;">등록</button>
                             </div>
                         </div>
                     </div>`;
@@ -204,27 +204,42 @@
         });
     }
 
-    // 기능 함수 등록
+    // --- 주요 기능 함수 ---
     window.toggleSidebar = () => {
         const sb = document.getElementById('sidebar');
         const ov = document.getElementById('sidebar-overlay');
-        const isOpen = sb.style.right === '0px';
-        sb.style.right = isOpen ? '-300px' : '0px';
+        const isOpen = sb.style.left === '0px';
+        sb.style.left = isOpen ? '-300px' : '0px';
         ov.style.display = isOpen ? 'none' : 'block';
         if(!isOpen) loadMyPosts();
     };
 
     async function loadMyPosts() {
         const user = auth.currentUser;
-        if (!user) return;
+        const listContainer = document.getElementById('my-posts-list');
+        if (!user) {
+            listContainer.innerHTML = `<p style="font-size:12px; color:#444; text-align:center; margin-top:20px;">로그인 후 확인 가능합니다.</p>`;
+            return;
+        }
+        
         const q = query(collection(db, "community"), where("uid", "==", user.uid), orderBy("createdAt", "desc"));
         const snap = await getDocs(q);
-        document.getElementById('my-posts-list').innerHTML = snap.docs.map(docSnap => {
+        
+        if(snap.empty) {
+            listContainer.innerHTML = `<p style="font-size:12px; color:#444; text-align:center; margin-top:20px;">작성한 글이 없습니다.</p>`;
+            return;
+        }
+
+        listContainer.innerHTML = snap.docs.map(docSnap => {
             const d = docSnap.data();
             return `
-                <div style="background:#252525; padding:10px; border-radius:8px; margin-bottom:10px; font-size:12px; cursor:pointer;" onclick="location.href='#post-${docSnap.id}'; toggleSidebar();">
-                    <div style="font-weight:bold; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.title}</div>
-                    <div style="color:#666; margin-top:4px;">🧡 ${d.likes?.length || 0}  💬 ${d.commentCount || 0}</div>
+                <div style="background:#222; padding:12px; border-radius:8px; margin-bottom:10px; font-size:12px; cursor:pointer; border:1px solid #333;" onclick="location.href='#post-${docSnap.id}'; toggleSidebar();">
+                    <div style="font-weight:600; color:#eee; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:5px;">${d.title}</div>
+                    <div style="color:#555; display:flex; gap:10px;">
+                        <span>🧡 ${d.likes?.length || 0}</span>
+                        <span>💬 ${d.commentCount || 0}</span>
+                        <span style="margin-left:auto;">${timeSince(d.createdAt)}</span>
+                    </div>
                 </div>`;
         }).join('');
     }
@@ -232,11 +247,15 @@
     window.toggleLike = async (postId, authorUid) => {
         const user = auth.currentUser;
         if (!user) return alert("로그인이 필요합니다.");
-        if (user.uid === authorUid) return alert("본인 글은 추천할 수 없습니다.");
+        if (user.uid === authorUid) return alert("본인의 글은 추천할 수 없습니다.");
+        
         const postRef = doc(db, "community", postId);
         const postSnap = await getDoc(postRef);
         const likes = postSnap.data().likes || [];
-        await updateDoc(postRef, { likes: likes.includes(user.uid) ? arrayRemove(user.uid) : arrayUnion(user.uid) });
+        
+        await updateDoc(postRef, { 
+            likes: likes.includes(user.uid) ? arrayRemove(user.uid) : arrayUnion(user.uid) 
+        });
     };
 
     window.toggleComments = (postId) => {
@@ -245,10 +264,21 @@
             section.style.display = 'block';
             const q = query(collection(db, "comments"), where("postId", "==", postId), orderBy("createdAt", "asc"));
             onSnapshot(q, (snap) => {
-                document.getElementById(`comment-list-${postId}`).innerHTML = snap.docs.map(doc => {
-                    const c = doc.data();
-                    return `<div style="margin-bottom:8px; border-bottom:1px solid #222; padding-bottom:5px;"><b style="color:var(--accent);">${c.author}</b>: ${c.content}</div>`;
-                }).join('');
+                const cmtList = document.getElementById(`comment-list-${postId}`);
+                if(snap.empty) {
+                    cmtList.innerHTML = `<p style="color:#444; font-size:11px; text-align:center;">첫 댓글을 남겨보세요!</p>`;
+                } else {
+                    cmtList.innerHTML = snap.docs.map(doc => {
+                        const c = doc.data();
+                        return `<div style="margin-bottom:10px; border-bottom:1px solid #1a1a1a; padding-bottom:8px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                                <b style="color:var(--accent); font-size:11px;">${c.author}</b>
+                                <span style="color:#444; font-size:10px;">${timeSince(c.createdAt)}</span>
+                            </div>
+                            <div style="color:#bbb; font-size:12px;">${c.content}</div>
+                        </div>`;
+                    }).join('');
+                }
             });
         } else { section.style.display = 'none'; }
     };
@@ -256,25 +286,47 @@
     window.addComment = async (postId) => {
         const user = auth.currentUser;
         const input = document.getElementById(`cmt-input-${postId}`);
-        if (!user || !input.value.trim()) return;
-        await addDoc(collection(db, "comments"), { postId, uid: user.uid, author: myBtag.split('#')[0], content: input.value.trim(), createdAt: Date.now() });
-        const postRef = doc(db, "community", postId);
-        const postSnap = await getDoc(postRef);
-        await updateDoc(postRef, { commentCount: (postSnap.data().commentCount || 0) + 1 });
-        input.value = "";
+        const content = input.value.trim();
+        if (!user) return alert("로그인 후 이용 가능합니다.");
+        if (!content) return;
+
+        try {
+            await addDoc(collection(db, "comments"), { 
+                postId, uid: user.uid, author: myBtag.split('#')[0], content, createdAt: Date.now() 
+            });
+            const postRef = doc(db, "community", postId);
+            const postSnap = await getDoc(postRef);
+            await updateDoc(postRef, { commentCount: (postSnap.data().commentCount || 0) + 1 });
+            input.value = "";
+        } catch(e) { alert("댓글 등록 중 오류가 발생했습니다."); }
     };
 
     document.getElementById('btn-comm-post').onclick = async () => {
         const user = auth.currentUser;
-        if (!user) return alert("로그인 후 이용 가능합니다.");
+        if (!user) return alert("로그인 후 글을 작성할 수 있습니다.");
+        
         const title = document.getElementById('comm-title').value.trim();
         const content = document.getElementById('comm-content').value.trim();
-        if(!title || !content) return alert("내용을 입력하세요.");
-        await addDoc(collection(db, "community"), { uid: user.uid, author: myBtag.split('#')[0], title, content, createdAt: Date.now(), likes: [], commentCount: 0 });
-        document.getElementById('comm-title').value = ""; document.getElementById('comm-content').value = "";
+        
+        if(!title || !content) return alert("제목과 내용을 모두 입력하세요.");
+
+        try {
+            await addDoc(collection(db, "community"), { 
+                uid: user.uid, author: myBtag.split('#')[0], title, content, 
+                createdAt: Date.now(), likes: [], commentCount: 0 
+            });
+            document.getElementById('comm-title').value = "";
+            document.getElementById('comm-content').value = "";
+            alert("게시글이 등록되었습니다.");
+        } catch (e) { alert("등록 실패: 권한이 없습니다."); }
     };
 
-    window.delCommPost = async (id) => { if(confirm("삭제하시겠습니까?")) await deleteDoc(doc(db, "community", id)); };
+    window.delCommPost = async (id) => { 
+        if(confirm("게시글을 삭제하시겠습니까?")) {
+            try { await deleteDoc(doc(db, "community", id)); } 
+            catch(e) { alert("삭제 권한이 없습니다."); }
+        }
+    };
 </script>
 </body>
 </html>
