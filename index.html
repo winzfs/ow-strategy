@@ -851,6 +851,9 @@ const getTierBadge = (tier, tierNum) => {
 
     // ${tier}와 ${tierNum}을 한 공간에 넣음
     return `<span style="
+    display: inline-flex;       /* 1. 내용물에 맞춰 크기 조절 */
+        align-items: center;
+        white-space: nowrap;  
     width:24px; height:24px;
         background: ${color};
         color: ${textColor};
