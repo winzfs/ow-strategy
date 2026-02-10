@@ -132,23 +132,33 @@
         }
 
         /* 사이드바 메뉴 */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            height: 100%;
-            background: #000;
-            border-right: 1px solid #333;
-            z-index: 1000;
-            transition: left 0.3s ease-in-out;
-            overflow-y: auto;
-            padding-bottom: 20px;
-        }
+        /* 사이드바 본체만 이 코드로 수정하세요 */
+.sidebar {
+    position: fixed;
+    top: 85px;          /* 1. 상단 바 아래로 적당히 띄움 */
+    left: -280px;       /* 닫혔을 때 위치 */
+    width: 240px;
+    height: auto;       /* 2. 핵심: 메뉴 개수만큼만 높이 차지 (바닥까지 안 내려옴) */
+    max-height: 70vh;   /* 3. 메뉴가 너무 많아지면 화면 70%까지만 커짐 */
+    background: #252525;
+    z-index: 1000;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* 4. 플로팅 디자인: 둥근 모서리와 왼쪽 벽에서 띄움 */
+    border-radius: 20px !important;
+    margin-left: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    
+    padding: 10px 0;
+    overflow: hidden;   /* 둥근 모서리 밖으로 내용 안 나가게 */
+    border: none !important;
+}
 
-        .sidebar.active {
-            left: 0;
-        }
+/* 사이드바가 열렸을 때 위치 */
+.sidebar.active {
+    left: 0;
+}
+
 
         .sidebar-header {
             padding: 20px 15px;
