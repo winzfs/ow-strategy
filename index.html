@@ -296,15 +296,23 @@
 .badge-tank { background: var(--tank) !important; color: white !important; }
 .badge-dps { background: var(--dps) !important; color: white !important; }
 .badge-sup { background: var(--sup) !important; color: black !important; }
-        .filter-tag { 
-            cursor: pointer; 
-            transition: background 0.2s, border 0.2s, box-shadow 0.2s; 
-            border: 2px solid transparent; 
-            display: inline-flex;
-            align-items: center;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+        .filter-tag {
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    border-radius: 20px !important; /* 필터는 다시 완전 둥글게 */
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #1a1a1a;
+    color: #888;
+    border: 1px solid #333;
+    transition: all 0.2s;
+    white-space: nowrap;
+    margin-bottom: 8px;
+    margin-right: 4px;
 
         @media (hover: hover) {
             .filter-tag:hover:not(.active) { 
