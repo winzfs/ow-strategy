@@ -44,6 +44,14 @@
     </script>
      
     <style>
+
+         /* 모든 요소의 테두리 선 일괄 삭제 */
+*, *::before, *::after {
+    border: none !important;
+    outline: none !important;
+    box-sizing: border-box;
+}
+
         :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
         body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
         
@@ -224,7 +232,7 @@
         .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
         .page { display: none; }
         .page.active { display: block; }
-        .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
+        .box { background: #1a1a1a; padding: 20px; border-radius: 12px; margin-bottom: 15px; }
         .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
         .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; transition: 0.2s; }
         .btn-danger { background: #ff3c3c; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
