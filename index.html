@@ -854,14 +854,12 @@ const getTierBadge = (tier, tierNum) => {
     display: inline-flex;       /* 1. 내용물에 맞춰 크기 조절 */
         align-items: center;
         white-space: nowrap;  
-        height:24px;
+        height:32px;
         background: ${color};
         color: ${textColor};
         padding: 3px 8px;
         border-radius: 10px;
-        font-size: 11px;
-        font-weight: bold;
-        display: inline-block;
+        font-size: 18px;
     ">${tier} ${tierNum || ''}</span>`; // tierNum이 없으면 빈칸 처리
 };
 
