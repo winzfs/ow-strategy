@@ -324,13 +324,19 @@
         .filter-tag.active {
     background: var(--accent) !important;
     color: #000 !important;
-    border-color: var(--accent) !important;
+    border-color: #fff !important; /* 테두리를 밝게 */
+    font-weight: 800 !important;
+    /* 하이라이트 핵심: 그림자 효과(Glow) */
+    box-shadow: 0 0 15px rgba(255, 156, 0, 0.4); 
+    transform: scale(1.05); /* 살짝 커지는 효과 추가 */
 }
 
-        .filter-tag:active {
-            filter: brightness(0.9);
-            transform: scale(0.95);
-        }
+/* 마우스를 올렸을 때 미세한 효과 */
+.filter-tag:hover:not(.active) {
+    border-color: #555;
+    background: #222;
+    color: #fff;
+}
 
         #search-title-area { margin-bottom: 15px; padding-left: 5px; border-left: 4px solid var(--accent); }
 
