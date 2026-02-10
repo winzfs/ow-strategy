@@ -263,11 +263,39 @@
         .stars { color: #444; font-size: 24px; cursor: pointer; text-align: center; margin: 10px 0; }
         .stars span.active { color: var(--accent); }
         .pos-group { border: 1px solid #333; padding: 12px; border-radius: 10px; margin-bottom: 10px; background: #1e1e1e; }
-        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-right: 4px; font-weight: bold; }
-        .badge-tank { background: var(--tank); color: white; }
-        .badge-dps { background: var(--dps); color: white; }
-        .badge-sup { background: var(--sup); color: black; }
+        .badge-item {
+    height: 26px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 10px !important;
+    border-radius: 6px !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+    margin-right: 5px !important;
+    white-space: nowrap !important;
+}
 
+/* 티어 뱃지: 티어 아이콘과 텍스트 포함 */
+.badge-tier {
+    background: #2a2a2a !important;
+    color: #eee !important;
+    border: 1px solid #444 !important;
+}
+
+/* 인원수 뱃지: 현재 인원 / 최대 인원 */
+.badge-count {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #aaa !important;
+    border: 1px solid #333 !important;
+}
+
+/* 포지션 뱃지 (기존 스타일 보완) */
+.badge-tank { background: var(--tank) !important; color: white !important; }
+.badge-dps { background: var(--dps) !important; color: white !important; }
+.badge-sup { background: var(--sup) !important; color: black !important; }
         .filter-tag { 
             cursor: pointer; 
             transition: background 0.2s, border 0.2s, box-shadow 0.2s; 
@@ -914,73 +942,72 @@ window.showPageAndClose = function(id) {
         };
 
         window.renderList = () => {
-            const listDiv = document.getElementById('party-list');
-            if (!listDiv) return;
-            
-            const filtered = currentPosts.filter(p => {
-                if (p.deleted) return false;
-                if (currentFilter.pos.length > 0 && !currentFilter.pos.includes(p.pos)) return false;
-                if (currentFilter.tier.length > 0 && !currentFilter.tier.includes(p.tier)) return false;
-                return true;
-            });
+    const list = document.getElementById('party-list');
+    list.innerHTML = "";
+    
+    // 필터링 로직 거친 posts 사용
+    const filtered = currentPosts.filter(p => {
+        if (p.deleted) return false;
+        const posMatch = currentFilter.pos.length === 0 || currentFilter.pos.includes(p.pos);
+        const tierMatch = currentFilter.tier.length === 0 || currentFilter.tier.includes(p.tier);
+        return posMatch && tierMatch;
+    });
 
-            let html = "";
-            filtered.forEach(p => {
-                const count = (p.members?.length || 0) + 1;
-                const isFull = count >= p.maxp;
-                const isMine = auth.currentUser?.uid === p.uid;
-                const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
-                const isSent = mySentRequests.has(p.id);
-                const rateText = p.ownerRate ? `★ ${p.ownerRate}` : `★ 신규`;
-          const posColors = { '탱커': 'var(--tank)', '딜러': 'var(--dps)', '지원': 'var(--sup)' };
-        const isSup = p.pos === '지원';
-                
-                let btn = `<button class="btn-sub" style="background:var(--accent); color:black; font-weight:bold; white-space:nowrap;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
-                if (isMine || isAdmin) btn = `<button class="btn-danger" style="white-space:nowrap;" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "삭제" : "종료"}</button>`;
-                else if (isSent) btn = `<button class="btn-sub" style="background:#444; color:#888; cursor:default; white-space:nowrap;" disabled>신청됨</button>`;
-                else if (isFull) btn = `<button class="btn-sub" style="opacity:0.5; white-space:nowrap;" disabled>마감</button>`;
+    if (filtered.length === 0) {
+        list.innerHTML = '<div style="text-align:center; color:#444; padding:40px;">조건에 맞는 파티가 없습니다.</div>';
+        return;
+    }
 
-                const posImg = `<img src="${ICON_URLS[p.pos]}" style="width:28px; height:28px; vertical-align:middle; margin-right:4px;">`;
-                const tierImg = `<img src="${ICON_URLS[p.tier]}" style="width:28px; height:28px; vertical-align:middle; margin-right:2px;">`;
+    filtered.forEach(p => {
+        const isMine = auth.currentUser && p.uid === auth.currentUser.uid;
+        const isAdmin = auth.currentUser && (auth.currentUser.email === ADMIN_EMAIL || (CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email === auth.currentUser.email)));
+        const isFull = (p.members ? p.members.length + 1 : 1) >= (p.maxp || 5);
+        const isSent = auth.currentUser && p.requests && p.requests[auth.currentUser.uid];
+        const rateText = p.ownerRate ? `★ ${p.ownerRate}` : `★ 신규`;
 
-                html += `
-<div class="box" style="padding: 15px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-        <div style="flex-grow:1; min-width:0;">
-            <div style="display:flex; align-items:center; margin-bottom:8px; flex-wrap:nowrap; overflow:hidden;">
-                <b style="font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.btag ? p.btag.split('#')[0] : '익명'}</b> 
-                <span style="color:var(--accent); font-size:11px; margin-left:6px; font-weight:bold; white-space:nowrap;">${rateText}</span>
-                <small style="color:#666; margin-left:8px; white-space:nowrap;">${timeSince(p.createdAt)}</small>
+        // 버튼 정의
+        let btn = `<button class="btn-sub" style="background:var(--accent); color:black; font-weight:bold;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
+        if (isMine || isAdmin) btn = `<button class="btn-danger" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "삭제" : "종료"}</button>`;
+        else if (isSent) btn = `<button class="btn-sub" style="background:#444; color:#888; cursor:default;" disabled>신청됨</button>`;
+        else if (isFull) btn = `<button class="btn-sub" style="opacity:0.5;" disabled>마감</button>`;
+
+        // 카드 생성
+        let html = `
+        <div class="box" style="padding: 15px; margin-bottom: 12px; border: 1px solid #222;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <b style="font-size:15px; color:#fff;">${p.btag ? p.btag.split('#')[0] : '익명'}</b>
+                    <span style="color:var(--accent); font-size:11px; font-weight:bold;">${rateText}</span>
+                    <small style="color:#555; font-size:11px;">${timeSince(p.createdAt)}</small>
+                </div>
+                ${btn}
             </div>
-            
-            <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
-                <span onclick="setFilter('pos', '${p.pos}')" 
-      class="pos-badge-inline ${isSup ? 'pos-badge-sup' : ''}" 
-      style="background: ${posColors[p.pos] || '#555'}; padding: 6px 12px; border-radius: 8px;">
-    <img src="${ICON_URLS[p.pos]}" 
-         style="width: 22px; height: 22px; margin-right: 6px; filter: ${isSup ? 'brightness(0)' : 'none'}; vertical-align: middle;">
-    <span style="vertical-align: middle; font-size: 14px;">${p.pos}</span>
-</span>
 
-                <span onclick="setFilter('tier', '${p.tier}')" style="cursor:pointer; display:inline-flex; align-items:center; font-size:14px; font-weight:900; color:var(--accent);">
-                    ${tierImg} ${p.tier} ${p.tier !== '배치' ? p.tierNum : ''}
+            <div style="margin-bottom:15px; color:#bbb; font-size:14px; min-height:18px;">
+                ${p.desc || '내용 없음'}
+            </div>
+
+            <div style="display:flex; align-items:center; flex-wrap: wrap; gap: 4px;">
+                <span class="badge-item ${p.pos === '탱커' ? 'badge-tank' : p.pos === '딜러' ? 'badge-dps' : 'badge-sup'}">
+                    <img src="${ICON_URLS[p.pos]}" style="width:14px; height:14px; margin-right:4px; filter:${p.pos==='지원'?'brightness(0)':'none'};">
+                    ${p.pos}
                 </span>
-                <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; font-size:12px; font-weight:bold;">
-                    ● ${count}/${p.maxp}
+
+                <span class="badge-item badge-tier">
+                    <img src="${ICON_URLS[p.tier]}" style="width:16px; height:16px; margin-right:4px;">
+                    ${p.tier} ${p.tierNum || ''}
+                </span>
+
+                <span class="badge-item badge-count">
+                    <i class="fas fa-users" style="margin-right:5px; font-size:10px;"></i>
+                    ${p.members ? p.members.length + 1 : 1} / ${p.maxp || 5}명
                 </span>
             </div>
-        </div>
-        <div style="flex-shrink:0;">
-            ${btn}
-        </div>
-    </div>
-    <p style="margin-top:12px; margin-bottom:0; color:#bbb; font-size:13px; line-height:1.4; background:#222; padding:8px 12px; border-radius:8px;">
-        ${p.desc || '모집 내용이 없습니다.'}
-    </p>
-</div>`;
-            });
-            listDiv.innerHTML = html || `<div style="text-align:center; color:#444; padding:40px;">조건에 맞는 파티가 없습니다.<br><button onclick="resetFilter()" style="margin-top:10px; color:var(--accent); background:none; border:none; cursor:pointer;">전체 보기로 돌아가기</button></div>`;
-        };
+        </div>`;
+        list.innerHTML += html;
+    });
+};
+
 
         const renderNotiUI = () => {
             const list = document.getElementById('noti-list');
