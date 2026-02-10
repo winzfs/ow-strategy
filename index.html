@@ -1060,7 +1060,7 @@ onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap
                 const activeParties = currentPosts.filter(p => !p.deleted).length;
                 const partyEl = document.getElementById('live-party-count');
                 if (partyEl) {
-                    partyEl.innerText = `현재 모집중인 파티: ${activeParties}`;
+                    partyEl.innerText = `모집 중인 파티: ${activeParties}`;
                 } 
                 renderList(); renderEvalList();
             });
