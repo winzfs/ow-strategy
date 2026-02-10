@@ -70,15 +70,22 @@
         }
 
         /* 기존 .nav-logo 수정 및 추가 */
-.nav-logo {
-    font-size: 18px;
-    font-weight: 900;
-    color: var(--accent); /* #ff9c00 */
-    letter-spacing: -0.5px;
-    text-transform: uppercase; /* 대문자로 강조 */
+/* 상단 네비 로고 컨테이너 */
+.nav-logo-container {
+    display: flex;
+    align-items: center;
+    height: 100%; /* 네비게이션 높이에 맞춤 */
     cursor: pointer;
-    user-select: none;
 }
+
+/* 로고 이미지 스타일 */
+.nav-logo-img {
+    height: 32px; /* 상단 바 높이(50px)에 맞춰 32~35px가 가장 적당합니다 */
+    width: auto;  /* 비율 유지 */
+    object-fit: contain;
+    display: block;
+}
+
 
 
 
@@ -329,7 +336,10 @@
         <span id="nav-new-badge" style="display:none; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: #ff3c3c; border-radius: 50%; border: 2px solid #000; z-index: 1002;"></span>
     </div>
 
-    <div class="nav-logo" onclick="location.href='index.html'">OVERWATCH HUB</div>
+    <div class="nav-logo-container" onclick="location.href='index.html'">
+    <img src="logo.jpg" alt="OW HUB" class="nav-logo-img">
+</div>
+
     
     <div style="width: 35px;"></div>
 </nav>
