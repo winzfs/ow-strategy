@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>오버워치 허브 - 옵치 같이 하실분 구해요! 그룹찾기/파티매칭 커뮤니티! </title>
+    
+     <meta name="google-site-verification" content="7OvWXc4oEGF5-Aub2pEWiCaBatEsSzA4Im454PrJ0kM" />
+     <meta name="theme-color" content="#ff9c00">
+
+     <meta name="keywords" content="오버워치 파티찾기, 오버워치2 그룹찾기, 오버워치 커뮤니티, 오버워치 듀오, 오버워치 티어별 매칭, 티어메이커, owhub">
+     <meta name="description" content="오버워치2 팀원을 가장 빠르게 찾는 실시간 파티 매칭 서비스! 탱커, 딜러, 지원 포지션별 그룹찾기, 매너 별점 시스템으로 클린한 팀 보이스 게임을 즐기세요.">
+
+
+     <meta name="robots" content="index, follow">
+    
+    <meta property="og:title" content="Overwatch Hub - 파티 매칭 서비스">
+    <meta property="og:description" content="지금 바로 실력에 맞는 팀원을 찾고 연승을 시작하세요!">
+    <meta property="og:url" content="https://owhub.vercel.app">
+     <meta property="og:image" content="https://owhub.vercel.app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Overwatch Hub",
+      "operatingSystem": "WEB",
+      "applicationCategory": "GameApplication",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "150"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "KRW"
+      }
+    }
+    </script>
+     
+    <style>
+
+         /* 모든 요소의 테두리 선 일괄 삭제 */
+*, *::before, *::after {
+    border: none !important;
+    outline: none !important;
+    box-sizing: border-box;
+}
+
+        :root { --accent: #ff9c00; --tank: #00a2ff; --dps: #ff3c3c; --sup: #00ff7b; --bg-dark: #111; }
+        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; }
+        
+        /* 상단 네비게이션 - 햄버거 메뉴만 */
+        nav { 
+            background: #000; 
+            padding: 10px 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #333; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            height: 50px;
+        }
+
+        /* 기존 .nav-logo 수정 및 추가 */
+.nav-logo {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--accent); /* #ff9c00 */
+    letter-spacing: -0.5px;
+    text-transform: uppercase; /* 대문자로 강조 */
+    cursor: pointer;
+    user-select: none;
+}
+
+
+
+        /* 햄버거 메뉴 아이콘 */
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(7px, 7px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* 사이드바 오버레이 */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 사이드바 메뉴 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: #000;
+            border-right: 1px solid #333;
+            z-index: 1000;
+            transition: left 0.3s ease-in-out;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px 15px;
+            border-bottom: 1px solid #333;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            color: var(--accent);
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .sidebar-menu {
+            padding: 10px 0;
+        }
+
+        .sidebar-menu-item {
+            padding: 15px 20px;
+            color: #888;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu-item:hover {
+            background: #1a1a1a;
+            color: var(--accent);
+            border-left-color: var(--accent);
+        }
+
+        .sidebar-menu-item.active {
+            color: var(--accent);
+            background: #1a1a1a;
+            border-left-color: var(--accent);
+        }
+
+        .sidebar-menu-item a {
+            color: inherit;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+        }
+
+        /* 로그인 영역을 사이드바 안으로 */
+        .sidebar-auth {
+            padding: 15px;
+            border-top: 1px solid #333;
+            margin-top: 10px;
+        }
+
+        .sidebar-auth input {
+            margin-bottom: 8px;
+            font-size: 13px;
+            padding: 10px;
+        }
+
+        .sidebar-auth button {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .menu-new { 
+            background: #ff3c3c; 
+            color: white; 
+            font-size: 10px; 
+            padding: 2px 6px; 
+            border-radius: 10px; 
+            font-weight: 900; 
+            animation: blink 1.2s infinite;
+        }
+        
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        
+        .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .box { background: #323232; padding: 20px; border-radius: 12px; margin-bottom: 15px; }
+        .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .btn-danger { background: #ff3c3c; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+        input, select, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
+        .stars { color: #444; font-size: 24px; cursor: pointer; text-align: center; margin: 10px 0; }
+        .stars span.active { color: var(--accent); }
+        .pos-group { border: 1px solid #333; padding: 12px; border-radius: 10px; margin-bottom: 10px; background: #1e1e1e; }
+        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-right: 4px; font-weight: bold; }
+        .badge-tank { background: var(--tank); color: white; }
+        .badge-dps { background: var(--dps); color: white; }
+        .badge-sup { background: var(--sup); color: black; }
+
+        .filter-tag { 
+            cursor: pointer; 
+            transition: background 0.2s, border 0.2s, box-shadow 0.2s; 
+            border: 2px solid transparent; 
+            display: inline-flex;
+            align-items: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (hover: hover) {
+            .filter-tag:hover:not(.active) { 
+                transform: translateY(-2px); 
+                filter: brightness(1.1);
+            }
+        }
+
+        .filter-tag.active { 
+            border: 2px solid white !important; 
+            box-shadow: 0 0 12px rgba(255,156,0,0.4);
+            filter: brightness(1.2);
+            transform: none !important; 
+        }
+
+        .filter-tag:active {
+            filter: brightness(0.9);
+            transform: scale(0.95);
+        }
+
+        #search-title-area { margin-bottom: 15px; padding-left: 5px; border-left: 4px solid var(--accent); }
+
+         /* 기존 style 태그 마지막에 추가 */
+.pos-badge-inline {
+    cursor:pointer; 
+    display:inline-flex; 
+    align-items:center; 
+    padding:4px 10px; 
+    border-radius:6px; 
+    font-size:13px; 
+    font-weight:800; 
+    color:white; 
+    border:1px solid rgba(0,0,0,0.1);
+}
+.pos-badge-sup {
+    color: black !important;
+}
+.pos-badge-inline img {
+    width:16px; 
+    height:16px; 
+    margin-right:5px;
+}
+
+         
+    </style>
+</head>
+<body>
+    <h1 style="display:none;">오버워치 허브 - 실시간 그룹찾기/파티 매칭 커뮤니티</h1>
+     
+    <!-- 상단 네비게이션 (햄버거 메뉴만) -->
+    
+<nav>
+    <div class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" style="position: relative; z-index: 1001;">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span id="nav-new-badge" style="display:none; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: #ff3c3c; border-radius: 50%; border: 2px solid #000; z-index: 1002;"></span>
+    </div>
+
+    <div class="nav-logo" onclick="location.href='index.html'">OVERWATCH HUB</div>
+    
+    <div style="width: 35px;"></div>
+</nav>
+
+
+
+
+    <!-- 디버그 콘솔 (모바일용 - 자동 표시) -->
+    <div id="debug-console" style="position: fixed; bottom: 0; left: 0; right: 0; background: #000; color: #0f0; font-family: monospace; font-size: 10px; padding: 10px; max-height: 150px; overflow-y: auto; z-index: 9999; border-top: 2px solid #0f0; display: block;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <strong>🐛 DEBUG CONSOLE</strong>
+            <button onclick="document.getElementById('debug-console').style.display='none'" style="background: #f00; color: white; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">닫기</button>
+        </div>
+        <div id="debug-output"></div>
+    </div>
+    <button onclick="document.getElementById('debug-console').style.display='block'" style="position: fixed; bottom: 10px; right: 10px; background: #0f0; color: #000; border: none; padding: 10px; border-radius: 50%; font-weight: bold; z-index: 9998; font-size: 12px; width: 50px; height: 50px;">🐛</button>
+
+    <!-- 사이드바 오버레이 -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 사이드바 메뉴 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+    <h2>⚔️ MENU</h2>
+    <div id="sidebar-user-tag" style="margin-top: 8px; font-size: 14px; color: #fff; font-weight: bold; display: none;">
+        <span style="color: var(--accent);">Agent:</span> <span id="display-btag">로딩 중...</span>
+    </div>
+</div>
+
+        
+        <div class="sidebar-menu">
+            <div class="sidebar-menu-item active" data-page="list" id="sidebar-list" onclick="showPageAndClose('list')">
+                파티찾기
+            </div>
+            <div class="sidebar-menu-item" data-page="profile" id="sidebar-profile" onclick="showPageAndClose('profile')">
+                내 정보
+            </div>
+            <div class="sidebar-menu-item" data-page="noti" id="sidebar-noti" onclick="showPageAndClose('noti')">
+                <span>알림</span>
+                <span id="sidebar-new-tag" class="menu-new" style="display:none;">N</span>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="commu.html">커뮤니티</a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="tiermaker.html">티어메이커</a>
+            </div>
+        </div>
+
+        <!-- 로그인 영역 -->
+        <div class="sidebar-auth">
+            <div id="login-form-sidebar">
+                <input type="email" id="login-email" placeholder="이메일">
+                <input type="password" id="login-password" placeholder="비밀번호">
+                <button id="btn-login" class="btn-main">로그인 / 가입</button>
+                <button onclick="forgotPassword()" class="btn-sub" style="width:100%; margin-top:5px;">비밀번호 찾기</button>
+            </div>
+            <div id="user-info-sidebar" style="display:none; text-align:center;">
+                <p style="color: var(--accent); font-weight: bold; margin: 0 0 10px 0;">접속 중</p>
+                <button id="btn-logout" class="btn-danger" style="width:100%;">로그아웃</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 실시간 상태바 -->
+    <div id="live-status-bar" style="background: linear-gradient(90deg, #000 0%, #1a1a1a 50%, #000 100%); border-bottom: 1px solid #333; padding: 7px 15px; font-size: 11px; color: #aaa; display: flex; align-items: center; justify-content: space-between; letter-spacing: 0.5px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="display: flex; position: relative; width: 8px; height: 8px;">
+                <span style="position: absolute; display: inline-flex; width: 100%; height: 100%; background: #00ff7b; border-radius: 50%; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+                <span style="position: relative; display: inline-flex; border-radius: 50%; width: 8px; height: 8px; background: #00ff7b;"></span>
+            </span>
+            <span id="live-user-count" style="font-weight: 600; text-shadow: 0 0 5px rgba(0,255,123,0.3);">전투 대기 중인 요원: --명</span>
+        </div>
+        <div id="live-party-count" style="color: var(--accent); font-weight: bold; font-size: 10px; opacity: 0.8;">
+            ACTIVE MISSIONS: 0
+        </div>
+    </div>
+
+    <style>
+    @keyframes ping {
+        75%, 100% { transform: scale(2.5); opacity: 0; }
+    }
+    </style>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container">
+        <div id="page-list" class="page active">
+            <div class="box" style="margin-bottom: 20px; background-color: #323232 !important;"> 
+                <h4 style="margin:0; color:var(--accent);">🚀 파티 모집 시작</h4>
+                <div style="margin-top:10px;">
+                    <input type="text" id="post-btag" placeholder="배틀태그#1234">
+                    <div style="display:flex; gap:5px;">
+                        <select id="post-main-pos">
+                            <option value="탱커">🛡️ 탱커</option>
+                            <option value="딜러">⚔️ 딜러</option>
+                            <option value="지원">💉 지원</option>
+                        </select>
+                        <select id="post-tier">
+                            <option value="배치">배치</option>
+                            <option value="브론즈">브론즈</option>
+                            <option value="실버">실버</option>
+                            <option value="골드">골드</option>
+                            <option value="플래티넘">플래티넘</option>
+                            <option value="다이아몬드">다이아몬드</option>
+                            <option value="마스터">마스터</option>
+                            <option value="그랜드마스터">그랜드마스터</option>
+                            <option value="챔피언">챔피언</option>
+                        </select>
+                        <select id="post-tier-num">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5" selected>5</option>
+                        </select>
+                    </div>
+                    <select id="post-maxp" style="margin-top:8px;">
+                        <option value="2">2인 파티</option>
+                        <option value="3">3인 파티</option>
+                        <option value="4">4인 파티</option>
+                        <option value="5" selected>5인 파티</option>
+                    </select>
+                </div>
+                <textarea id="post-desc" placeholder="모집 내용 (모스트, 마이크 유무 등)" rows="2"></textarea>
+                <button class="btn-main" id="btn-post">모집 시작</button>
+            </div>
+
+            <div class="box" style="padding: 15px; background: #111;">
+                <div id="search-title-area">
+                    <h3 id="search-title" style="margin:0; font-size: 16px; color: #eee;">매칭 검색</h3>
+                    <small id="search-desc" style="color: #666; font-size: 11px;">포지션과 티어를 여러 개 선택할 수 있습니다!</small>
+                </div>
+                
+                <div id="filter-pos-group" style="display:flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #222;">
+                    <span onclick="toggleFilter('pos', '탱커', this)" class="badge filter-tag" style="background:var(--tank); padding: 5px 10px;">
+                        <img src="./img/tank.png" style="width:22px; height:22px; margin-right:4px; vertical-align:middle;">탱커
+                    </span>
+                    <span onclick="toggleFilter('pos', '딜러', this)" class="badge filter-tag" style="background:var(--dps); padding: 5px 10px;">
+                        <img src="./img/dps.png" style="width:22px; height:22px; margin-right:4px; vertical-align:middle;">딜러
+                    </span>
+                    <span onclick="toggleFilter('pos', '지원', this)" class="badge filter-tag" style="background:var(--sup); color:black; padding: 5px 10px;">
+                        <img src="./img/sup.png" style="width:22px; height:22px; margin-right:4px; vertical-align:middle;">지원
+                    </span>
+                </div>
+
+                <div id="filter-tier-group" style="display:flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">
+                    <span onclick="toggleFilter('tier', '배치', this)" class="badge filter-tag" style="background:#444; padding: 4px 8px;">배치</span>
+                    <span onclick="toggleFilter('tier', '브론즈', this)" class="badge filter-tag" style="background:#8b4513; padding: 4px 8px;">브론즈</span>
+                    <span onclick="toggleFilter('tier', '실버', this)" class="badge filter-tag" style="background:#c0c0c0; color:black; padding: 4px 8px;">실버</span>
+                    <span onclick="toggleFilter('tier', '골드', this)" class="badge filter-tag" style="background:#cd7f32; padding: 4px 8px;">골드</span>
+                    <span onclick="toggleFilter('tier', '플래티넘', this)" class="badge filter-tag" style="background:#e5e4e2; color:black; padding: 4px 8px;">플래티넘</span>
+                    <span onclick="toggleFilter('tier', '다이아몬드', this)" class="badge filter-tag" style="background:#b9f2ff; color:black; padding: 4px 8px;">다이아</span>
+                    <span onclick="toggleFilter('tier', '마스터', this)" class="badge filter-tag" style="background:#ffdb58; color:black; padding: 4px 8px;">마스터</span>
+                    <span onclick="toggleFilter('tier', '그랜드마스터', this)" class="badge filter-tag" style="background:#ffffff; color:black; padding: 4px 8px;">그마</span>
+                    <span onclick="toggleFilter('tier', '챔피언', this)" class="badge filter-tag" style="background:linear-gradient(45deg, #ff00ff, #00ffff); color:black; padding: 4px 8px; font-weight:900;">챔피언</span>
+                    
+                    <button onclick="resetFilter()" class="btn-sub" style="padding: 4px 10px; font-size: 10px; background: #222; margin-left: auto;">초기화 ↺</button>
+                </div>
+            </div>
+
+            <div id="party-list"></div>
+        </div>
+
+        <div id="page-profile" class="page">
+            <div class="box">
+                <h3>내 프로필</h3>
+                <div id="avg-rating-area" style="text-align: center; margin-bottom: 20px; padding: 15px; background: #222; border-radius: 12px; border: 1px solid #333; display: none;">
+                    <span style="color: #888; font-size: 12px; display: block; margin-bottom: 5px;">내 평균 매너 별점</span>
+                    <div id="profile-avg-stars" style="color: var(--accent); font-size: 24px; font-weight: bold;"></div>
+                </div>
+                <input type="text" id="profile-btag" placeholder="배틀태그#1234">
+                <div class="pos-group"><label style="color:var(--tank);">🛡️ 돌격</label><div style="display:flex; gap:5px;"><select id="tier-tank"><option value="배치">배치</option><option value="브론즈">브론즈</option><option value="실버">실버</option><option value="골드">골드</option><option value="플래티넘">플래티넘</option><option value="다이아몬드">다이아몬드</option><option value="마스터">마스터</option><option value="그랜드마스터">그랜드마스터</option><option value="챔피언">챔피언</option></select><select id="num-tank"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div></div>
+                <div class="pos-group"><label style="color:var(--dps);">⚔️ 공격</label><div style="display:flex; gap:5px;"><select id="tier-dps"><option value="배치">배치</option><option value="브론즈">브론즈</option><option value="실버">실버</option><option value="골드">골드</option><option value="플래티넘">플래티넘</option><option value="다이아몬드">다이아몬드</option><option value="마스터">마스터</option><option value="그랜드마스터">그랜드마스터</option><option value="챔피언">챔피언</option></select><select id="num-dps"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div></div>
+                <div class="pos-group"><label style="color:var(--sup);">💉 지원</label><div style="display:flex; gap:5px;"><select id="tier-sup"><option value="배치">배치</option><option value="브론즈">브론즈</option><option value="실버">실버</option><option value="골드">골드</option><option value="플래티넘">플래티넘</option><option value="다이아몬드">다이아몬드</option><option value="마스터">마스터</option><option value="그랜드마스터">그랜드마스터</option><option value="챔피언">챔피언</option></select><select id="num-sup"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div></div>
+                <button class="btn-main" id="btn-save-profile">정보 저장</button>
+            </div>
+        </div>
+
+        <div id="page-noti" class="page">
+            <h3>📫 알림 센터</h3>
+            <div id="noti-list"></div>
+            <hr style="border: 0; border-top: 1px dashed #333; margin: 20px 0;">
+            <div id="group-eval-list"></div>
+        </div>
+    </div>
+
+    <!-- 모달들 -->
+    <div class="modal-overlay" id="request-modal">
+        <div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px;">
+            <h3>파티 신청</h3>
+            <label style="font-size:11px; color:#888;">포지션 및 세부 티어</label>
+            <div style="display:flex; gap:5px;">
+                <select id="request-pos"><option value="탱커">🛡️ 탱커</option><option value="딜러">⚔️ 딜러</option><option value="지원">💉 지원</option></select>
+                <select id="request-tier">
+                    <option value="배치">배치</option>
+                    <option value="브론즈">브론즈</option>
+                    <option value="실버">실버</option>
+                    <option value="골드">골드</option>
+                    <option value="플래티넘">플래티넘</option>
+                    <option value="다이아몬드">다이아몬드</option>
+                    <option value="마스터">마스터</option>
+                    <option value="그랜드마스터">그랜드마스터</option>
+                    <option value="챔피언">챔피언</option>
+                </select>
+                <select id="request-tier-num"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+            </div>
+            <input type="text" id="request-btag" placeholder="내 배틀태그#1234">
+            <textarea id="request-msg" placeholder="상대에게 보낼 메시지" rows="3"></textarea>
+            <button class="btn-main" id="btn-confirm-send">신청하기</button>
+            <button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="rate-modal">
+        <div class="modal-content" style="background:#222; padding:20px; border-radius:15px; width:300px; text-align:center;">
+            <h3>팀원 평가</h3>
+            <div class="stars" id="rate-stars"><span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span></div>
+            <button class="btn-main" id="btn-confirm-rate">평가 완료</button>
+            <button class="btn-sub" onclick="closeModal()" style="width:100%; margin-top:5px;">취소</button>
+        </div>
+    </div>
+
+<section class="container" style="margin-top: 50px; margin-bottom: 30px;">
+    <details style="background: #1a1a1a; border-radius: 12px; border: 1px solid #333; overflow: hidden; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <summary style="padding: 18px; color: var(--accent); font-size: 15px; font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; background: #222;">
+            <span>💡 오버워치 허브 이용 가이드 & 시스템 상세 안내 (FAQ)</span>
+            <span style="font-size: 12px; color: #666; transition: 0.3s;">펼쳐보기 ▼</span>
+        </summary>
+        
+        <div style="padding: 10px 20px 25px 20px; background: #151515;">
+            <div style="margin-top: 15px; padding-bottom: 15px; border-bottom: 1px solid #222;">
+                <strong style="display: block; color: #fff; margin-bottom: 8px; font-size: 14px;">❓ 어떻게 하면 파티를 빨리 구할 수 있나요?</strong>
+                <p style="margin: 0; color: #888; font-size: 13px; line-height: 1.6;">
+                    가장 빠른 방법은 본인의 <strong>배틀태그와 티어(브론즈~챔피언)</strong>를 정확히 입력하고 '모집 등록'을 하는 것입니다. 특히 모집 내용에 본인의 플레이 스타일을 구체적으로 적으면 성향이 맞는 팀원을 훨씬 빠르게 만날 수 있습니다.
+                </p>
+            </div>
+
+            <div style="margin-top: 15px; padding-bottom: 15px; border-bottom: 1px solid #222;">
+                <strong style="display: block; color: #fff; margin-bottom: 8px; font-size: 14px;">⚔️ 포지션 선택은 게임 내 역할군과 동일한가요?</strong>
+                <p style="margin: 0; color: #888; font-size: 13px; line-height: 1.6;">
+                    네, 오버워치2의 공식 역할군인 <strong>돌격(Tank), 공격(Damage), 지원(Support)</strong> 아이콘을 그대로 사용합니다. 본인이 주력으로 플레이하는 포지션을 선택해 주세요.
+                </p>
+            </div>
+
+            <div style="margin-top: 15px; padding-bottom: 15px; border-bottom: 1px solid #222;">
+                <strong style="display: block; color: #fff; margin-bottom: 8px; font-size: 14px;">⭐ 매너 별점은 무엇인가요?</strong>
+                <p style="margin: 0; color: #888; font-size: 13px; line-height: 1.6;">
+                    함께 그룹 플레이를 마친 후 상대방에게 <strong>매너 평가(1~5점)</strong>를 남길 수 있습니다. 높은 별점을 유지하는 유저는 신뢰할 수 있는 요원으로 간주되어 파티 매칭 성공률이 올라갑니다.
+                </p>
+            </div>
+
+            <div style="margin-top: 15px; padding-bottom: 15px; border-bottom: 1px solid #222;">
+                <strong style="display: block; color: #fff; margin-bottom: 8px; font-size: 14px;">🏆 티어 정보가 실제와 다르면 어떻게 하나요?</strong>
+                <p style="margin: 0; color: #888; font-size: 13px; line-height: 1.6;">
+                    현재 유저 자율 입력을 원칙으로 하고 있습니다. 다만, 고의적인 <strong>허위 티어 기재</strong>는 다른 팀원에게 피해를 주며, 매너 별점 하락의 원인이 될 수 있으니 주의 부탁드립니다.
+                </p>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <strong style="display: block; color: #fff; margin-bottom: 8px; font-size: 14px;">🚨 비매너 유저나 핵 사용자 신고는 어떻게 하나요?</strong>
+                <p style="margin: 0; color: #888; font-size: 13px; line-height: 1.6;">
+                    오버워치 허브는 유저분들의 제보를 바탕으로 운영됩니다. 부적절한 유저 발견 시 <strong>관리자 이메일(jazzhjm@gmail.com)</strong>로 해당 유저의 배틀태그와 증거 스크린샷을 보내주세요. 관리자가 확인 후 이용 제한 등 필요한 조치를 취하고 있습니다.
+                </p>
+            </div>
+        </div>
+    </details>
+</section>
+
+     
+    <!-- Footer -->
+    <footer style="margin-top: 50px; padding: 20px 15px; border-top: 1px solid #222; color: #555; font-size: 11px; line-height: 1.8;">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div style="margin-bottom: 10px;">
+                <a href="terms.html" style="color: #888; text-decoration: none; margin-right: 15px;">이용약관</a>
+                <a href="privacy.html" style="color: #888; text-decoration: none; font-weight: bold;">개인정보 처리방침</a>
+            </div>
+            <p style="margin: 0;">
+                <strong>오버워치 허브 (OWHUB)</strong> | 관리자 이메일: <a href="mailto:jazzhjm@gmail.com" style="color: #666; text-decoration: none;">jazzhjm@gmail.com</a><br>
+                본 서비스는 오버워치2 유저들을 위한 실시간 파티 매칭 커뮤니티입니다. 
+                사용자가 입력한 배틀태그 정보는 파티 매칭 목적으로만 사용되며, 
+                구글 애드센스 광고를 통해 운영됩니다. 
+                모든 게임 데이터의 저작권은 Blizzard Entertainment에 있습니다.
+            </p>
+            <p style="margin-top: 10px; color: #444;">
+                © 2026 Overwatch Hub. All rights reserved.
+            </p>
+        </div>
+
+
+    </footer>
+     
+    <script>
+        // ========================================
+        // 사이드바 전용 스크립트 (일반 script - 가장 먼저 실행)
+        // ========================================
+        
+        // 디버그 로그 함수
+// ========================================
+// 사이드바 전용 스크립트 (수정본)
+// ========================================
+
+// 디버그 로그 함수
+window.debugLog = function(msg, type) {
+    type = type || 'info';
+    const output = document.getElementById('debug-output');
+    if (output) {
+        const time = new Date().toLocaleTimeString();
+        const color = type === 'error' ? '#f00' : type === 'success' ? '#0f0' : '#0ff';
+        output.innerHTML += '<div style="color: ' + color + '; margin: 2px 0;">[' + time + '] ' + msg + '</div>';
+        output.scrollTop = output.scrollHeight;
+    }
+    console.log(msg);
+};
+
+// 사이드바 토글 함수
+window.toggleSidebar = function() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const hamburger = document.querySelector('.hamburger');
+    
+    if (sidebar && overlay && hamburger) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        hamburger.classList.toggle('active');
+        debugLog('✅ 사이드바 토글 완료');
+    } else {
+        debugLog('❌ 요소를 찾을 수 없음', 'error');
+    }
+};
+
+// 페이지 전환 함수
+window.showPage = function(id) {
+    debugLog('📄 페이지 전환 시도: ' + id);
+    
+    // 1. 모든 페이지 숨기기
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(p => p.classList.remove('active'));
+    
+    // 2. 모든 메뉴 아이템 비활성화
+    const menuItems = document.querySelectorAll('.sidebar-menu-item');
+    menuItems.forEach(m => m.classList.remove('active'));
+    
+    // 3. 선택한 페이지 및 메뉴 활성화
+    const targetPage = document.getElementById('page-' + id);
+    const targetMenu = document.getElementById('sidebar-' + id);
+    
+    if (targetPage) targetPage.classList.add('active');
+    if (targetMenu) targetMenu.classList.add('active');
+    
+    // 4. 알림 페이지 처리
+    if (id === 'noti') {
+        const sidebarTag = document.getElementById('sidebar-new-tag');
+        const navBadge = document.getElementById('nav-new-badge');
+        if (sidebarTag) sidebarTag.style.display = 'none';
+        if (navBadge) navBadge.style.display = 'none';
+        
+        if (typeof window.renderNotiUI === 'function') window.renderNotiUI();
+        if (typeof window.renderEvalList === 'function') window.renderEvalList();
+    }
+    
+    debugLog('✅ ' + id + ' 페이지 활성화 완료', 'success');
+};
+
+// 페이지 전환 후 사이드바 자동으로 닫기
+window.showPageAndClose = function(id) {
+    window.showPage(id);
+    window.toggleSidebar();
+};
+
+        
+        debugLog('✅ Sidebar functions ready!', 'success');
+        
+        // 에러 핸들러
+        window.addEventListener('error', function(e) {
+            debugLog('💥 ERROR: ' + e.message, 'error');
+        });
+    </script>
+    
+    <script>
+        // Config inline으로 변경
+        const CONFIG = {
+            ADMIN_EMAIL: 'jazzhjm@gmail.com',
+            TEST_ACCOUNTS: []
+        };
+    </script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, getDoc, setDoc, deleteDoc, getDocs, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { 
+            getAuth, onAuthStateChanged, signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, signOut, sendEmailVerification,
+            sendPasswordResetEmail 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", authDomain: "ow-party-97936.firebaseapp.com", projectId: "ow-party-97936", storageBucket: "ow-party-97936.firebasestorage.app", messagingSenderId: "15782204013", appId: "1:15782204013:web:5c74ef2e603c311fc82564" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
+        const ADMIN_EMAIL = CONFIG.ADMIN_EMAIL;
+        
+        let currentPosts = [];
+        let hiddenEvals = new Set();
+        let lastMatchSnap = null;
+        let mySentRequests = new Set(); 
+        let targetData = null; 
+        let rateTargetInfo = null;
+        let currentFilter = { pos: [], tier: [] };
+
+        debugLog('🎬 Firebase script started...');
+
+        const ICON_URLS = {
+            '탱커': './img/tank.png',
+            '딜러': './img/dps.png',
+            '지원': './img/sup.png',
+            '배치': './img/u.png',
+            '브론즈': './img/b.webp',
+            '실버': './img/s.webp',
+            '골드': './img/g.webp',
+            '플래티넘': './img/p.webp',
+            '다이아몬드': './img/d.webp',
+            '마스터': './img/m.webp',
+            '그랜드마스터': './img/gm.webp',
+            '챔피언': './img/c.webp'
+        };
+
+        const timeSince = (date) => {
+            const seconds = Math.floor((Date.now() - date) / 1000);
+            if (seconds < 60) return "방금 전";
+            const mins = Math.floor(seconds / 60);
+            return mins < 60 ? mins + "분 전" : Math.floor(mins / 60) + "시간 전";
+        };
+
+        const getPosBadge = (pos) => {
+            const colors = { '탱커': 'var(--tank)', '딜러': 'var(--dps)', '지원': 'var(--sup)' };
+            const iconUrl = ICON_URLS[pos] || '';
+            
+            return `
+                <span class="badge" style="background:${colors[pos] || '#555'}; color:${pos==='지원'?'black':'white'}; display:inline-flex; align-items:center; padding: 3px 6px;">
+                    <img src="${iconUrl}" style="width:12px; height:12px; margin-right:4px; filter:${pos==='지원'?'brightness(0)':'none'};">
+                    ${pos}
+                </span>`;
+        };
+
+        window.closeModal = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+
+        window.forgotPassword = async function() {
+            const email = document.getElementById('login-email').value;
+            if(!email) return alert("이메일을 먼저 입력해주세요.");
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("비밀번호 재설정 메일을 보냈습니다. 메일함을 확인해주세요.");
+            } catch (e) { alert("오류: " + e.message); }
+        };
+
+        debugLog('✅ Firebase functions ready', 'success');
+
+        const loadMyProfile = async (uid) => {
+    const snap = await getDoc(doc(db, "users", uid));
+    const sidebarUserTag = document.getElementById('sidebar-user-tag');
+    const displayBtag = document.getElementById('display-btag');
+
+    if (snap.exists()) {
+        const d = snap.data();
+        const btag = d.btag || "닉네임#0000";
+                document.getElementById('profile-btag').value = d.btag || "";
+        document.getElementById('post-btag').value = d.btag || "";
+        
+        // 사이드바 상단 배틀태그 업데이트
+        if(displayBtag) displayBtag.innerText = btag;
+        if(sidebarUserTag) sidebarUserTag.style.display = 'block';
+                if(d.탱커) { document.getElementById('tier-tank').value = d.탱커.tier; document.getElementById('num-tank').value = d.탱커.num; }
+                if(d.딜러) { document.getElementById('tier-dps').value = d.딜러.tier; document.getElementById('num-dps').value = d.딜러.num; }
+                if(d.지원) { document.getElementById('tier-sup').value = d.지원.tier; document.getElementById('num-sup').value = d.지원.num; }
+                if(d.rateCount > 0) {
+                    document.getElementById('avg-rating-area').style.display = 'block';
+                    document.getElementById('profile-avg-stars').innerText = `★ ${(d.rateTotal / d.rateCount).toFixed(1)}`;
+                }
+         } else {
+        // 데이터가 없는 신규 유저일 경우 처리
+        if(displayBtag) displayBtag.innerText = "프로필을 설정하세요";
+        if(sidebarUserTag) sidebarUserTag.style.display = 'block';
+    }
+};
+
+        window.setFilter = (type, value) => {
+            currentFilter = { pos: [], tier: [] };
+            document.querySelectorAll('.filter-tag').forEach(el => el.classList.remove('active'));
+            
+            const tags = document.querySelectorAll('.filter-tag');
+            tags.forEach(tag => {
+                if(tag.innerText.includes(value)) {
+                    tag.classList.add('active');
+                    currentFilter[type].push(value);
+                }
+            });
+            
+            updateSearchTitle();
+            window.renderList();
+        };
+
+        window.toggleFilter = (type, value, element) => {
+            const index = currentFilter[type].indexOf(value);
+            
+            if (index > -1) {
+                currentFilter[type].splice(index, 1);
+                element.classList.remove('active');
+            } else {
+                currentFilter[type].push(value);
+                element.classList.add('active');
+            }
+            
+            updateSearchTitle();
+            window.renderList();
+        };
+
+        window.resetFilter = () => {
+            currentFilter = { pos: [], tier: [] };
+            document.querySelectorAll('.filter-tag').forEach(el => el.classList.remove('active'));
+            updateSearchTitle();
+            window.renderList();
+        };
+
+        const updateSearchTitle = () => {
+            const title = document.getElementById('search-title');
+            const { pos, tier } = currentFilter;
+            
+            if (pos.length === 0 && tier.length === 0) {
+                title.innerText = "전체 파티 보기";
+            } else {
+                const posText = pos.length > 0 ? `[${pos.join(', ')}]` : "";
+                const tierText = tier.length > 0 ? `[${tier.join(', ')}]` : "";
+                title.innerText = `🔍 ${posText} ${tierText} 필터링 중`;
+            }
+        };
+
+        window.renderEvalList = () => {
+            const list = document.getElementById('group-eval-list');
+            if(!auth.currentUser) return;
+            let html = "";
+            currentPosts.forEach(p => {
+                if (hiddenEvals.has(p.id) || p.deleted) return;
+                const isOwner = p.uid === auth.currentUser.uid;
+                const isMember = p.members?.some(m => m.uid === auth.currentUser.uid);
+                if (isOwner || isMember) {
+                    let targets = [];
+                    if(!isOwner) targets.push({uid: p.uid, btag: p.btag, pos: p.pos, tier: p.tier, tierNum: p.tierNum});
+                    if(p.members) p.members.forEach(m => { if(m.uid !== auth.currentUser.uid) targets.push(m); });
+                    if(targets.length > 0) {
+                        let mHtml = targets.map(t => {
+                            const evalKey = `eval_${auth.currentUser.uid}_to_${t.uid}`;
+                            const savedScore = (p.evals && p.evals[evalKey]) ? p.evals[evalKey] : null;
+                            return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#000; border-radius:8px; margin-top:5px; border:1px solid #333;">
+                                <div style="font-size:12px;">${getPosBadge(t.pos)} <b>${t.btag.split('#')[0]}</b><div style="font-size:10px; color:#888;">${t.tier} ${t.tierNum || ''}</div></div>
+                                <div>${savedScore ? `<span style="color:var(--accent); font-size:12px; font-weight:bold;">평가완료 (★${savedScore})</span>` : `<button class="btn-sub" style="background:var(--accent); color:black;" onclick="window.openRateModal('${t.uid}', '${p.id}')">평가</button>`}</div>
+                            </div>`;
+                        }).join('');
+                        html += `<div class="box" id="eval-box-${p.id}" style="border:1px solid var(--accent); position:relative;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <div style="font-size:11px; color:var(--accent); font-weight:bold;">🤝 파티 멤버 평가</div>
+                                <button onclick="window.hideEvalBox('${p.id}')" style="background:none; border:none; color:#666; cursor:pointer; font-size:16px;">&times;</button>
+                            </div>${mHtml}</div>`;
+                    }
+                }
+            });
+            list.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">참여 중인 파티가 없습니다.</div>';
+        };
+
+        window.hideEvalBox = (postId) => {
+            if(confirm("평가창을 닫으시겠습니까?")) { hiddenEvals.add(postId); renderEvalList(); }
+        };
+
+        window.renderList = () => {
+            const listDiv = document.getElementById('party-list');
+            if (!listDiv) return;
+            
+            const filtered = currentPosts.filter(p => {
+                if (p.deleted) return false;
+                if (currentFilter.pos.length > 0 && !currentFilter.pos.includes(p.pos)) return false;
+                if (currentFilter.tier.length > 0 && !currentFilter.tier.includes(p.tier)) return false;
+                return true;
+            });
+
+            let html = "";
+            filtered.forEach(p => {
+                const count = (p.members?.length || 0) + 1;
+                const isFull = count >= p.maxp;
+                const isMine = auth.currentUser?.uid === p.uid;
+                const isAdmin = auth.currentUser?.email === ADMIN_EMAIL;
+                const isSent = mySentRequests.has(p.id);
+                const rateText = p.ownerRate ? `★ ${p.ownerRate}` : `★ 신규`;
+          const posColors = { '탱커': 'var(--tank)', '딜러': 'var(--dps)', '지원': 'var(--sup)' };
+        const isSup = p.pos === '지원';
+                
+                let btn = `<button class="btn-sub" style="background:var(--accent); color:black; font-weight:bold; white-space:nowrap;" onclick="openRequestModal('${p.uid}','${p.btag}','${p.id}')">신청</button>`;
+                if (isMine || isAdmin) btn = `<button class="btn-danger" style="white-space:nowrap;" onclick="delPost('${p.id}')">${isAdmin && !isMine ? "삭제" : "종료"}</button>`;
+                else if (isSent) btn = `<button class="btn-sub" style="background:#444; color:#888; cursor:default; white-space:nowrap;" disabled>신청됨</button>`;
+                else if (isFull) btn = `<button class="btn-sub" style="opacity:0.5; white-space:nowrap;" disabled>마감</button>`;
+
+                const posImg = `<img src="${ICON_URLS[p.pos]}" style="width:28px; height:28px; vertical-align:middle; margin-right:4px;">`;
+                const tierImg = `<img src="${ICON_URLS[p.tier]}" style="width:28px; height:28px; vertical-align:middle; margin-right:2px;">`;
+
+                html += `
+<div class="box" style="padding: 15px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div style="flex-grow:1; min-width:0;">
+            <div style="display:flex; align-items:center; margin-bottom:8px; flex-wrap:nowrap; overflow:hidden;">
+                <b style="font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.btag ? p.btag.split('#')[0] : '익명'}</b> 
+                <span style="color:var(--accent); font-size:11px; margin-left:6px; font-weight:bold; white-space:nowrap;">${rateText}</span>
+                <small style="color:#666; margin-left:8px; white-space:nowrap;">${timeSince(p.createdAt)}</small>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
+                <span onclick="setFilter('pos', '${p.pos}')" 
+      class="pos-badge-inline ${isSup ? 'pos-badge-sup' : ''}" 
+      style="background: ${posColors[p.pos] || '#555'}; padding: 6px 12px; border-radius: 8px;">
+    <img src="${ICON_URLS[p.pos]}" 
+         style="width: 22px; height: 22px; margin-right: 6px; filter: ${isSup ? 'brightness(0)' : 'none'}; vertical-align: middle;">
+    <span style="vertical-align: middle; font-size: 14px;">${p.pos}</span>
+</span>
+
+                <span onclick="setFilter('tier', '${p.tier}')" style="cursor:pointer; display:inline-flex; align-items:center; font-size:14px; font-weight:900; color:var(--accent);">
+                    ${tierImg} ${p.tier} ${p.tier !== '배치' ? p.tierNum : ''}
+                </span>
+                <span style="color:${isFull ? '#ff3c3c' : 'var(--sup)'}; font-size:12px; font-weight:bold;">
+                    ● ${count}/${p.maxp}
+                </span>
+            </div>
+        </div>
+        <div style="flex-shrink:0;">
+            ${btn}
+        </div>
+    </div>
+    <p style="margin-top:12px; margin-bottom:0; color:#bbb; font-size:13px; line-height:1.4; background:#222; padding:8px 12px; border-radius:8px;">
+        ${p.desc || '모집 내용이 없습니다.'}
+    </p>
+</div>`;
+            });
+            listDiv.innerHTML = html || `<div style="text-align:center; color:#444; padding:40px;">조건에 맞는 파티가 없습니다.<br><button onclick="resetFilter()" style="margin-top:10px; color:var(--accent); background:none; border:none; cursor:pointer;">전체 보기로 돌아가기</button></div>`;
+        };
+
+        const renderNotiUI = () => {
+            const list = document.getElementById('noti-list');
+            if(!list || !lastMatchSnap || !auth.currentUser) return; 
+            let html = "";
+            lastMatchSnap.docs.forEach(ds => {
+                const m = ds.data();
+                if(m.fromUid === auth.currentUser.uid || m.toUid === auth.currentUser.uid) {
+                    const isToMe = m.toUid === auth.currentUser.uid;
+                    if(m.status === 'pending') {
+                        if(isToMe) html += `<div class="box" style="border-left:5px solid var(--accent);"><div style="font-size:11px; color:var(--accent); margin-bottom:5px; font-weight:bold;">내 파티에 신청함</div><b>${m.fromBtag}</b> 신청 도착!<br><div style="margin:5px 0;">${getPosBadge(m.reqPos)} <span style="font-size:11px; color:#888;">${m.reqTier} ${m.reqTierNum}</span></div><small style="display:block; margin-bottom:8px; color:#ccc;">"${m.message || '메시지 없음'}"</small><div style="display:flex; gap:5px; margin-top:10px;"><button class="btn-main" style="margin:0; flex:1;" onclick="acceptMatch('${ds.id}')">수락</button><button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button></div></div>`;
+                        else html += `<div class="box" style="border-left:5px solid #555;"><div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;"><div><div style="font-size:11px; color:#888; margin-bottom:3px;">파티장 정보</div><b>${m.toBtag.split('#')[0]}</b>님 ${getPosBadge(m.leaderPos || '정보없음')} <span style="font-size:12px; color:#ccc;">${m.leaderTier || ''}</span></div><button class="btn-sub" style="font-size:10px; background:#444;" onclick="delMatch('${ds.id}')">취소</button></div><div style="background:#000; padding:10px; border-radius:8px; border:1px solid #333;"><div style="font-size:10px; color:#666;">내 신청 조건</div>${getPosBadge(m.reqPos)} <span style="font-size:11px; color:var(--accent); font-weight:bold;">${m.reqTier}</span><div style="font-size:11px; color:#777; margin-top:5px; border-top:1px solid #222; padding-top:5px;">"${m.message || '메시지 없음'}"</div></div><div style="font-size:10px; color:var(--accent); margin-top:8px; text-align:right;">⌛ 수락 대기 중</div></div>`;
+                    } else {
+                        html += `<div class="box" style="border-left:5px solid var(--sup);"><div style="display:flex; justify-content:space-between; align-items:center;"><span>✅ <b>${isToMe ? m.fromBtag.split('#')[0] : m.toBtag.split('#')[0]}</b>님과 매칭 성공!</span><button class="btn-sub" style="font-size:10px;" onclick="delMatch('${ds.id}')">확인</button></div></div>`;
+                    }
+                }
+            });
+            list.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">알림이 없습니다.</div>';
+        };
+        window.renderNotiUI = renderNotiUI;
+
+        onAuthStateChanged(auth, async (user) => {
+            const loginForm = document.getElementById('login-form-sidebar');
+            const userInfo = document.getElementById('user-info-sidebar');
+            const sidebarUserTag = document.getElementById('sidebar-user-tag'); // 추가
+
+            if (user) {
+                const isSpecialAccount = (user.email === ADMIN_EMAIL) || (CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === user.email.toLowerCase()));
+                if (!isSpecialAccount && !user.emailVerified) {
+                    loginForm.style.display = 'block'; userInfo.style.display = 'none';
+                    return; 
+                }
+                loginForm.style.display = 'none'; userInfo.style.display = 'block';
+                loadMyProfile(user.uid);
+
+                // 기존 matches 스냅샷 리스너 부분을 아래 내용으로 교체
+onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap) => {
+    lastMatchSnap = snap;
+    const newSentSet = new Set();
+    
+    // 1. 내가 보낸 신청 데이터 업데이트
+    if (auth.currentUser) {
+        snap.docs.forEach(doc => { 
+            if (doc.data().fromUid === auth.currentUser.uid) newSentSet.add(doc.data().postId); 
+        });
+    }
+    mySentRequests = newSentSet;
+
+    // 2. 나에게 온 새로운 'pending' 신청이 있는지 확인
+    const hasNew = auth.currentUser ? snap.docs.some(d => d.data().toUid === auth.currentUser.uid && d.data().status === 'pending') : false;
+    
+    // 3. 사이드바 내부 "N" 태그 제어
+    const sidebarTag = document.getElementById('sidebar-new-tag');
+    if(sidebarTag) {
+        sidebarTag.style.display = hasNew ? 'inline-block' : 'none';
+    }
+
+    // 4. 외부 햄버거 버튼 빨간 배지 제어
+    const navBadge = document.getElementById('nav-new-badge');
+    if(navBadge) {
+        navBadge.style.display = hasNew ? 'block' : 'none';
+    }
+
+    renderList(); 
+    renderNotiUI(); 
+});
+
+            } else {
+                 loginForm.style.display = 'block'; 
+             userInfo.style.display = 'none';
+             if(sidebarUserTag) sidebarUserTag.style.display = 'none'; // 배틀태그 숨김
+             mySentRequests = new Set(); 
+             lastMatchSnap = null;
+            }
+
+            onSnapshot(query(collection(db, "parties"), orderBy("createdAt", "desc")), (snap) => {
+                currentPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                const activeParties = currentPosts.filter(p => !p.deleted).length;
+                const partyEl = document.getElementById('live-party-count');
+                if (partyEl) {
+                    partyEl.innerText = `현재 모집중인 파티: ${activeParties}`;
+                } 
+                renderList(); renderEvalList();
+            });
+        });
+
+        document.getElementById('btn-login').onclick = async () => {
+            const e = document.getElementById('login-email').value.trim(); 
+            const p = document.getElementById('login-password').value.trim();
+            if(!e || !p) return alert("이메일과 비밀번호를 입력해주세요.");
+
+            const isSpecialAccount = (e === ADMIN_EMAIL) || (CONFIG.TEST_ACCOUNTS && CONFIG.TEST_ACCOUNTS.some(acc => acc.email.toLowerCase() === e.toLowerCase()));
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, e, p);
+                const user = userCredential.user;
+
+                if (!isSpecialAccount && !user.emailVerified) {
+                    alert("이메일 인증이 필요합니다! 메일함을 확인해주세요.");
+                    await sendEmailVerification(user); 
+                    await signOut(auth);
+                } else { 
+                    alert(isSpecialAccount ? "관리자/테스트 계정 접속 성공!" : "환영합니다!");
+                    if (window.toggleSidebar) window.toggleSidebar(); // 로그인 후 사이드바 닫기
+                }
+            } catch (err) {
+                if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
+                    try {
+                        const newUserCredential = await createUserWithEmailAndPassword(auth, e, p);
+                        
+                        if (isSpecialAccount) {
+                            alert("관리자/테스트 계정 가입 및 로그인 성공!");
+                            location.reload();
+                        } else {
+                            await sendEmailVerification(newUserCredential.user);
+                            alert("🎉 가입 성공!\n\n" + 
+                                  "입력하신 메일로 인증 링크를 보냈습니다.\n" +
+                                  "메일이 보이지 않으면 반드시 '스팸 메일함'을 확인해 주세요!\n" +
+                                  "인증 완료 후 로그인이 가능합니다."); 
+                            await signOut(auth);
+                        }
+                    } catch (ce) { alert("가입 오류: " + ce.message); }
+                } else { alert("로그인 오류: " + err.message); }
+            }
+        };
+
+        document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => location.reload());
+
+        document.getElementById('btn-post').onclick = async () => {
+            if(!auth.currentUser) return alert("로그인이 필요한 서비스입니다.");
+
+            const btagInput = document.getElementById('post-btag').value.trim();
+            if (!btagInput || !btagInput.includes('#')) {
+                alert("정확한 배틀태그(예: 닉네임#1234)를 입력해주세요!");
+                document.getElementById('post-btag').focus();
+                return;
+            }
+
+            try {
+                const q = query(
+                    collection(db, "parties"), 
+                    where("uid", "==", auth.currentUser.uid), 
+                    where("deleted", "==", false)
+                );
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    if (confirm("이미 모집 중인 파티글이 있습니다.\n기존 글을 종료하고 새로운 글을 등록하시겠습니까?")) {
+                        const batch = writeBatch(db);
+                        querySnapshot.forEach((oldDoc) => {
+                            batch.update(oldDoc.ref, { deleted: true });
+                        });
+                        await batch.commit();
+                    } else {
+                        return;
+                    }
+                }
+
+                const userSnap = await getDoc(doc(db, "users", auth.currentUser.uid));
+                let ownerRate = (userSnap.exists() && userSnap.data().rateCount > 0) 
+                    ? (userSnap.data().rateTotal / userSnap.data().rateCount).toFixed(1) 
+                    : "신규";
+                
+                await addDoc(collection(db, "parties"), {
+                    btag: btagInput,
+                    uid: auth.currentUser.uid, 
+                    ownerRate: ownerRate,
+                    pos: document.getElementById('post-main-pos').value, 
+                    tier: document.getElementById('post-tier').value,
+                    tierNum: document.getElementById('post-tier-num').value, 
+                    maxp: parseInt(document.getElementById('post-maxp').value),
+                    desc: document.getElementById('post-desc').value, 
+                    createdAt: Date.now(), 
+                    members: [], 
+                    deleted: false
+                });
+
+                alert("새로운 파티 모집을 시작했습니다!");
+                document.getElementById('post-desc').value = "";
+            } catch (error) {
+                console.error("Error:", error);
+                alert("오류가 발생했습니다: " + error.message);
+            }
+        };
+
+        window.openRequestModal = (uid, btag, postId) => {
+            if (!auth.currentUser) {
+                alert("로그인이 필요한 서비스입니다.");
+                return;
+            }
+            if (uid === auth.currentUser.uid) return alert("자신의 파티에는 신청할 수 없습니다.");
+            targetData = {uid, btag, postId}; 
+
+            const mySavedBtag = document.getElementById('profile-btag').value;
+            document.getElementById('request-btag').value = mySavedBtag || "";    
+            document.getElementById('request-modal').style.display = 'flex';
+        };
+
+        document.getElementById('btn-confirm-send').onclick = async () => {
+            if(!auth.currentUser || !targetData) return;
+
+            const reqBtag = document.getElementById('request-btag').value.trim();
+            if (!reqBtag || !reqBtag.includes('#')) {
+                alert("정확한 배틀태그(예: 닉네임#1234)를 입력해주세요!");
+                document.getElementById('request-btag').focus();
+                return;
+            }
+
+            const parentPost = currentPosts.find(p => p.id === targetData.postId);
+            await addDoc(collection(db, "matches"), {
+                fromUid: auth.currentUser.uid, 
+                fromBtag: reqBtag,
+                reqPos: document.getElementById('request-pos').value, 
+                reqTier: document.getElementById('request-tier').value,
+                reqTierNum: document.getElementById('request-tier-num').value, 
+                toUid: targetData.uid, 
+                toBtag: targetData.btag,
+                leaderPos: parentPost?.pos || "정보없음", 
+                leaderTier: parentPost?.tier || "", 
+                leaderTierNum: parentPost?.tierNum || "",
+                postId: targetData.postId, 
+                message: document.getElementById('request-msg').value, 
+                status: "pending", 
+                createdAt: Date.now()
+            });
+            alert("신청완료"); 
+            closeModal();
+        };
+
+        window.acceptMatch = async (id) => {
+            const mRef = doc(db, "matches", id); const m = (await getDoc(mRef)).data();
+            await updateDoc(mRef, { status: 'accepted' });
+            const pRef = doc(db, "parties", m.postId); const p = (await getDoc(pRef)).data();
+            const members = p.members || [];
+            members.push({uid: m.fromUid, btag: m.fromBtag, pos: m.reqPos, tier: m.reqTier, tierNum: m.reqTierNum});
+            await updateDoc(pRef, { members });
+        };
+
+        window.openRateModal = (uid, postId) => {
+            rateTargetInfo = { uid, postId }; 
+            document.querySelectorAll('#rate-stars span').forEach(s => s.classList.remove('active'));
+            document.getElementById('rate-modal').style.display = 'flex';
+        };
+
+        document.getElementById('btn-confirm-rate').onclick = async () => {
+            const score = document.querySelectorAll('#rate-stars span.active').length;
+            if(score === 0 || !rateTargetInfo) return alert("별점을 선택해주세요.");
+            try {
+                const uRef = doc(db, "users", rateTargetInfo.uid); const uSnap = await getDoc(uRef);
+                let count = uSnap.exists() ? (uSnap.data().rateCount || 0) : 0;
+                let total = uSnap.exists() ? (uSnap.data().rateTotal || 0) : 0;
+                await setDoc(uRef, { rateCount: count + 1, rateTotal: total + score }, { merge: true });
+                await setDoc(doc(db, "parties", rateTargetInfo.postId), { evals: { [`eval_${auth.currentUser.uid}_to_${rateTargetInfo.uid}`]: score } }, { merge: true });
+                alert("평가 완료!"); closeModal();
+            } catch (err) { alert("평가 오류!"); }
+        };
+
+        document.getElementById('btn-save-profile').onclick = async () => {
+            const data = {
+                btag: document.getElementById('profile-btag').value,
+                "탱커": { tier: document.getElementById('tier-tank').value, num: document.getElementById('num-tank').value },
+                "딜러": { tier: document.getElementById('tier-dps').value, num: document.getElementById('num-dps').value },
+                "지원": { tier: document.getElementById('tier-sup').value, num: document.getElementById('num-sup').value }
+            };
+            await setDoc(doc(db, "users", auth.currentUser.uid), data, {merge:true});
+            alert("프로필 저장 완료!");
+        };
+
+        window.delPost = async (id) => { if(confirm("종료하시겠습니까?")) await updateDoc(doc(db, "parties", id), {deleted:true}); };
+        window.delMatch = async (id) => { await deleteDoc(doc(db, "matches", id)); };
+
+        document.querySelectorAll('#rate-stars span').forEach(s => {
+            s.onclick = () => {
+                const v = s.dataset.v;
+                document.querySelectorAll('#rate-stars span').forEach(i => i.classList.toggle('active', i.dataset.v <= v));
+            };
+        });
+
+        const updateUserPresence = async () => {
+            let guestId = localStorage.getItem('guest_id');
+            if (!guestId) {
+                guestId = 'guest_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('guest_id', guestId);
+            }
+            
+            const id = auth.currentUser ? auth.currentUser.uid : guestId;
+            
+            try {
+                await setDoc(doc(db, "presences", id), {
+                    lastSeen: Date.now(),
+                    isGuest: !auth.currentUser
+                }, { merge: true });
+            } catch (e) { console.error("Presence error:", e); }
+        };
+
+        updateUserPresence();
+        setInterval(updateUserPresence, 4 * 60 * 1000);
+
+        onSnapshot(collection(db, "presences"), (snap) => {
+            const now = Date.now();
+            const activeTimeThreshold = 5 * 60 * 1000;
+            let actualOnlineCount = 0;
+
+            snap.docs.forEach(doc => {
+                if (now - doc.data().lastSeen < activeTimeThreshold) {
+                    actualOnlineCount++;
+                }
+            });
+
+            const safePosts = currentPosts || [];
+            const partyCount = safePosts.filter(p => !p.deleted).length;
+            
+            const minUsers = 3; 
+            const finalDisplayCount = actualOnlineCount + minUsers + (partyCount * 2);
+
+            const countEl = document.getElementById('live-user-count');
+            if(countEl) countEl.innerText = `전투 대기 중인 요원: ${finalDisplayCount}명`;
+            
+            const partyEl = document.getElementById('live-party-count');
+            if(partyEl) partyEl.innerText = `현재 모집중인 파티: ${partyCount}`;
+        });
+    </script>
+</body>
+</html>
