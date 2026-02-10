@@ -1300,7 +1300,7 @@ onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap
             if(countEl) countEl.innerText = `${finalDisplayCount}명 접속 중`;
             
             const partyEl = document.getElementById('live-party-count');
-            if(partyEl) partyEl.innerText = `현재 모집중인 파티: ${partyCount}`;
+            if(partyEl) partyEl.innerText = `모집 중인 파티: ${partyCount}`;
         });
     </script>
 </body>
