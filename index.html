@@ -860,6 +860,8 @@ const getTierBadge = (tier, tierNum) => {
         padding: 3px 8px;
         border-radius: 10px;
         font-size: 15px;
+        line-height: 1;             /* 기본 행간을 제거하여 중앙 정렬 방해 금지 */
+    box-sizing: border-box;
     ">${tier} ${tierNum || ''}</span>`; // tierNum이 없으면 빈칸 처리
 };
 
