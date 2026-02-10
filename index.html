@@ -1294,7 +1294,7 @@ onSnapshot(query(collection(db, "matches"), orderBy("createdAt", "desc")), (snap
             const finalDisplayCount = actualOnlineCount + minUsers + (partyCount * 2);
 
             const countEl = document.getElementById('live-user-count');
-            if(countEl) countEl.innerText = `전투 대기 중인 요원: ${finalDisplayCount}명`;
+            if(countEl) countEl.innerText = `${finalDisplayCount}명 접속 중`;
             
             const partyEl = document.getElementById('live-party-count');
             if(partyEl) partyEl.innerText = `현재 모집중인 파티: ${partyCount}`;
