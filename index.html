@@ -1065,15 +1065,68 @@ const getTierBadge = (tier, tierNum) => {
             let html = "";
             lastMatchSnap.docs.forEach(ds => {
                 const m = ds.data();
-                if(m.fromUid === auth.currentUser.uid || m.toUid === auth.currentUser.uid) {
-                    const isToMe = m.toUid === auth.currentUser.uid;
-                    if(m.status === 'pending') {
-                        if(isToMe) html += `<div class="box" style="border-left:5px solid var(--accent);"><div style="font-size:11px; color:var(--accent); margin-bottom:5px; font-weight:bold;">내 파티에 신청함</div><b>${m.fromBtag}</b> 신청 도착!<br><div style="margin:5px 0;">${getPosBadge(m.reqPos)} <span style="font-size:11px; color:#888; border-radius: 10px;">${getTierBadge(m.reqTier, m.reqTierNum)}</span></div><small style="display:block; margin-bottom:8px; color:#ccc;">"${m.message || '메시지 없음'}"</small><div style="display:flex; gap:5px; margin-top:10px;"><button class="btn-main" style="margin:0; flex:1;" onclick="acceptMatch('${ds.id}')">수락</button><button class="btn-danger" style="flex:1;" onclick="delMatch('${ds.id}')">거절</button></div></div>`;
-                        else html += `<div class="box" style="border-left:5px solid #555;"><div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;"><div><div style="font-size:11px; color:#888; margin-bottom:3px;">파티장 정보</div><b>${m.toBtag.split('#')[0]}</b>님 ${getPosBadge(m.leaderPos || '정보없음')} <span style="font-size:12px; color:#ccc; border-radius: 10px;">${m.leaderTier || ''}</span></div><button class="btn-sub" style="font-size:10px; background:#444;" onclick="delMatch('${ds.id}')">취소</button></div><div style="background:#000; padding:10px; border-radius:8px; border:1px solid #333;"><div style="font-size:10px; color:#666;">내 신청 조건</div>${getPosBadge(m.reqPos)} <span style="font-size:11px; color:var(--accent); font-weight:bold;">${m.reqTier}</span><div style="font-size:11px; color:#777; margin-top:5px; border-top:1px solid #222; padding-top:5px;">"${m.message || '메시지 없음'}"</div></div><div style="font-size:10px; color:var(--accent); margin-top:8px; text-align:right;">⌛ 수락 대기 중</div></div>`;
-                    } else {
-                        html += `<div class="box" style="border-left:5px solid var(--sup);"><div style="display:flex; justify-content:space-between; align-items:center;"><span>✅ <b>${isToMe ? m.fromBtag.split('#')[0] : m.toBtag.split('#')[0]}</b>님과 매칭 성공!</span><button class="btn-sub" style="font-size:10px;" onclick="delMatch('${ds.id}')">확인</button></div></div>`;
-                    }
-                }
+                if (m.fromUid === auth.currentUser.uid || m.toUid === auth.currentUser.uid) {
+    const isToMe = m.toUid === auth.currentUser.uid;
+
+    if (m.status === 'pending') {
+        if (isToMe) {
+            // [1. 나에게 온 신청]
+            html += `
+            <div class="box" style="border-left:5px solid var(--accent); border-radius:15px; padding:15px; margin-bottom:10px;">
+                <div style="font-size:11px; color:var(--accent); margin-bottom:8px; font-weight:bold;">내 파티에 신청함</div>
+                <b style="font-size:15px;">${m.fromBtag}</b> 신청 도착!<br>
+                <div style="margin:8px 0; display:flex; align-items:center; gap:5px;">
+                    ${getPosBadge(m.reqPos)} 
+                    ${getTierBadge(m.reqTier, m.reqTierNum)}
+                </div>
+                <small style="display:block; margin:10px 0; color:#ccc; line-height:1.4;">"${m.message || '메시지 없음'}"</small>
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                    <button class="btn-main" style="margin:0; flex:1; border-radius:10px; height:36px;" onclick="acceptMatch('${ds.id}')">수락</button>
+                    <button class="btn-danger" style="flex:1; border-radius:10px; height:36px;" onclick="delMatch('${ds.id}')">거절</button>
+                </div>
+            </div>`;
+        } else {
+            // [2. 내가 보낸 신청]
+            html += `
+            <div class="box" style="border-left:5px solid #555; border-radius:15px; padding:15px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div>
+                        <div style="font-size:11px; color:#888; margin-bottom:3px;">파티장 정보</div>
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <b style="font-size:14px;">${m.toBtag.split('#')[0]}</b>님 
+                            ${getPosBadge(m.leaderPos || '정보없음')}
+                            ${getTierBadge(m.leaderTier, m.leaderTierNum || '')}
+                        </div>
+                    </div>
+                    <button class="btn-sub" style="font-size:10px; background:#444; border-radius:6px; padding:4px 8px;" onclick="delMatch('${ds.id}')">취소</button>
+                </div>
+                <div style="background:rgba(0,0,0,0.4); padding:10px; border-radius:10px; border:1px solid #333;">
+                    <div style="font-size:10px; color:#666; margin-bottom:6px;">내 신청 조건</div>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        ${getPosBadge(m.reqPos)} 
+                        ${getTierBadge(m.reqTier, m.reqTierNum)}
+                    </div>
+                    <div style="font-size:11px; color:#888; margin-top:8px; border-top:1px solid #222; padding-top:8px;">
+                        "${m.message || '메시지 없음'}"
+                    </div>
+                </div>
+                <div style="font-size:10px; color:var(--accent); margin-top:10px; text-align:right; font-weight:bold;">⌛ 수락 대기 중</div>
+            </div>`;
+        }
+    } else {
+        // [3. 매칭 성공 상태] (Pending이 아닐 때)
+        html += `
+        <div class="box" style="border-left:5px solid var(--sup); border-radius:12px; padding:15px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:13px; color:#eee;">
+                    ✅ <b>${isToMe ? m.fromBtag.split('#')[0] : m.toBtag.split('#')[0]}</b>님과 매칭 성공!
+                </span>
+                <button class="btn-sub" style="font-size:11px; background:#444; border-radius:6px; padding:5px 12px;" onclick="delMatch('${ds.id}')">확인</button>
+            </div>
+        </div>`;
+    }
+}
+
             });
             list.innerHTML = html || '<div style="text-align:center; color:#444; padding:20px;">알림이 없습니다.</div>';
         };
