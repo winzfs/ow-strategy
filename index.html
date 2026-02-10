@@ -296,50 +296,61 @@
 .badge-tank { background: var(--tank) !important; color: white !important; }
 .badge-dps { background: var(--dps) !important; color: white !important; }
 .badge-sup { background: var(--sup) !important; color: black !important; }
-        .filter-tag {
-    height: 32px;
+        /* [수정본] 검색 필터 전체 박스 */
+.filter-container { 
+    background: linear-gradient(145deg, #161b22, #0d1117) !important; /* 남색 계열 그라데이션 */
+    padding: 20px !important; 
+    border-radius: 20px !important; /* 박스 둥글게 */
+    margin-bottom: 20px; 
+    border: 1px solid #30363d !important; /* 은은한 남색 테두리 */
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5); /* 입체감 */
+}
+
+/* 검색 제목 영역 */
+#search-title-area { 
+    margin-bottom: 18px; 
+    padding-left: 12px; 
+    border-left: 4px solid var(--accent) !important; 
+    border-bottom: none !important; /* 기존 선 제거 */
+}
+
+/* 필터 태그들 (버튼) */
+.filter-tag {
+    height: 34px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 0 16px;
-    border-radius: 10px !important; /* 필터는 다시 완전 둥글게 */
-    font-size: 12px;
+    border-radius: 17px !important; /* 태그도 완전 둥글게 */
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    background: #1a1a1a;
-    color: #888;
-    border: 1px solid #333;
+    background: #21262d; /* 미세한 남색조 회색 */
+    color: #c9d1d9;
+    border: 1px solid #30363d;
     transition: all 0.2s;
-    white-space: nowrap;
     margin-bottom: 8px;
     margin-right: 4px;
+}
 
-        @media (hover: hover) {
-            .filter-tag:hover:not(.active) { 
-                transform: translateY(-2px); 
-                filter: brightness(1.1);
-            }
-        }
-
-        .filter-tag.active {
-    background-color: var(--accent) !important;
+/* 필터 활성화(클릭) 시 */
+.filter-tag.active {
+    background: var(--accent) !important;
     color: #000 !important;
     border-color: #fff !important;
-    font-weight: 800 !important;
-    /* 모바일 가독성을 위해 그림자 범위를 살짝 조정 */
-    box-shadow: 0 0 12px var(--accent), inset 0 0 5px rgba(255,255,255,0.5) !important;
-    transform: translateY(-2px); /* 살짝 위로 띄워서 강조 */
+    box-shadow: 0 0 15px rgba(255, 156, 0, 0.4) !important;
+    transform: translateY(-2px); /* 모바일에서도 살짝 들리는 효과 */
 }
 
-/* 마우스를 올렸을 때 미세한 효과 */
-.filter-tag:hover:not(.active) {
-    border-color: #555;
-    background: #222;
-    color: #fff;
+/* 구분선 */
+.filter-divider {
+    height: 1px;
+    background: #30363d;
+    margin: 15px 0;
 }
 
-        #search-title-area { margin-bottom: 15px; padding-left: 5px; border-left: 4px solid var(--accent); }
 
+        
          /* 기존 style 태그 마지막에 추가 */
 .pos-badge-inline {
     cursor:pointer; 
@@ -512,7 +523,7 @@
                 <button class="btn-main" id="btn-post">모집 시작</button>
             </div>
 
-            <div class="box" style="padding: 15px; background: #111;">
+            <div class="filter-container" style="padding: 15px; background: #111;">
                 <div id="search-title-area">
                     <h3 id="search-title" style="margin:0; font-size: 16px; color: #eee;">검색 필터</h3>
                     <small id="search-desc" style="color: #666; font-size: 11px;">포지션과 티어를 여러 개 선택해서 검색 할 수 있습니다</small>
