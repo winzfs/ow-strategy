@@ -831,7 +831,7 @@ window.showPageAndClose = function(id) {
             const iconUrl = ICON_URLS[pos] || '';
             
             return `
-                <span class="badge" style="background:${colors[pos] || '#555'}; color:${pos==='지원'?'black':'white'}; display:inline-flex; align-items:center; border-radius: 10px; padding: 3px 6px;">
+                <span class="badge" style="background:${colors[pos] || '#555'}; color:${pos==='지원'?'black':'white'}; display:inline-flex; align-items:center; border-radius: 10px; padding: 3px 6px 3px 2px;">
                     <img src="${iconUrl}" style="width:24px; height:24px; margin-right:4px; filter:${pos==='지원'?'brightness(0)':'none'};">
                     ${pos}
                 </span>`;
