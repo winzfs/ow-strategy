@@ -302,7 +302,7 @@
     align-items: center;
     justify-content: center;
     padding: 0 16px;
-    border-radius: 12px !important; /* 필터는 다시 완전 둥글게 */
+    border-radius: 10px !important; /* 필터는 다시 완전 둥글게 */
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -321,12 +321,11 @@
             }
         }
 
-        .filter-tag.active { 
-            border: 2px solid white !important; 
-            box-shadow: 0 0 12px rgba(255,156,0,0.4);
-            filter: brightness(1.2);
-            transform: none !important; 
-        }
+        .filter-tag.active {
+    background: var(--accent) !important;
+    color: #000 !important;
+    border-color: var(--accent) !important;
+}
 
         .filter-tag:active {
             filter: brightness(0.9);
