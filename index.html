@@ -910,7 +910,7 @@ window.showPageAndClose = function(id) {
             const { pos, tier } = currentFilter;
             
             if (pos.length === 0 && tier.length === 0) {
-                title.innerText = "전체 파티 보기";
+                title.innerText = "검색 필터";
             } else {
                 const posText = pos.length > 0 ? `[${pos.join(', ')}]` : "";
                 const tierText = tier.length > 0 ? `[${tier.join(', ')}]` : "";
