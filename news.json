@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-11 05:23",
+  "lastUpdated": "2026-02-11 15:16",
   "pro": [
     {
       "id": "4MlZ5UD41lQ",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "9E68nDws190",
-      "title": "폭발해버린 랭킹 1위 탱커",
+      "id": "hn2fPXQJJgk",
+      "title": "골골대다가 오버워치.",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,17 +19,27 @@
   ],
   "streamer": [
     {
-      "id": "MYZCRkGOIpk",
-      "title": "오버워치 고양이 신캐 '제트팩 캣' 플레이 영상 첫 공개!! 스크림 터뜨리는 프로게이머의 고양이ㄷㄷ",
+      "id": "4T_3ya87zDY",
+      "title": "오버워치 1시즌 미쳤다",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "ghp9WR217XQ",
-      "title": "1부 : 20시즌 통계 총정리 2부 : 프로경기 재관전 3부 : 라이브",
+      "id": "HpTaftXngp0",
+      "title": "탱커 경쟁전",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "YegEZCquqqU",
+      "title": "‘다른 삶’ 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "sw2gTaGZ32M",
+      "title": "‘다가오는 복수’ 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
     {
       "id": "UYiE_O3XbFM",
       "title": "대부분의 스킬을 무시해버리는 신규 영웅 안란 #오버워치",
@@ -49,47 +59,37 @@
       "id": "20H-MrgQl0A",
       "title": "5 명의 신규 영웅 게임플레이 트레일러 | 1 시즌: 정복 | 오버워치",
       "player": "Official"
-    },
-    {
-      "id": "cbb4MJUITWM",
-      "title": "오버워치 신캐 미즈키가 가져온 10년짜리 떡밥?",
-      "player": "Official"
-    },
-    {
-      "id": "ksgnhbJJ5Cw",
-      "title": "죽어도 다시 살아날 수 있는 신규 영웅 안란 #오버워치",
-      "player": "Official"
     }
   ],
   "trending": [
     {
-      "id": "NzUhhlvYpfg",
-      "title": "오버워치2하이라이트팟지",
+      "id": "I3ccaaJiNes",
+      "title": "FLARE OPEN SCRIM 결승전 4set 하이라이트 | 99DIVINE vs NEW ERA",
       "player": "Trending"
     },
     {
-      "id": "oFSm103tXrs",
-      "title": "오버워치 신규 하이라이트 모음 #오버워치2 #하이라이트  #주노 #도미나",
+      "id": "-aKaYqktuH0",
+      "title": "FLARE OPEN SCRIM 결승전 3set 하이라이트 | 99DIVINE vs NEW ERA",
       "player": "Trending"
     },
     {
-      "id": "mp353q30E8U",
-      "title": "오버워치2 마지막 1000딜방 하이라이트 Overwatch2 #shorts [계란과자] [2026.02.10]",
+      "id": "CAq2QkjPuFE",
+      "title": "FLARE OPEN SCRIM 결승전 1set 하이라이트 | 99DIVINE vs NEW ERA",
       "player": "Trending"
     },
     {
-      "id": "pAU6D1KPksM",
-      "title": "게임 끄고 자는 벤처 꿈에도 튀어나올 라이프위버 [오버워치]",
+      "id": "LQJyg2uqegE",
+      "title": "FLARE OPEN SCRIM 결승전 2set 하이라이트 | 99DIVINE vs NEW ERA",
       "player": "Trending"
     },
     {
-      "id": "XvBDII6yr4Y",
-      "title": "오버워치) 땡 중",
+      "id": "eEasm59M5bg",
+      "title": "감동의 페어힐러",
       "player": "Trending"
     },
     {
-      "id": "NJ40WsYU4NM",
-      "title": "신캐 5명 영웅 및 하이라이트 연출 빠르게 보기 #shorts #overwatch",
+      "id": "j8F4hbCAF6k",
+      "title": "오버워치 하이라이트 2탄",
       "player": "Trending"
     }
   ]
