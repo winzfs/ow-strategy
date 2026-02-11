@@ -397,18 +397,6 @@
 </nav>
 
 
-
-
-    <!-- 디버그 콘솔 (모바일용 - 자동 표시) -->
-    <div id="debug-console" style="position: fixed; bottom: 0; left: 0; right: 0; background: #000; color: #0f0; font-family: monospace; font-size: 10px; padding: 10px; max-height: 150px; overflow-y: auto; z-index: 9999; border-top: 2px solid #0f0; display: block;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-            <strong>🐛 DEBUG CONSOLE</strong>
-            <button onclick="document.getElementById('debug-console').style.display='none'" style="background: #f00; color: white; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">닫기</button>
-        </div>
-        <div id="debug-output"></div>
-    </div>
-    <button onclick="document.getElementById('debug-console').style.display='block'" style="position: fixed; bottom: 10px; right: 10px; background: #0f0; color: #000; border: none; padding: 10px; border-radius: 50%; font-weight: bold; z-index: 9998; font-size: 12px; width: 50px; height: 50px;">🐛</button>
-
     <!-- 사이드바 오버레이 -->
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
@@ -697,18 +685,7 @@
 // 사이드바 전용 스크립트 (수정본)
 // ========================================
 
-// 디버그 로그 함수
-window.debugLog = function(msg, type) {
-    type = type || 'info';
-    const output = document.getElementById('debug-output');
-    if (output) {
-        const time = new Date().toLocaleTimeString();
-        const color = type === 'error' ? '#f00' : type === 'success' ? '#0f0' : '#0ff';
-        output.innerHTML += '<div style="color: ' + color + '; margin: 2px 0;">[' + time + '] ' + msg + '</div>';
-        output.scrollTop = output.scrollHeight;
-    }
-    console.log(msg);
-};
+
 
 // 사이드바 토글 함수
 window.toggleSidebar = function() {
@@ -760,7 +737,7 @@ window.showPage = function(id) {
 };
 
 // 페이지 전환 후 사이드바 자동으로 닫기
-window.showPageAndClose = function(id) {
+indow.showPageAndClose = function(id) {
     window.showPage(id);
     window.toggleSidebar();
 };
