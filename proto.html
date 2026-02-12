@@ -3,156 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Overwatch Hub - Mobile & Auth</title>
+    <title>Overwatch Hub Professional - v4.5</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&family=Orbitron:wght@900&display=swap" rel="stylesheet">
 
+    <script type="module">
+        import { CONFIG } from './config.js';
+        window.CONFIG = CONFIG;
+    </script>
+
     <style>
-        :root { --ow-orange: #ff9c00; --ow-dark: #0b0c10; }
-        body { font-family: 'Noto Sans KR', sans-serif; background: var(--ow-dark); color: white; margin: 0; -webkit-tap-highlight-color: transparent; }
-        
-        /* [반응형] 사이드바: 모바일에서는 숨김, 테블릿 이상 노출 */
-        .sidebar { width: 260px; transition: all 0.3s ease; background: #14161c; border-right: 1px solid rgba(255,255,255,0.05); height: 100vh; position: fixed; z-index: 50; }
+        :root { --ow-orange: #ff9c00; --ow-blue: #00aeff; --ow-dark: #050608; }
+        body { font-family: 'Noto Sans KR', sans-serif; background: var(--ow-dark); color: white; margin: 0; overflow-x: hidden; }
+        .font-ow { font-family: 'Orbitron', sans-serif; }
+
+        /* [수정] 사이드바: 글자 깨짐 방지를 위한 overflow 및 width 제어 */
+        .sidebar { width: 260px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(15, 16, 20, 0.95); border-right: 1px solid rgba(255,255,255,0.05); height: 100vh; position: fixed; z-index: 100; overflow: hidden; }
         .sidebar.collapsed { width: 80px; }
         
-        /* [반응형] 메인 컨텐츠 여백 조절 */
-        .main-content { margin-left: 260px; min-height: 100vh; background: #0f1014; transition: all 0.3s ease; padding-bottom: 80px; /* 모바일 하단바 공간 */ }
+        .nav-item { 
+            display: flex; align-items: center; padding: 1rem 1.5rem; margin: 0.5rem 0.75rem;
+            border-radius: 12px; transition: 0.2s; color: #888; white-space: nowrap; cursor: pointer;
+        }
+        .nav-item i { min-width: 32px; font-size: 1.25rem; }
+        /* 글자 깨짐 방지: 투명도와 위치 이동 */
+        .nav-item span { transition: opacity 0.2s, transform 0.2s; opacity: 1; }
+        .sidebar.collapsed .nav-item span { opacity: 0; transform: translateX(-20px); pointer-events: none; }
+        .nav-item.active { background: rgba(255, 156, 0, 0.1); color: var(--ow-orange); box-shadow: inset 4px 0 0 var(--ow-orange); }
+
+        /* 메인 영역 */
+        .main-content { margin-left: 260px; transition: margin-left 0.3s ease; min-height: 100vh; background: radial-gradient(circle at 50% 0%, #1a1c23 0%, #050608 100%); padding-bottom: 80px; }
         .main-content.expanded { margin-left: 80px; }
 
-        /* [수정] 사이드바 하이라이트 (아이콘 보호) */
-        .nav-item { 
-            position: relative; display: flex; align-items: center; gap: 1rem; 
-            padding: 0.9rem 1.25rem; margin: 0.25rem 0.75rem;
-            border-radius: 0.75rem; font-weight: 700; color: #9ca3af; transition: 0.2s;
+        /* [디자인] 글래스모피즘 카드 */
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); 
+            border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.3s;
         }
-        .nav-item i { width: 24px; text-align: center; position: relative; z-index: 10; }
-        .nav-item.active { color: var(--ow-orange); background: rgba(255, 156, 0, 0.12); }
-        .nav-item.active::after { content: ''; position: absolute; left: 0; top: 25%; height: 50%; width: 3px; background: var(--ow-orange); border-radius: 0 4px 4px 0; }
+        .glass-card:hover { border-color: rgba(255, 156, 0, 0.5); transform: translateY(-5px); box-shadow: 0 15px 40px rgba(255, 156, 0, 0.1); }
 
-        /* [모바일] 하단 네비게이션바 (768px 미만 노출) */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: #14161c; border-top: 1px solid rgba(255,255,255,0.1); display: flex; z-index: 100; backdrop-blur: lg; }
-        .bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 10px; font-weight: 800; color: #666; }
-        .bottom-nav-item.active { color: var(--ow-orange); }
-
-        @media (max-width: 767px) {
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
             .sidebar { display: none; }
             .main-content { margin-left: 0 !important; }
-            .header-search { width: 100% !important; }
+            .bottom-nav { display: flex; }
         }
-        @media (min-width: 768px) {
-            .bottom-nav { display: none; }
-        }
-
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; transition: 0.3s; }
-        .view-section { display: none; }
-        .view-section.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(10, 11, 14, 0.9); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); display: none; z-index: 200; align-items: center; justify-content: space-around; }
+        
+        /* 알림창 슬라이드 */
+        #noti-drawer { position: fixed; top: 0; right: -320px; width: 320px; height: 100vh; background: rgba(15, 16, 20, 0.98); backdrop-filter: blur(20px); border-left: 1px solid rgba(255,255,255,0.1); transition: 0.4s; z-index: 150; }
+        #noti-drawer.open { right: 0; }
     </style>
 </head>
 <body>
 
-    <aside id="sidebar" class="sidebar flex flex-col py-6">
-        <div class="px-6 mb-10 flex items-center gap-3 cursor-pointer" onclick="UI.toggleSidebar()">
-            <div class="w-10 h-10 bg-[#ff9c00] rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-                <i class="fa-solid fa-crosshairs text-black text-xl"></i>
+    <aside id="sidebar" class="sidebar">
+        <div class="p-6 mb-8 flex items-center gap-4 cursor-pointer" onclick="UI.toggleSidebar()">
+            <div class="w-10 h-10 bg-gradient-to-br from-[#ff9c00] to-[#ff6b00] rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/40">
+                <i class="fa-solid fa-shield-halved text-black text-xl"></i>
             </div>
-            <h1 class="hidden-text font-black text-xl tracking-tighter italic">OW HUB</h1>
+            <span class="font-ow text-2xl font-black tracking-tighter">OW <span class="text-[#ff9c00]">HUB</span></span>
         </div>
-        <nav class="flex-1">
-            <button onclick="Router.go('matching')" class="nav-item active w-full" title="파티">
-                <i class="fa-solid fa-user-group"></i><span class="hidden-text">파티 매칭</span>
-            </button>
-            <button onclick="Router.go('community')" class="nav-item w-full" title="커뮤니티">
-                <i class="fa-solid fa-hashtag"></i><span class="hidden-text">커뮤니티</span>
-            </button>
-            <button onclick="Auth.toggleAuthModal()" id="auth-btn-side" class="nav-item w-full" title="계정">
-                <i class="fa-solid fa-circle-user"></i><span class="hidden-text">로그인</span>
-            </button>
+        <nav>
+            <div onclick="Router.go('matching')" class="nav-item active" title="파티 찾기">
+                <i class="fa-solid fa-users-viewfinder"></i><span>파티 찾기</span>
+            </div>
+            <div onclick="Router.go('community')" class="nav-item" title="커뮤니티">
+                <i class="fa-solid fa-comments"></i><span>커뮤니티</span>
+            </div>
+            <div onclick="UI.toggleNoti()" class="nav-item" title="알림">
+                <i class="fa-solid fa-bell"></i><span>알림 센터</span>
+            </div>
+            <div onclick="Auth.openModal()" id="auth-nav" class="nav-item" title="로그인">
+                <i class="fa-solid fa-user-astronaut"></i><span id="auth-nav-text">로그인</span>
+            </div>
         </nav>
-        <div id="admin-badge-container" class="px-4 hidden">
-            <div class="glass p-3 flex items-center gap-3 border-orange-500/30">
+
+        <div id="admin-indicator" class="mt-auto p-6 hidden">
+            <div class="glass-card p-3 flex items-center gap-2 border-orange-500/50">
                 <i class="fa-solid fa-crown text-orange-500"></i>
-                <div class="hidden-text text-[10px] font-black uppercase text-orange-500">Admin Mode</div>
+                <span class="text-[10px] font-black text-orange-500">MASTER</span>
             </div>
         </div>
     </aside>
 
     <nav class="bottom-nav">
-        <button onclick="Router.go('matching')" class="bottom-nav-item active" id="m-nav-matching">
-            <i class="fa-solid fa-user-group text-lg"></i><span>파티</span>
-        </button>
-        <button onclick="Router.go('community')" class="bottom-nav-item" id="m-nav-community">
-            <i class="fa-solid fa-hashtag text-lg"></i><span>커뮤니티</span>
-        </button>
-        <button onclick="Auth.toggleAuthModal()" class="bottom-nav-item" id="m-nav-auth">
-            <i class="fa-solid fa-circle-user text-lg"></i><span id="m-auth-text">로그인</span>
-        </button>
+        <div onclick="Router.go('matching')" class="text-orange-500 flex flex-col items-center gap-1">
+            <i class="fa-solid fa-users-viewfinder text-xl"></i><span class="text-[10px] font-bold">파티</span>
+        </div>
+        <div onclick="Router.go('community')" class="text-gray-500 flex flex-col items-center gap-1">
+            <i class="fa-solid fa-comments text-xl"></i><span class="text-[10px] font-bold">커뮤</span>
+        </div>
+        <div onclick="UI.openWriteModal()" class="w-12 h-12 bg-[#ff9c00] rounded-full flex items-center justify-center text-black -translate-y-4 shadow-xl shadow-orange-500/30">
+            <i class="fa-solid fa-plus text-xl"></i>
+        </div>
+        <div onclick="UI.toggleNoti()" class="text-gray-500 flex flex-col items-center gap-1">
+            <i class="fa-solid fa-bell text-xl"></i><span class="text-[10px] font-bold">알림</span>
+        </div>
+        <div onclick="Auth.openModal()" class="text-gray-500 flex flex-col items-center gap-1">
+            <i class="fa-solid fa-user text-xl"></i><span class="text-[10px] font-bold">계정</span>
+        </div>
     </nav>
 
     <main id="main-content" class="main-content">
-        <header class="sticky top-0 z-40 bg-[#0f1014]/90 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center">
-            <div class="relative w-full max-w-sm header-search">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
-                <input type="text" id="global-search" oninput="App.search(this.value)" placeholder="요원 또는 게시글 검색..." class="w-full bg-white/5 border border-white/10 rounded-full py-2 pl-11 pr-4 text-sm outline-none focus:border-[#ff9c00]">
+        <header class="sticky top-0 z-40 bg-black/50 backdrop-blur-xl border-b border-white/5 px-6 md:px-10 py-5 flex justify-between items-center">
+            <div class="relative w-full max-w-md">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                <input type="text" id="main-search" oninput="App.search(this.value)" placeholder="요원, 태그, 제목 검색..." class="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-12 pr-6 outline-none focus:border-[#ff9c00] transition-all">
             </div>
-            <button onclick="UI.openWriteModal()" class="ml-4 bg-[#ff9c00] text-black font-black w-10 h-10 md:w-auto md:px-6 md:py-2.5 rounded-full flex items-center justify-center gap-2">
-                <i class="fa-solid fa-plus"></i> <span class="hidden md:inline text-sm">작성</span>
+            <button onclick="UI.openWriteModal()" class="hidden md:flex bg-[#ff9c00] text-black font-black px-8 py-2.5 rounded-full hover:scale-105 active:scale-95 transition shadow-lg shadow-orange-500/20 items-center gap-2">
+                <i class="fa-solid fa-plus"></i> 파티 모집하기
             </button>
         </header>
 
         <section id="view-matching" class="view-section active p-6 md:p-10">
-            <div class="mb-8">
-                <h2 class="text-3xl md:text-5xl font-black italic tracking-tighter mb-2">SQUAD FINDER</h2>
-                <p id="party-count" class="text-gray-500 text-[10px] md:text-xs font-bold uppercase tracking-widest">실시간 매칭 대기 중</p>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
+                <div>
+                    <h2 class="text-4xl md:text-6xl font-black italic tracking-tighter mb-2">SQUAD <span class="text-[#ff9c00]">FINDER</span></h2>
+                    <p id="party-stats" class="text-gray-500 text-xs font-bold tracking-widest uppercase">실시간 세션 로딩 중...</p>
+                </div>
+                <div class="flex bg-white/5 p-1 rounded-2xl border border-white/10" id="filter-btns">
+                    <button onclick="App.filter('all')" class="px-6 py-2 rounded-xl text-xs font-black bg-[#ff9c00] text-black">ALL</button>
+                    <button onclick="App.filter('탱커')" class="px-6 py-2 rounded-xl text-xs font-black text-gray-400">TANK</button>
+                    <button onclick="App.filter('딜러')" class="px-6 py-2 rounded-xl text-xs font-black text-gray-400">DPS</button>
+                    <button onclick="App.filter('지원')" class="px-6 py-2 rounded-xl text-xs font-black text-gray-400">SUPP</button>
+                </div>
             </div>
-            <div id="matching-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+            <div id="matching-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                </div>
         </section>
 
         <section id="view-community" class="view-section p-6 md:p-10">
-            <h2 class="text-3xl md:text-5xl font-black italic tracking-tighter mb-8">COMMUNITY</h2>
-            <div id="community-list" class="space-y-4 max-w-4xl"></div>
+            <h2 class="text-4xl md:text-6xl font-black italic tracking-tighter mb-10 uppercase">Forum</h2>
+            <div id="community-list" class="space-y-4 max-w-5xl">
+                </div>
         </section>
     </main>
 
-    <div id="modal-auth" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-        <div class="glass w-full max-w-sm p-8 bg-[#16171d]">
-            <div class="flex justify-between items-center mb-8">
-                <h2 id="auth-title" class="text-2xl font-black">LOGIN</h2>
-                <button onclick="Auth.toggleAuthModal()" class="text-gray-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+    <div id="noti-drawer">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="text-2xl font-black italic uppercase">Notifications</h3>
+                <button onclick="UI.toggleNoti()" class="text-gray-500"><i class="fa-solid fa-xmark text-2xl"></i></button>
             </div>
-            <form id="auth-form" class="space-y-4">
-                <input type="email" id="auth-email" placeholder="이메일" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]" required>
-                <input type="password" id="auth-pw" placeholder="비밀번호" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]" required>
-                <button type="submit" id="auth-submit" class="w-full bg-[#ff9c00] text-black font-black py-4 rounded-xl shadow-lg">접속하기</button>
-            </form>
-            <div class="mt-6 text-center">
-                <button onclick="Auth.switchMode()" id="auth-switch" class="text-sm text-gray-500 font-bold hover:text-white underline">아직 계정이 없으신가요? 회원가입</button>
+            <div id="noti-content" class="space-y-4">
+                <div class="glass-card p-4 text-xs leading-relaxed">
+                    <p class="text-orange-500 font-black mb-1">WELCOME AGENT!</p>
+                    <p class="text-gray-400">오버워치 허브 v4.5에 접속하신 것을 환영합니다.</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="modal-write" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-        <div class="glass w-full max-w-lg p-6 md:p-8 bg-[#16171d]">
-            <div class="flex gap-4 mb-6 border-b border-white/10 pb-4">
-                <button id="tab-p" onclick="UI.switchTab('p')" class="font-black text-lg text-[#ff9c00]">파티 찾기</button>
-                <button id="tab-c" onclick="UI.switchTab('c')" class="font-black text-lg text-gray-500">커뮤니티</button>
+    <div id="modal-write" class="fixed inset-0 z-[300] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+        <div class="glass-card w-full max-w-xl p-8 bg-[#111216]">
+            <div class="flex gap-6 mb-8 border-b border-white/5 pb-4">
+                <button id="tab-p" onclick="UI.switchTab('p')" class="text-xl font-black text-[#ff9c00]">파티 매칭</button>
+                <button id="tab-c" onclick="UI.switchTab('c')" class="text-xl font-black text-gray-500">커뮤니티</button>
             </div>
             <form id="post-form" class="space-y-4">
                 <input type="hidden" id="post-type" value="p">
-                <div id="p-options" class="grid grid-cols-2 gap-3">
-                    <select id="f-role" class="bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none">
-                        <option value="탱커">🛡️ 탱커</option><option value="딜러">⚔️ 딜러</option><option value="지원">💉 지원</option>
+                <div id="p-options" class="grid grid-cols-2 gap-4">
+                    <select id="f-role" class="bg-white/5 border border-white/10 rounded-xl p-4 outline-none">
+                        <option value="탱커">🛡️ TANK</option><option value="딜러">⚔️ DPS</option><option value="지원">💉 SUPP</option>
                     </select>
-                    <select id="f-tier" class="bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none">
-                        <option>브론즈</option><option>실버</option><option>골드</option><option>플래티넘</option><option>다이아몬드</option><option>마스터</option>
+                    <select id="f-tier" class="bg-white/5 border border-white/10 rounded-xl p-4 outline-none">
+                        <option>브론즈</option><option>실버</option><option>골드</option><option>플래티넘</option><option>다이아몬드</option><option>마스터</option><option>그랜드마스터</option>
                     </select>
                 </div>
-                <input type="text" id="f-title" placeholder="배틀태그 또는 제목" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]">
-                <textarea id="f-content" rows="4" placeholder="상세 내용을 입력하세요..." class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]"></textarea>
-                <button type="submit" class="w-full bg-[#ff9c00] text-black font-black py-4 rounded-xl">게시하기</button>
+                <input type="text" id="f-title" placeholder="배틀태그 또는 글 제목" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]" required>
+                <textarea id="f-content" rows="5" placeholder="상세 내용을 입력하세요..." class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]" required></textarea>
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-[#ff9c00] text-black font-black py-4 rounded-xl shadow-lg">포스팅 하기</button>
+                    <button type="button" onclick="UI.closeModal()" class="px-6 bg-white/5 rounded-xl font-black">취소</button>
+                </div>
             </form>
+        </div>
+    </div>
+
+    <div id="modal-auth" class="fixed inset-0 z-[400] hidden flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl">
+        <div class="glass-card w-full max-w-sm p-10 bg-[#0f1014]">
+            <h2 id="auth-title" class="text-3xl font-black italic mb-8 uppercase text-center">Login</h2>
+            <form id="auth-form" class="space-y-4">
+                <input type="email" id="auth-email" placeholder="Email Address" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]" required>
+                <input type="password" id="auth-pw" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]" required>
+                <button type="submit" id="auth-submit" class="w-full bg-white text-black font-black py-4 rounded-xl">SIGN IN</button>
+            </form>
+            <div class="mt-6 text-center">
+                <button onclick="Auth.switchMode()" id="auth-switch" class="text-xs text-gray-500 font-bold underline">계정이 없으신가요? 회원가입</button>
+            </div>
+            <button onclick="UI.closeAuthModal()" class="w-full mt-4 text-gray-600 text-xs font-black uppercase">Close</button>
         </div>
     </div>
 
@@ -161,12 +204,9 @@
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         
-        // 사용자가 제공한 config.js 임포트
-        import { CONFIG } from './config.js';
-
-        // Firebase 설정 (사용자 키 입력 필요)
+        // 1. Firebase 설정 (config.js의 내용을 여기 입력하거나 유지)
         const firebaseConfig = {
-            apiKey: "AIzaSyCH...", // 실제 키로 교체 필요
+            apiKey: "AIzaSyCH...", // 실제 API 키
             authDomain: "owhub-655f2.firebaseapp.com",
             projectId: "owhub-655f2",
             storageBucket: "owhub-655f2.appspot.com",
@@ -178,30 +218,140 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // 전역 상태
-        let currentUser = null;
-        let posts = [];
-        let community = [];
-        let searchKey = "";
+        let userState = null;
+        let partyData = [];
+        let forumData = [];
+        let currentFilter = 'all';
+        let searchQuery = '';
 
-        // [Auth Logic] 인증 시스템
+        // [Logic] 실시간 데이터 리스너
+        const initApp = () => {
+            onSnapshot(query(collection(db, "posts"), orderBy("timestamp", "desc")), (snap) => {
+                partyData = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                renderMatching();
+            });
+            onSnapshot(query(collection(db, "community"), orderBy("timestamp", "desc")), (snap) => {
+                forumData = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                renderForum();
+            });
+        };
+
+        // [Logic] 렌더링 함수
+        const renderMatching = () => {
+            const grid = document.getElementById('matching-grid');
+            let list = partyData.filter(p => currentFilter === 'all' || p.role === currentFilter);
+            if(searchQuery) list = list.filter(p => p.title.toLowerCase().includes(searchQuery) || p.content.toLowerCase().includes(searchQuery));
+            
+            grid.innerHTML = list.map(p => `
+                <div class="glass-card p-8 group relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="text-[11px] font-black text-[#ff9c00] border-b-2 border-[#ff9c00] pb-1 uppercase tracking-widest">${p.role}</span>
+                        <span class="text-[10px] font-bold text-gray-500 italic">${p.tier}</span>
+                    </div>
+                    <h4 class="text-2xl font-black mb-1 group-hover:text-[#ff9c00] transition-colors">${p.title}</h4>
+                    <div class="flex gap-1 text-[10px] text-yellow-500 mb-6">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-sm text-gray-400 line-clamp-2 h-10 mb-8 leading-relaxed">${p.content}</p>
+                    <button class="w-full py-4 bg-white/5 rounded-xl text-xs font-black hover:bg-[#ff9c00] hover:text-black transition-all">SQUAD JOIN</button>
+                </div>
+            `).join('');
+            document.getElementById('party-stats').innerText = `${list.length} AGENTS READY TO FIGHT`;
+        };
+
+        const renderForum = () => {
+            const container = document.getElementById('community-list');
+            let list = forumData;
+            if(searchQuery) list = list.filter(c => c.title.toLowerCase().includes(searchQuery) || c.content.toLowerCase().includes(searchQuery));
+
+            container.innerHTML = list.map(c => `
+                <div class="glass-card p-6 flex justify-between items-center group cursor-pointer border-l-4 border-l-transparent hover:border-l-[#ff9c00]">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="text-[10px] font-black text-blue-500 uppercase tracking-tighter">Forum</span>
+                            <h3 class="text-lg font-bold group-hover:text-[#ff9c00] transition">${c.title}</h3>
+                        </div>
+                        <p class="text-sm text-gray-500 line-clamp-1">${c.content}</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-gray-700 group-hover:text-[#ff9c00] translate-x-0 group-hover:translate-x-2 transition"></i>
+                </div>
+            `).join('');
+        };
+
+        // [Logic] 인증 및 유저 상태
+        onAuthStateChanged(auth, (user) => {
+            userState = user;
+            const authText = document.getElementById('auth-nav-text');
+            if(user) {
+                authText.innerText = '로그아웃';
+                if(user.email === window.CONFIG?.ADMIN_EMAIL) document.getElementById('admin-indicator').classList.remove('hidden');
+            } else {
+                authText.innerText = '로그인';
+                document.getElementById('admin-indicator').classList.add('hidden');
+            }
+        });
+
+        // [Global Actions] 전역 노출
         window.Auth = {
             mode: 'login',
-            toggleAuthModal() {
-                if(currentUser) {
-                    if(confirm("로그아웃 하시겠습니까?")) signOut(auth);
-                } else {
-                    document.getElementById('modal-auth').classList.toggle('hidden');
-                }
+            openModal() {
+                if(userState) { if(confirm('로그아웃 하시겠습니까?')) signOut(auth); }
+                else document.getElementById('modal-auth').classList.remove('hidden');
             },
             switchMode() {
                 this.mode = this.mode === 'login' ? 'signup' : 'login';
-                document.getElementById('auth-title').innerText = this.mode === 'login' ? 'LOGIN' : 'SIGN UP';
-                document.getElementById('auth-submit').innerText = this.mode === 'login' ? '접속하기' : '가입하기';
-                document.getElementById('auth-switch').innerText = this.mode === 'login' ? '아직 계정이 없으신가요? 회원가입' : '이미 계정이 있나요? 로그인';
+                document.getElementById('auth-title').innerText = this.mode.toUpperCase();
+                document.getElementById('auth-submit').innerText = this.mode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT';
+                document.getElementById('auth-switch').innerText = this.mode === 'login' ? '계정이 없으신가요? 회원가입' : '이미 계정이 있나요? 로그인';
             }
         };
 
+        window.App = {
+            filter(role) {
+                currentFilter = role;
+                renderMatching();
+                document.querySelectorAll('#filter-btns button').forEach(b => {
+                    b.className = "px-6 py-2 rounded-xl text-xs font-black text-gray-400";
+                    if(b.innerText === role.toUpperCase() || (role==='all' && b.innerText==='ALL')) {
+                        b.className = "px-6 py-2 rounded-xl text-xs font-black bg-[#ff9c00] text-black shadow-lg shadow-orange-500/30";
+                    }
+                });
+            },
+            search(val) { searchQuery = val.toLowerCase(); renderMatching(); renderForum(); }
+        };
+
+        window.UI = {
+            toggleSidebar() {
+                document.getElementById('sidebar').classList.toggle('collapsed');
+                document.getElementById('main-content').classList.toggle('expanded');
+            },
+            toggleNoti() { document.getElementById('noti-drawer').classList.toggle('open'); },
+            openWriteModal() { 
+                if(!userState) return alert('로그인이 필요합니다.');
+                document.getElementById('modal-write').classList.remove('hidden'); 
+            },
+            closeModal() { document.getElementById('modal-write').classList.add('hidden'); },
+            closeAuthModal() { document.getElementById('modal-auth').classList.add('hidden'); },
+            switchTab(type) {
+                document.getElementById('post-type').value = type;
+                document.getElementById('p-options').style.display = type === 'p' ? 'grid' : 'none';
+                document.getElementById('tab-p').className = type === 'p' ? 'text-xl font-black text-[#ff9c00]' : 'text-xl font-black text-gray-500';
+                document.getElementById('tab-c').className = type === 'c' ? 'text-xl font-black text-[#ff9c00]' : 'text-xl font-black text-gray-500';
+            }
+        };
+
+        window.Router = {
+            go(view) {
+                document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+                document.getElementById(`view-${view}`).classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(n => {
+                    n.classList.remove('active');
+                    if(n.innerText.includes(view === 'matching' ? '파티' : '커뮤니티')) n.classList.add('active');
+                });
+            }
+        };
+
+        // 폼 제출
         document.getElementById('auth-form').onsubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
@@ -209,92 +359,8 @@
             try {
                 if(Auth.mode === 'login') await signInWithEmailAndPassword(auth, email, pw);
                 else await createUserWithEmailAndPassword(auth, email, pw);
-                document.getElementById('modal-auth').classList.add('hidden');
-            } catch (err) { alert("인증 오류: " + err.message); }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            const btnText = user ? '로그아웃' : '로그인';
-            document.getElementById('auth-btn-side').querySelector('span').innerText = btnText;
-            document.getElementById('m-auth-text').innerText = btnText;
-            
-            // 관리자 확인 (config.js의 ADMIN_EMAIL 활용)
-            if(user && user.email === CONFIG.ADMIN_EMAIL) {
-                document.getElementById('admin-badge-container').classList.remove('hidden');
-            } else {
-                document.getElementById('admin-badge-container').classList.add('hidden');
-            }
-        });
-
-        // [App Logic] 데이터 관리
-        window.App = {
-            init() {
-                onSnapshot(query(collection(db, "posts"), orderBy("timestamp", "desc")), (snap) => {
-                    posts = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                    this.render('matching');
-                });
-                onSnapshot(query(collection(db, "community"), orderBy("timestamp", "desc")), (snap) => {
-                    community = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                    this.render('community');
-                });
-            },
-            search(val) {
-                searchKey = val.toLowerCase();
-                this.render('matching');
-                this.render('community');
-            },
-            render(type) {
-                if(type === 'matching') {
-                    const grid = document.getElementById('matching-grid');
-                    let filtered = posts;
-                    if(searchKey) filtered = filtered.filter(p => p.title.toLowerCase().includes(searchKey) || p.content.toLowerCase().includes(searchKey));
-                    grid.innerHTML = filtered.map(p => `
-                        <div class="glass p-6 group">
-                            <div class="flex justify-between items-center mb-4 text-[10px] font-black">
-                                <span class="text-[#ff9c00] border border-[#ff9c00]/30 px-2 py-0.5 rounded">${p.role}</span>
-                                <span class="text-gray-500">${p.tier}</span>
-                            </div>
-                            <h4 class="text-xl font-black mb-1">${p.title}</h4>
-                            <p class="text-xs text-gray-500 line-clamp-2 mb-6">${p.content}</p>
-                            <button class="w-full py-3 bg-white/5 rounded-xl text-xs font-black hover:bg-[#ff9c00] hover:text-black transition">팀 합류 신청</button>
-                        </div>
-                    `).join('');
-                    document.getElementById('party-count').innerText = `${filtered.length}개의 요원 모집 중`;
-                } else {
-                    const list = document.getElementById('community-list');
-                    let filtered = community;
-                    if(searchKey) filtered = filtered.filter(c => c.title.toLowerCase().includes(searchKey) || c.content.toLowerCase().includes(searchKey));
-                    list.innerHTML = filtered.map(c => `
-                        <div class="glass p-5 hover:border-white/20 cursor-pointer">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] text-orange-500 font-black">FEED</span>
-                                <h3 class="font-bold">${c.title}</h3>
-                            </div>
-                            <p class="text-sm text-gray-500">${c.content}</p>
-                        </div>
-                    `).join('');
-                }
-            }
-        };
-
-        // [UI Logic] 인터랙션
-        window.UI = {
-            toggleSidebar() {
-                document.getElementById('sidebar').classList.toggle('collapsed');
-                document.getElementById('main-content').classList.toggle('expanded');
-            },
-            openWriteModal() {
-                if(!currentUser) return alert("로그인이 필요한 서비스입니다.");
-                document.getElementById('modal-write').classList.remove('hidden');
-            },
-            closeModal() { document.getElementById('modal-write').classList.add('hidden'); },
-            switchTab(type) {
-                document.getElementById('post-type').value = type;
-                document.getElementById('p-options').style.display = type === 'p' ? 'grid' : 'none';
-                document.getElementById('tab-p').className = type === 'p' ? 'font-black text-lg text-[#ff9c00]' : 'font-black text-lg text-gray-500';
-                document.getElementById('tab-c').className = type === 'c' ? 'font-black text-lg text-[#ff9c00]' : 'font-black text-lg text-gray-500';
-            }
+                UI.closeAuthModal();
+            } catch (err) { alert(err.message); }
         };
 
         document.getElementById('post-form').onsubmit = async (e) => {
@@ -304,9 +370,8 @@
             const data = {
                 title: document.getElementById('f-title').value,
                 content: document.getElementById('f-content').value,
-                uid: currentUser.uid,
-                email: currentUser.email,
-                timestamp: serverTimestamp()
+                timestamp: serverTimestamp(),
+                author: userState.email
             };
             if(type === 'p') {
                 data.role = document.getElementById('f-role').value;
@@ -317,20 +382,7 @@
             e.target.reset();
         };
 
-        window.Router = {
-            go(view) {
-                document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-                document.getElementById(`view-${view}`).classList.add('active');
-                
-                // 네비게이션 활성화 표시
-                document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(n => {
-                    n.classList.remove('active');
-                    if(n.title === (view==='matching'?'파티':'커뮤니티') || n.id === `m-nav-${view}`) n.classList.add('active');
-                });
-            }
-        };
-
-        App.init();
+        initApp();
     </script>
 </body>
 </html>
