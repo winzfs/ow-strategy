@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-11 15:16",
+  "lastUpdated": "2026-02-12 05:18",
   "pro": [
     {
       "id": "4MlZ5UD41lQ",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "hn2fPXQJJgk",
-      "title": "골골대다가 오버워치.",
+      "id": "zxH47dYk-8I",
+      "title": "브론즈급 궁 타이밍",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,8 +19,8 @@
   ],
   "streamer": [
     {
-      "id": "4T_3ya87zDY",
-      "title": "오버워치 1시즌 미쳤다",
+      "id": "c-T3Izdw3a0",
+      "title": "OWCS 오픈 스크림 크레이지라쿤 | 1~3시: CR vs TL / 3~5시: CR vs FLC",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,11 @@
     }
   ],
   "official": [
+    {
+      "id": "7yHA8k06k_4",
+      "title": "【02/05】설맞이 델타포스 대회 2일차 (광고) / 오버워치 대격변 패치 알아보기 (1부)",
+      "player": "Official"
+    },
     {
       "id": "YegEZCquqqU",
       "title": "‘다른 삶’ 스토리 타임 | 오버워치",
@@ -54,14 +59,34 @@
       "id": "U2f2QBE6OEo",
       "title": "탈론 모집 트레일러 | 오버워치",
       "player": "Official"
-    },
-    {
-      "id": "20H-MrgQl0A",
-      "title": "5 명의 신규 영웅 게임플레이 트레일러 | 1 시즌: 정복 | 오버워치",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "ohfTk37zY9g",
+      "title": "용의 눈을 장착했더니 개사기가 된 일리아리 [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "JWdeF1-wap0",
+      "title": "메르시 폼폼푸린 안아주기 스킨별 하이라이트 (예쁜 스킨 + 있는 스킨만) #shorts #overwatch",
+      "player": "Trending"
+    },
+    {
+      "id": "9Vhy1tp4j6c",
+      "title": "오버워치) 고양이가 하고싶었어",
+      "player": "Trending"
+    },
+    {
+      "id": "CsLDzpb1_80",
+      "title": "오버워치2 애쉬 하이라이트",
+      "player": "Trending"
+    },
+    {
+      "id": "GViwDn6uAi4",
+      "title": "오버워치2  애쉬 하이라이트",
+      "player": "Trending"
+    },
     {
       "id": "I3ccaaJiNes",
       "title": "FLARE OPEN SCRIM 결승전 4set 하이라이트 | 99DIVINE vs NEW ERA",
@@ -90,6 +115,76 @@
     {
       "id": "j8F4hbCAF6k",
       "title": "오버워치 하이라이트 2탄",
+      "player": "Trending"
+    },
+    {
+      "id": "FanQ5hz_6I0",
+      "title": "주노 신화 무기에 따른 하이라이트 효과음 변화",
+      "player": "Trending"
+    },
+    {
+      "id": "FKbjxAVhTpQ",
+      "title": "오버워치2 아이헨발데 엠레 아직은 어색한 신 영웅 엠레 #shorts",
+      "player": "Trending"
+    },
+    {
+      "id": "IGYEfZ8sLRs",
+      "title": "오버워치2 리알토 소전 궁극기 투자한 만큼 뽑기 #shorts",
+      "player": "Trending"
+    },
+    {
+      "id": "BxiaWkcNCo0",
+      "title": "오버워치2 한조 하이라이트 플레이 모음6 (Overwatch2 Hanzo Potg Play Collection6) #shorts 버전1",
+      "player": "Trending"
+    },
+    {
+      "id": "cEdHFeoF6uQ",
+      "title": "오버워치2 한조 하이라이트 플레이 모음6 (Overwatch2 Hanzo Potg Play Collection6) #351",
+      "player": "Trending"
+    },
+    {
+      "id": "dY1tewvih9Y",
+      "title": "오버워치2 한조 하이라이트 플레이 모음6 (Overwatch2 Hanzo Potg Play Collection6) #shorts 버전2",
+      "player": "Trending"
+    },
+    {
+      "id": "izD27gaQVa8",
+      "title": "요즘 힐러워치라고 불리는 이유 #오버워치 #팟지 #하이라이트 #힐러",
+      "player": "Trending"
+    },
+    {
+      "id": "Mbvkq9Nww6s",
+      "title": "오버워치) 쓰레기통",
+      "player": "Trending"
+    },
+    {
+      "id": "74G3Npu3eko",
+      "title": "벤데타 하이라이트",
+      "player": "Trending"
+    },
+    {
+      "id": "6PM0gr9t_8E",
+      "title": "소전 하이라이트(클러치 2탄)",
+      "player": "Trending"
+    },
+    {
+      "id": "MsLSDOiiH5E",
+      "title": "주노 헬로키티 안아주기 스킨별 하이라이트 (예쁜 스킨+있는 스킨만) #shorts #overwatch",
+      "player": "Trending"
+    },
+    {
+      "id": "jDE7OD0qvA0",
+      "title": "오버워치 서버터졌는데요",
+      "player": "Trending"
+    },
+    {
+      "id": "NzUhhlvYpfg",
+      "title": "오버워치2하이라이트팟지",
+      "player": "Trending"
+    },
+    {
+      "id": "oFSm103tXrs",
+      "title": "오버워치 신규 하이라이트 모음 #오버워치2 #하이라이트  #주노 #도미나",
       "player": "Trending"
     }
   ]
