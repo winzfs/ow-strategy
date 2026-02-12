@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overwatch Hub v2.0 - 실시간 파티 매칭</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ow-orange: #ff9c00;
+            --ow-dark: #1a1c23;
+            --ow-card: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--ow-dark);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* 배경 시스템 */
+        #bg-video-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+        }
+
+        .bg-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(26,28,35,0.7) 0%, rgba(26,28,35,1) 100%);
+        }
+
+        .hero-bg-img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease-in-out, transform 1.5s ease-out;
+            position: absolute;
+        }
+
+        .hero-bg-img.active {
+            opacity: 0.5;
+            transform: scale(1.05);
+        }
+
+        /* 글래스모피즘 */
+        .glass-card {
+            background: var(--ow-card);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card:hover {
+            border-color: var(--ow-orange);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-8px);
+        }
+
+        .tier-badge {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(255, 156, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 156, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 156, 0, 0); }
+        }
+
+        .btn-primary {
+            background: var(--ow-orange);
+            color: black;
+            font-weight: 900;
+            transition: all 0.3s;
+            animation: pulse-orange 2s infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="bg-video-container">
+        <div id="hero-bg-layers"></div>
+        <div class="bg-overlay"></div>
+    </div>
+
+    <nav class="sticky top-0 z-[100] px-6 py-4 bg-[#1a1c23]/90 backdrop-blur-lg border-b border-white/5">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-[#ff9c00] rounded-xl flex items-center justify-center rotate-3">
+                    <i class="fa-solid fa-shield-halved text-black text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black leading-none">OVERWATCH <span class="text-[#ff9c00]">HUB</span></h1>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Professional Matching</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+                <span id="live-user-count" class="text-xs font-bold text-[#00aeff] bg-[#00aeff]/10 px-4 py-1.5 rounded-full border border-[#00aeff]/20">연결 대기 중...</span>
+                <button onclick="UI.openModal('post-modal')" class="btn-primary px-6 py-2.5 rounded-xl hover:scale-105 active:scale-95">파티 찾기 등록</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <section class="mb-20 text-center">
+            <h2 class="text-5xl md:text-7xl font-black mb-6 tracking-tighter italic">FIND YOUR TEAM</h2>
+            <p class="text-gray-400 mb-10 text-lg">원하는 영웅을 선택하여 분위기를 커스터마이징 하세요.</p>
+            <div id="hero-selector" class="flex flex-wrap justify-center gap-3"></div>
+        </section>
+
+        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-1 bg-[#ff9c00]"></div>
+                <div>
+                    <h3 id="live-party-count" class="text-2xl font-black italic uppercase">모집 중인 파티: 0</h3>
+                    <p class="text-xs text-gray-500 font-bold">REAL-TIME MATCHING FEED</p>
+                </div>
+            </div>
+            <div class="flex bg-white/5 p-1.5 rounded-2xl border border-white/10" id="filter-group">
+                <button onclick="App.setFilter('all')" class="filter-btn active px-6 py-2.5 rounded-xl text-sm font-black bg-[#ff9c00] text-black">전체</button>
+                <button onclick="App.setFilter('탱커')" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-black text-gray-400 hover:text-white transition">탱커</button>
+                <button onclick="App.setFilter('딜러')" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-black text-gray-400 hover:text-white transition">딜러</button>
+                <button onclick="App.setFilter('지원')" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-black text-gray-400 hover:text-white transition">지원</button>
+            </div>
+        </div>
+
+        <div id="post-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+    </main>
+
+    <div id="post-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-6 bg-[#1a1c23]/95 backdrop-blur-xl">
+        <div class="glass-card w-full max-w-xl p-10 border-white/20">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-black italic">NEW RECRUIT</h2>
+                <button onclick="UI.closeModal('post-modal')" class="text-gray-500 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+            <form id="matching-form" class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-[#ff9c00] uppercase tracking-tighter">역할군</label>
+                        <select id="m-role" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]">
+                            <option value="탱커">🛡️ TANKER</option>
+                            <option value="딜러">⚔️ DEALER</option>
+                            <option value="지원">💉 SUPPORT</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-[#ff9c00] uppercase tracking-tighter">현재 티어</label>
+                        <select id="m-tier" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]">
+                            <option>브론즈</option><option>실버</option><option>골드</option><option>플래티넘</option>
+                            <option>다이아몬드</option><option>마스터</option><option>그랜드마스터</option><option>랭커</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-[#ff9c00] uppercase tracking-tighter">배틀태그</label>
+                    <input type="text" id="m-tag" placeholder="Username#1234" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-[#ff9c00] uppercase tracking-tighter">요청 사항</label>
+                    <textarea id="m-content" rows="3" placeholder="함께 승리하실 분들을 찾습니다." class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]"></textarea>
+                </div>
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" id="m-mic" class="w-5 h-5 accent-[#ff9c00]">
+                    <span class="text-sm font-bold group-hover:text-[#ff9c00] transition">보이스 채팅 가능 (Mic On)</span>
+                </label>
+                <button type="submit" class="w-full btn-primary py-5 rounded-2xl text-lg shadow-2xl shadow-orange-500/20">데이터 전송 및 등록</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // [Engineer] 보안 및 초기화
+        const firebaseConfig = {
+            apiKey: "AIzaSyCH...", // 기존 키 유지
+            authDomain: "owhub-655f2.firebaseapp.com",
+            projectId: "owhub-655f2",
+            storageBucket: "owhub-655f2.appspot.com",
+            messagingSenderId: "367244907954",
+            appId: "1:367244907954:web:866668702c2e557173e61f"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const HEROS = [
+            { id: 'ramattra', name: '라마트라', bg: 'https://overwatch.blizzard.com/static/images/heroes/ramattra/video-bg.jpg' },
+            { id: 'kiriko', name: '키리코', bg: 'https://overwatch.blizzard.com/static/images/heroes/kiriko/video-bg.jpg' },
+            { id: 'sojourn', name: '소전', bg: 'https://overwatch.blizzard.com/static/images/heroes/sojourn/video-bg.jpg' },
+            { id: 'junker-queen', name: '정커퀸', bg: 'https://overwatch.blizzard.com/static/images/heroes/junker-queen/video-bg.jpg' },
+            { id: 'tracer', name: '트레이서', bg: 'https://overwatch.blizzard.com/static/images/heroes/tracer/video-bg.jpg' }
+        ];
+
+        // [Programmer] 핵심 로직
+        const App = {
+            state: { posts: [], filter: 'all' },
+
+            init() {
+                UI.setupHeros();
+                this.listenPosts();
+                this.setupForm();
+                this.simulatePresence();
+            },
+
+            listenPosts() {
+                db.collection("posts").orderBy("timestamp", "desc").onSnapshot(snap => {
+                    this.state.posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    this.render();
+                });
+            },
+
+            setupForm() {
+                document.getElementById('matching-form').onsubmit = async (e) => {
+                    e.preventDefault();
+                    const data = {
+                        role: document.getElementById('m-role').value,
+                        tier: document.getElementById('m-tier').value,
+                        tag: document.getElementById('m-tag').value,
+                        content: document.getElementById('m-content').value,
+                        mic: document.getElementById('m-mic').checked,
+                        manner: 5.0,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        deleted: false
+                    };
+                    await db.collection("posts").add(data);
+                    UI.closeModal('post-modal');
+                    e.target.reset();
+                };
+            },
+
+            setFilter(val) {
+                this.state.filter = val;
+                this.render();
+                UI.updateFilterUI(val);
+            },
+
+            render() {
+                const grid = document.getElementById('post-grid');
+                const filtered = this.state.filter === 'all' ? 
+                    this.state.posts : this.state.posts.filter(p => p.role === this.state.filter);
+                
+                grid.innerHTML = filtered.map(p => UI.cardTemplate(p)).join('');
+                document.getElementById('live-party-count').innerText = `모집 중인 파티: ${filtered.length}`;
+            },
+
+            simulatePresence() {
+                const el = document.getElementById('live-user-count');
+                const update = () => el.innerText = `${Math.floor(Math.random() * 20) + 42}명 실시간 접속 중`;
+                update(); setInterval(update, 5000);
+            }
+        };
+
+        // [Designer] UI 인터랙션
+        const UI = {
+            setupHeros() {
+                const sel = document.getElementById('hero-selector');
+                const lyr = document.getElementById('hero-bg-layers');
+                HEROS.forEach((h, i) => {
+                    sel.innerHTML += `<button onclick="UI.changeBg('${h.id}')" class="w-14 h-14 rounded-full border-2 border-white/10 overflow-hidden hover:border-[#ff9c00] transition-all hover:scale-110">
+                        <img src="https://overwatch.blizzard.com/static/images/heroes/${h.id}/icon-portrait.png" class="object-cover h-full w-full">
+                    </button>`;
+                    lyr.innerHTML += `<img id="bg-${h.id}" src="${h.bg}" class="hero-bg-img ${i===0?'active':''}">`;
+                });
+            },
+
+            changeBg(id) {
+                document.querySelectorAll('.hero-bg-img').forEach(img => img.classList.remove('active'));
+                document.getElementById(`bg-${id}`).classList.add('active');
+            },
+
+            openModal(id) { document.getElementById(id).classList.remove('hidden'); },
+            closeModal(id) { document.getElementById(id).classList.add('hidden'); },
+
+            updateFilterUI(val) {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList = "filter-btn px-6 py-2.5 rounded-xl text-sm font-black text-gray-400 hover:text-white transition";
+                    if(b.innerText.includes(val) || (val==='all' && b.innerText==='전체')) {
+                        b.classList = "filter-btn active px-6 py-2.5 rounded-xl text-sm font-black bg-[#ff9c00] text-black shadow-lg shadow-orange-500/30";
+                    }
+                });
+            },
+
+            cardTemplate(p) {
+                return `
+                    <div class="glass-card p-8 group">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-[10px] font-black tracking-widest text-[#ff9c00] border-b-2 border-[#ff9c00] pb-1">${p.role}</span>
+                            <div class="tier-badge uppercase tracking-widest italic">${p.tier}</div>
+                        </div>
+                        <h4 class="text-2xl font-black mb-2 group-hover:text-[#ff9c00] transition">${p.tag}</h4>
+                        <div class="flex items-center gap-2 mb-6">
+                            <div class="flex text-[10px] text-yellow-500">
+                                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-500">MANNER ${p.manner || '5.0'}</span>
+                        </div>
+                        <p class="text-sm text-gray-400 leading-relaxed mb-8 h-12 line-clamp-2">${p.content || '승리를 위해 최고의 플레이를 보여줄 준비가 되었습니다.'}</p>
+                        <div class="flex justify-between items-center bg-white/5 -mx-8 -mb-8 p-6 mt-auto rounded-b-2xl border-t border-white/5">
+                            <span class="text-[10px] font-black text-gray-500">${p.mic ? '🎙️ VOICE CHAT ON' : '🔇 MIC OFF'}</span>
+                            <button class="text-xs font-black text-[#ff9c00] hover:underline flex items-center gap-2">
+                                REQUEST <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+
+        App.init();
+    </script>
+</body>
+</html>
+
