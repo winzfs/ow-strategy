@@ -3,161 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overwatch Hub - Professional Edition</title>
+    <title>Overwatch Hub v3.0 - Professional</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&family=Orbitron:wght@900&display=swap" rel="stylesheet">
 
     <style>
-        :root { --ow-orange: #ff9c00; --ow-blue: #00aeff; --ow-dark: #0f1014; }
+        :root { --ow-orange: #ff9c00; --ow-dark: #0f1014; }
         body { font-family: 'Noto Sans KR', sans-serif; background: var(--ow-dark); color: white; margin: 0; overflow: hidden; }
-        .font-ow { font-family: 'Orbitron', sans-serif; }
         
-        /* 사이드바 스타일 */
-        .sidebar { width: 280px; background: rgba(20, 22, 28, 0.95); border-right: 1px solid rgba(255,255,255,0.05); height: 100vh; position: fixed; z-index: 50; }
-        .main-content { margin-left: 280px; height: 100vh; overflow-y: auto; background: radial-gradient(circle at top right, #1a1c23, #0f1014); }
+        /* 사이드바 가변 구조 */
+        .sidebar { width: 280px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(20, 22, 28, 0.98); border-right: 1px solid rgba(255,255,255,0.05); height: 100vh; position: fixed; z-index: 100; overflow: hidden; }
+        .sidebar.collapsed { width: 80px; }
+        .main-content { margin-left: 280px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); height: 100vh; overflow-y: auto; background: radial-gradient(circle at top right, #1a1c23, #0f1014); }
+        .main-content.expanded { margin-left: 80px; }
 
-        /* Glassmorphism 컴포넌트 */
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; }
-        .glass:hover { border-color: var(--ow-orange); background: rgba(255, 255, 255, 0.05); }
+        /* 컴포넌트 스타일 */
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; transition: 0.3s; }
+        .glass:hover { border-color: var(--ow-orange); background: rgba(255, 255, 255, 0.06); }
+        
+        .nav-item { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.25rem; border-radius: 0.75rem; font-weight: 700; transition: 0.3s; white-space: nowrap; color: #9ca3af; }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
+        .nav-item.active { background: rgba(255, 156, 0, 0.1); color: var(--ow-orange); box-shadow: inset -4px 0 0 var(--ow-orange); }
 
-        /* 알림 배지 애니메이션 */
-        .noti-pulse { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: var(--ow-orange); border-radius: 50%; box-shadow: 0 0 10px var(--ow-orange); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
-
-        /* 커스텀 스크롤 */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--ow-orange); border-radius: 10px; }
-
-        .nav-item.active { background: rgba(255, 156, 0, 0.1); color: var(--ow-orange); border-right: 3px solid var(--ow-orange); }
-        .view-section { display: none; animation: fadeIn 0.4s ease-out; }
+        .hidden-text { transition: opacity 0.3s; }
+        .collapsed .hidden-text { opacity: 0; pointer-events: none; width: 0; }
+        
+        .view-section { display: none; animation: slideIn 0.4s ease-out; }
         .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* 알림 배지 */
+        .badge { position: absolute; top: 10px; right: 20px; width: 8px; height: 8px; background: var(--ow-orange); border-radius: 50%; box-shadow: 0 0 10px var(--ow-orange); }
+        .collapsed .badge { right: 30px; }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar flex flex-col p-6">
-        <div class="flex items-center gap-3 mb-12 px-2">
-            <div class="w-10 h-10 bg-[#ff9c00] rounded-lg flex items-center justify-center rotate-3 shadow-lg shadow-orange-500/20">
-                <i class="fa-solid fa-shield-halved text-black text-xl"></i>
+    <aside id="sidebar" class="sidebar flex flex-col p-4">
+        <div class="flex items-center gap-4 mb-10 px-2 cursor-pointer" onclick="UI.toggleSidebar()">
+            <div class="min-w-[40px] h-10 bg-[#ff9c00] rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+                <i class="fa-solid fa-bars text-black text-xl"></i>
             </div>
-            <h1 class="font-ow text-xl font-black tracking-tighter">OW <span class="text-[#ff9c00]">HUB</span></h1>
+            <h1 class="hidden-text font-black tracking-tighter text-xl">OW <span class="text-[#ff9c00]">HUB</span></h1>
         </div>
 
         <nav class="flex-1 space-y-2">
-            <button onclick="Router.go('matching')" class="nav-item active w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold transition">
-                <i class="fa-solid fa-users-viewfinder w-5"></i> 파티 찾기
+            <button onclick="Router.go('matching')" class="nav-item active w-full" title="파티 찾기">
+                <i class="fa-solid fa-users-viewfinder text-xl min-w-[30px]"></i>
+                <span class="hidden-text">파티 매칭</span>
             </button>
-            <button onclick="Router.go('community')" class="nav-item w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold transition text-gray-400 hover:text-white">
-                <i class="fa-solid fa-comments w-5"></i> 커뮤니티
+            <button onclick="Router.go('community')" class="nav-item w-full" title="커뮤니티">
+                <i class="fa-solid fa-comments text-xl min-w-[30px]"></i>
+                <span class="hidden-text">커뮤니티</span>
             </button>
-            <button onclick="UI.toggleNoti()" class="nav-item w-full flex items-center justify-between px-4 py-3.5 rounded-xl font-bold transition text-gray-400 hover:text-white relative">
-                <div class="flex items-center gap-4">
-                    <i class="fa-solid fa-bell w-5"></i> 알림창
-                </div>
-                <div class="noti-pulse"></div>
+            <button onclick="UI.toggleNoti()" class="nav-item w-full relative" title="알림">
+                <i class="fa-solid fa-bell text-xl min-w-[30px]"></i>
+                <span class="hidden-text">알림 메세지</span>
+                <div class="badge"></div>
             </button>
         </nav>
 
-        <div class="mt-auto pt-6 border-t border-white/5">
-            <div class="glass p-4 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-yellow-300 flex items-center justify-center text-black font-black">
-                    U
+        <div class="mt-auto pt-4 border-t border-white/5">
+            <div class="flex items-center gap-3 p-2 rounded-xl bg-white/5">
+                <div class="min-w-[40px] h-10 rounded-full bg-orange-500 flex items-center justify-center font-black text-black">U</div>
+                <div class="hidden-text overflow-hidden">
+                    <p class="text-sm font-bold truncate">jazzhjm</p>
+                    <p class="text-[10px] text-orange-500 font-bold">Admin</p>
                 </div>
-                <div class="flex-1 overflow-hidden">
-                    <p id="user-name" class="text-sm font-bold truncate">Guest_User</p>
-                    <p id="user-tier" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Unranked</p>
-                </div>
-                <button class="text-gray-500 hover:text-white"><i class="fa-solid fa-gear"></i></button>
             </div>
         </div>
     </aside>
 
-    <main class="main-content">
-        <header class="sticky top-0 z-40 bg-[#0f1014]/80 backdrop-blur-xl border-b border-white/5 px-10 py-5 flex justify-between items-center">
-            <div class="relative w-96">
+    <main id="main-content" class="main-content">
+        <header class="sticky top-0 z-40 bg-[#0f1014]/80 backdrop-blur-xl border-b border-white/5 px-8 py-4 flex justify-between items-center">
+            <div class="relative w-1/3 min-w-[200px]">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                <input type="text" id="global-search" oninput="App.search(this.value)" placeholder="배틀태그 또는 제목 검색..." class="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-12 pr-6 outline-none focus:border-[#ff9c00] transition">
+                <input type="text" oninput="App.search(this.value)" placeholder="검색어를 입력하세요..." class="w-full bg-white/5 border border-white/10 rounded-full py-2 px-12 outline-none focus:border-[#ff9c00]">
             </div>
-            <button onclick="UI.openPostModal()" class="bg-[#ff9c00] text-black font-black px-6 py-2.5 rounded-full hover:scale-105 active:scale-95 transition shadow-lg shadow-orange-500/20">
-                <i class="fa-solid fa-plus mr-2"></i> 새로운 글 작성
+            <button onclick="UI.openModal()" class="bg-[#ff9c00] text-black font-black px-6 py-2 rounded-full hover:scale-105 active:scale-95 transition">
+                <i class="fa-solid fa-pen-to-square mr-2"></i> 글쓰기
             </button>
         </header>
 
-        <section id="view-matching" class="view-section active p-10">
-            <div class="mb-10 flex justify-between items-end">
+        <section id="view-matching" class="view-section active p-8">
+            <div class="flex justify-between items-end mb-8">
                 <div>
-                    <h2 class="text-4xl font-black italic uppercase mb-2">Real-time Matching</h2>
-                    <p class="text-gray-500 text-sm font-bold tracking-widest">현재 모집 중인 요원들</p>
+                    <h2 class="text-4xl font-black italic mb-2 uppercase tracking-tighter">Squad Finder</h2>
+                    <p id="party-stats" class="text-orange-500 text-xs font-bold tracking-widest">데이터 로딩 중...</p>
                 </div>
-                <div class="flex bg-white/5 p-1 rounded-xl border border-white/10" id="role-filters">
-                    <button onclick="App.filter('all')" class="px-5 py-2 rounded-lg text-xs font-black bg-[#ff9c00] text-black">전체</button>
-                    <button onclick="App.filter('탱커')" class="px-5 py-2 rounded-lg text-xs font-black text-gray-400">탱커</button>
-                    <button onclick="App.filter('딜러')" class="px-5 py-2 rounded-lg text-xs font-black text-gray-400">딜러</button>
-                    <button onclick="App.filter('지원')" class="px-5 py-2 rounded-lg text-xs font-black text-gray-400">지원</button>
+                <div class="flex bg-white/5 p-1 rounded-xl border border-white/10" id="filter-btns">
+                    <button onclick="App.filter('all')" class="px-6 py-2 rounded-lg text-xs font-black bg-[#ff9c00] text-black">전체</button>
+                    <button onclick="App.filter('탱커')" class="px-6 py-2 rounded-lg text-xs font-black text-gray-400">탱커</button>
+                    <button onclick="App.filter('딜러')" class="px-6 py-2 rounded-lg text-xs font-black text-gray-400">딜러</button>
+                    <button onclick="App.filter('지원')" class="px-6 py-2 rounded-lg text-xs font-black text-gray-400">지원</button>
                 </div>
             </div>
-            <div id="party-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                </div>
+            <div id="matching-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
         </section>
 
-        <section id="view-community" class="view-section p-10">
-            <h2 class="text-4xl font-black italic uppercase mb-10">Community Board</h2>
-            <div class="space-y-4" id="community-list">
-                <div class="glass p-6 flex justify-between items-center group cursor-pointer">
-                    <div class="flex gap-6 items-center">
-                        <div class="text-center w-12">
-                            <i class="fa-solid fa-caret-up text-gray-500 group-hover:text-[#ff9c00]"></i>
-                            <p class="font-black">24</p>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold group-hover:text-[#ff9c00] transition">이번 패치 밸런스 어떻게 생각하시나요?</h3>
-                            <p class="text-sm text-gray-500">작성자: Winston#1234 · 5분 전 · 댓글 12개</p>
-                        </div>
-                    </div>
-                    <span class="text-xs bg-white/5 px-3 py-1 rounded-full text-gray-400 font-bold uppercase tracking-widest">토론</span>
-                </div>
-            </div>
+        <section id="view-community" class="view-section p-8">
+            <h2 class="text-4xl font-black italic mb-10 uppercase tracking-tighter">Community Feed</h2>
+            <div id="community-list" class="space-y-4"></div>
         </section>
     </main>
 
-    <div id="modal-post" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
-        <div class="glass w-full max-w-xl p-8 bg-[#16171d]">
+    <div id="modal-write" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+        <div class="glass w-full max-w-xl p-8 bg-[#16171d] shadow-2xl">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-black italic">POST RECRUITMENT</h2>
-                <button onclick="UI.closeModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <div class="flex gap-4">
+                    <button id="tab-p" onclick="UI.switchModalTab('p')" class="text-xl font-black border-b-2 border-[#ff9c00] text-[#ff9c00]">파티 찾기</button>
+                    <button id="tab-c" onclick="UI.switchModalTab('c')" class="text-xl font-black text-gray-500">커뮤니티</button>
+                </div>
+                <button onclick="UI.closeModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark text-2xl"></i></button>
             </div>
-            <form id="party-form" class="space-y-5">
-                <div class="grid grid-cols-2 gap-4">
-                    <select id="p-role" class="bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]">
-                        <option value="탱커">🛡️ 탱커</option>
-                        <option value="딜러">⚔️ 딜러</option>
-                        <option value="지원">💉 지원</option>
+            
+            <form id="write-form" class="space-y-4">
+                <input type="hidden" id="form-type" value="p">
+                <div id="p-fields" class="grid grid-cols-2 gap-4">
+                    <select id="f-role" class="bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]">
+                        <option value="탱커">🛡️ 탱커</option><option value="딜러">⚔️ 딜러</option><option value="지원">💉 지원</option>
                     </select>
-                    <select id="p-tier" class="bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]">
-                        <option>브론즈</option><option>실버</option><option>골드</option><option>플래티넘</option><option>다이아몬드</option><option>마스터</option><option>랭커</option>
+                    <select id="f-tier" class="bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]">
+                        <option>브론즈</option><option>실버</option><option>골드</option><option>플래티넘</option><option>다이아몬드</option><option>마스터</option><option>그랜드마스터</option>
                     </select>
                 </div>
-                <input type="text" id="p-tag" placeholder="BattleTag#1234" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]">
-                <textarea id="p-content" rows="4" placeholder="메시지를 입력하세요..." class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]"></textarea>
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" id="p-mic" class="accent-[#ff9c00] w-4 h-4">
-                    <label for="p-mic" class="text-sm font-bold">보이스 채팅 가능</label>
-                </div>
-                <button type="submit" class="w-full bg-[#ff9c00] text-black font-black py-4 rounded-xl shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition">등록하기</button>
+                <input type="text" id="f-tag" placeholder="BattleTag#1234 (또는 제목)" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]">
+                <textarea id="f-content" rows="5" placeholder="내용을 입력하세요..." class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-[#ff9c00]"></textarea>
+                <button type="submit" class="w-full bg-[#ff9c00] text-black font-black py-4 rounded-xl shadow-lg">작성 완료</button>
             </form>
         </div>
     </div>
 
-    <div id="noti-panel" class="fixed top-20 left-[290px] w-80 glass p-4 z-50 hidden animate-fade-in shadow-2xl">
-        <h4 class="font-black text-xs text-[#ff9c00] uppercase mb-4 tracking-widest">Recent Notifications</h4>
-        <div class="space-y-3">
-            <div class="text-xs p-3 bg-white/5 rounded-lg border-l-2 border-orange-500">
-                <p class="font-bold">Genji#1234 님이 파티 신청을 보냈습니다.</p>
-                <p class="text-[10px] text-gray-500 mt-1">2분 전</p>
-            </div>
+    <div id="noti-panel" class="fixed top-20 left-[290px] w-80 glass p-5 z-50 hidden shadow-2xl border-orange-500/20">
+        <h4 class="font-black text-xs text-[#ff9c00] uppercase mb-4 tracking-tighter">Live Notifications</h4>
+        <div class="space-y-3" id="noti-list">
+            <div class="text-xs p-3 bg-white/5 rounded-lg border-l-2 border-orange-500">새로운 기능: 사이드바 접기 기능이 추가되었습니다!</div>
         </div>
     </div>
 
@@ -167,7 +149,7 @@
     <script>
         // [Engineer] 인프라 설정
         const firebaseConfig = {
-            apiKey: "AIzaSyCH...", // 기존 API 키 입력
+            apiKey: "AIzaSyCH...", // 기존 API 키
             authDomain: "owhub-655f2.firebaseapp.com",
             projectId: "owhub-655f2",
             storageBucket: "owhub-655f2.appspot.com",
@@ -177,112 +159,151 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // [Programmer] 상태 관리 및 라우팅 로직
+        // [Programmer] 핵심 로직
         const App = {
             posts: [],
-            currentFilter: 'all',
-            searchTerm: '',
+            community: [],
+            currentView: 'matching',
+            filterRole: 'all',
+            searchKey: '',
 
             init() {
-                this.listenPosts();
-                this.bindEvents();
+                this.listenData();
+                this.setupForm();
             },
 
-            listenPosts() {
+            listenData() {
+                // 파티 매칭 데이터
                 db.collection("posts").orderBy("timestamp", "desc").onSnapshot(snap => {
-                    this.posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    this.render();
+                    this.posts = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                    this.renderMatching();
+                });
+                // 커뮤니티 데이터
+                db.collection("community").orderBy("timestamp", "desc").onSnapshot(snap => {
+                    this.community = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                    if(this.currentView === 'community') this.renderCommunity();
                 });
             },
 
-            bindEvents() {
-                document.getElementById('party-form').onsubmit = async (e) => {
+            setupForm() {
+                document.getElementById('write-form').onsubmit = async (e) => {
                     e.preventDefault();
-                    const data = {
-                        role: document.getElementById('p-role').value,
-                        tier: document.getElementById('p-tier').value,
-                        tag: document.getElementById('p-tag').value,
-                        content: document.getElementById('p-content').value,
-                        mic: document.getElementById('p-mic').checked,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                        manner: 5.0
+                    const type = document.getElementById('form-type').value;
+                    const baseData = {
+                        tag: document.getElementById('f-tag').value,
+                        content: document.getElementById('f-content').value,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     };
-                    await db.collection("posts").add(data);
+
+                    if(type === 'p') {
+                        await db.collection("posts").add({
+                            ...baseData,
+                            role: document.getElementById('f-role').value,
+                            tier: document.getElementById('f-tier').value,
+                            manner: 5.0
+                        });
+                    } else {
+                        await db.collection("community").add(baseData);
+                    }
+                    
                     UI.closeModal();
-                    alert("성공적으로 등록되었습니다!");
+                    e.target.reset();
                 };
             },
 
             filter(role) {
-                this.currentFilter = role;
-                this.render();
-                UI.updateFilterButtons(role);
+                this.filterRole = role;
+                this.renderMatching();
+                UI.updateFilterUI(role);
             },
 
-            search(term) {
-                this.searchTerm = term.toLowerCase();
-                this.render();
+            search(val) {
+                this.searchKey = val.toLowerCase();
+                this.currentView === 'matching' ? this.renderMatching() : this.renderCommunity();
             },
 
-            render() {
-                const grid = document.getElementById('party-grid');
-                let filtered = this.posts;
-
-                if(this.currentFilter !== 'all') filtered = filtered.filter(p => p.role === this.currentFilter);
-                if(this.searchTerm) {
-                    filtered = filtered.filter(p => 
-                        p.tag.toLowerCase().includes(this.searchTerm) || 
-                        p.content.toLowerCase().includes(this.searchTerm)
-                    );
-                }
-
-                grid.innerHTML = filtered.map(post => `
-                    <div class="glass p-6 animate-fade-in group">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="text-[10px] font-black text-[#ff9c00] border border-[#ff9c00]/30 px-2 py-0.5 rounded">${post.role}</span>
-                            <span class="text-[10px] font-bold text-gray-500 uppercase">${post.tier}</span>
+            renderMatching() {
+                const grid = document.getElementById('matching-grid');
+                let list = this.posts.filter(p => this.filterRole === 'all' || p.role === this.filterRole);
+                if(this.searchKey) list = list.filter(p => p.tag.toLowerCase().includes(this.searchKey) || p.content.toLowerCase().includes(this.searchKey));
+                
+                grid.innerHTML = list.map(p => `
+                    <div class="glass p-6 group">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-[10px] font-black text-[#ff9c00] border border-[#ff9c00]/30 px-2 rounded">${p.role}</span>
+                            <span class="text-[10px] font-bold text-gray-500 italic">${p.tier}</span>
                         </div>
-                        <h4 class="text-xl font-black mb-1 group-hover:text-[#ff9c00] transition">${post.tag}</h4>
-                        <div class="flex items-center gap-1 text-[10px] text-yellow-500 mb-4">
-                            <i class="fa-solid fa-star"></i> 5.0
-                        </div>
-                        <p class="text-sm text-gray-400 line-clamp-2 h-10 mb-6">${post.content || '승리를 위해 달릴 준비가 됐습니다.'}</p>
-                        <div class="flex justify-between items-center pt-4 border-t border-white/5">
-                            <span class="text-[10px] text-gray-500 font-bold">${post.mic ? '🎙️ MIC ON' : '🔇 MIC OFF'}</span>
-                            <button class="text-xs font-black text-[#ff9c00] hover:underline">신청하기</button>
+                        <h4 class="text-xl font-black mb-1 group-hover:text-[#ff9c00] transition">${p.tag}</h4>
+                        <p class="text-xs text-yellow-500 mb-4"><i class="fa-solid fa-star"></i> 5.0 MANNER</p>
+                        <p class="text-sm text-gray-400 line-clamp-2 mb-6 h-10">${p.content || '승리를 위해!'}</p>
+                        <button class="w-full py-3 bg-white/5 rounded-xl text-xs font-black hover:bg-[#ff9c00] hover:text-black transition">신청하기</button>
+                    </div>
+                `).join('');
+                document.getElementById('party-stats').innerText = `${list.length}명의 요원 대기 중`;
+            },
+
+            renderCommunity() {
+                const listEl = document.getElementById('community-list');
+                let list = this.community;
+                if(this.searchKey) list = list.filter(c => c.tag.toLowerCase().includes(this.searchKey) || c.content.toLowerCase().includes(this.searchKey));
+
+                listEl.innerHTML = list.map(c => `
+                    <div class="glass p-6 hover:translate-x-2 transition cursor-pointer">
+                        <h3 class="text-lg font-black mb-1">${c.tag}</h3>
+                        <p class="text-sm text-gray-400 mb-3">${c.content}</p>
+                        <div class="flex items-center gap-4 text-[10px] font-bold text-gray-500 uppercase">
+                            <span><i class="fa-solid fa-user mr-1"></i> Player</span>
+                            <span><i class="fa-solid fa-clock mr-1"></i> Just Now</span>
                         </div>
                     </div>
                 `).join('');
             }
         };
 
-        const Router = {
-            go(view) {
-                document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-                document.getElementById(`view-${view}`).classList.add('active');
-                
-                document.querySelectorAll('.nav-item').forEach(n => {
-                    n.classList.remove('active', 'text-white');
-                    n.classList.add('text-gray-400');
-                    if(n.innerText.includes(view === 'matching' ? '파티 찾기' : '커뮤니티')) {
-                        n.classList.add('active');
-                        n.classList.remove('text-gray-400');
+        // [Designer] 인터페이스 핸들러
+        const UI = {
+            toggleSidebar() {
+                document.getElementById('sidebar').classList.toggle('collapsed');
+                document.getElementById('main-content').classList.toggle('expanded');
+                const panel = document.getElementById('noti-panel');
+                panel.style.left = document.getElementById('sidebar').classList.contains('collapsed') ? '90px' : '290px';
+            },
+
+            openModal() { document.getElementById('modal-write').classList.remove('hidden'); },
+            closeModal() { document.getElementById('modal-write').classList.add('hidden'); },
+
+            switchModalTab(type) {
+                document.getElementById('form-type').value = type;
+                document.getElementById('p-fields').style.display = type === 'p' ? 'grid' : 'none';
+                document.getElementById('tab-p').className = type === 'p' ? "text-xl font-black border-b-2 border-[#ff9c00] text-[#ff9c00]" : "text-xl font-black text-gray-500";
+                document.getElementById('tab-c').className = type === 'c' ? "text-xl font-black border-b-2 border-[#ff9c00] text-[#ff9c00]" : "text-xl font-black text-gray-500";
+            },
+
+            toggleNoti() { document.getElementById('noti-panel').classList.toggle('hidden'); },
+
+            updateFilterUI(role) {
+                document.querySelectorAll('#filter-btns button').forEach(b => {
+                    b.classList = "px-6 py-2 rounded-lg text-xs font-black text-gray-400";
+                    if(b.innerText.includes(role) || (role==='all' && b.innerText==='전체')) {
+                        b.classList = "px-6 py-2 rounded-lg text-xs font-black bg-[#ff9c00] text-black shadow-lg shadow-orange-500/30";
                     }
                 });
             }
         };
 
-        const UI = {
-            openPostModal() { document.getElementById('modal-post').classList.remove('hidden'); },
-            closeModal() { document.getElementById('modal-post').classList.add('hidden'); },
-            toggleNoti() { document.getElementById('noti-panel').classList.toggle('hidden'); },
-            updateFilterButtons(role) {
-                document.querySelectorAll('#role-filters button').forEach(b => {
-                    b.classList = "px-5 py-2 rounded-lg text-xs font-black text-gray-400";
-                    if(b.innerText.includes(role) || (role==='all' && b.innerText==='전체')) {
-                        b.classList = "px-5 py-2 rounded-lg text-xs font-black bg-[#ff9c00] text-black";
-                    }
+        const Router = {
+            go(view) {
+                App.currentView = view;
+                document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+                document.getElementById(`view-${view}`).classList.add('active');
+                
+                document.querySelectorAll('.nav-item').forEach(n => {
+                    n.classList.remove('active');
+                    if(n.title.includes(view === 'matching' ? '파티' : '커뮤니티')) n.classList.add('active');
                 });
+                
+                if(view === 'community') App.renderCommunity();
+                else App.renderMatching();
             }
         };
 
