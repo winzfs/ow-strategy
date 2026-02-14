@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-13 14:28",
+  "lastUpdated": "2026-02-14 04:59",
   "pro": [
     {
       "id": "4MlZ5UD41lQ",
@@ -7,29 +7,39 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "pG-mXhU4gxI",
-      "title": "모든 탱커들 상위 호환이라는 매혹적인 신규 영웅 \"도미나\"",
+      "id": "qj2UERNbyo4",
+      "title": "역대 최고의 미모를 가진 신규 영웅 도미나",
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "b1s5rO1c73I",
-      "title": "점수 좀 올릴게요",
+      "id": "AQKkdAX08-E",
+      "title": "이론상 500만원 넘게 벌 수 있는 역대급 미션....",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "Cgnj4T9_hsQ",
-      "title": "돈독 제대로 오른 오버워치의 역대급 콜라보 등장...이거 안사면 박탈감 심할 것 같습니다 | 오버워치x헬로키티",
+      "id": "Quj8BvxIZAA",
+      "title": "알고보니 세계관 최강자였던 고양이",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "VUO9luC-L2E",
-      "title": "프로게이머들의 신캐 시연쇼ㅋㅋㅋㅋㅋㅋ",
+      "id": "ZolnhR494Sg",
+      "title": "신캐 6명으로 도배된 옵치 대회, 제2의 키리코 등장?ㅣT1 VS 댈러스",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "GiK4U4nj-9c",
+      "title": "[2026.02.12 / 별농일기2 구경하구 오버워치 합방!!! (마인크래프트 + 오버워치2)] - 엘피스 루디",
+      "player": "Official"
+    },
+    {
+      "id": "D2HS_HMKaE8",
+      "title": "제트팩 캣을 가장 잘 쓰는 방법",
+      "player": "Official"
+    },
     {
       "id": "_wIjZd83ipE",
       "title": "They BUFFED This Ashe Build? Now it cooks | Stadium Overwatch",
@@ -59,37 +69,122 @@
       "id": "YegEZCquqqU",
       "title": "‘다른 삶’ 스토리 타임 | 오버워치",
       "player": "Official"
+    },
+    {
+      "id": "sw2gTaGZ32M",
+      "title": "‘다가오는 복수’ 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "UYiE_O3XbFM",
+      "title": "대부분의 스킬을 무시해버리는 신규 영웅 안란 #오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "pdA7OABPaN0",
+      "title": "오버워치 모집 트레일러 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "U2f2QBE6OEo",
+      "title": "탈론 모집 트레일러 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "20H-MrgQl0A",
+      "title": "5 명의 신규 영웅 게임플레이 트레일러 | 1 시즌: 정복 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "cbb4MJUITWM",
+      "title": "오버워치 신캐 미즈키가 가져온 10년짜리 떡밥?",
+      "player": "Official"
+    },
+    {
+      "id": "GD9ws8zby-M",
+      "title": "마지막 보루 바스티온 #오버워치2 #팬메이드 #ai음악",
+      "player": "Official"
+    },
+    {
+      "id": "-8p9z_Tf240",
+      "title": "녹슨 심장에 내려앉은 봄 - 바스티온 편 #오버워치2 #팬메이드 #ai음악",
+      "player": "Official"
+    },
+    {
+      "id": "NnwTGAZw6OM",
+      "title": "드디어 한국인 신규 영웅 메카 부대가 출시됩니다!",
+      "player": "Official"
+    },
+    {
+      "id": "Iz9DkuOneXE",
+      "title": "오버워치 신규영웅 도미나는 어떤 성격일까?",
+      "player": "Official"
+    },
+    {
+      "id": "YSuakBtqpxE",
+      "title": "시청자한테 기습 비난",
+      "player": "Official"
+    },
+    {
+      "id": "R1aMJthGtTg",
+      "title": "역대급 악평이 가득한 신캐...? 안란 플레이 후기 | 옵치토크쇼",
+      "player": "Official"
+    },
+    {
+      "id": "rKHvpg2FIGM",
+      "title": "오버워치 신캐 도미나에게 숨겨진 설정?",
+      "player": "Official"
+    },
+    {
+      "id": "s7BkBbAdtkg",
+      "title": "키리코 특전 너프? 오버워치 특전 변경점 [힐러편] | 옵치토크쇼",
+      "player": "Official"
+    },
+    {
+      "id": "Q_8pNs0fxJA",
+      "title": "오버워치 세계관에서 신캐 5명은 어떤 위치에 있을까? (스토리 정리)",
+      "player": "Official"
+    },
+    {
+      "id": "EEb-7lo6xzc",
+      "title": "오버워치 대격변 이후 펼쳐질 재앙 미리보기 ㅋㅋㅋㅋ 장르가 바뀜 ㄹㅇ",
+      "player": "Official"
+    },
+    {
+      "id": "2XYv0qqExC0",
+      "title": "회상 삭제? 오버워치 특전 변경점 미리보기 [탱딜편] | 옵치토크쇼",
+      "player": "Official"
     }
   ],
   "trending": [
     {
-      "id": "ul79F3EX12k",
-      "title": "큐피드 주노 모든 하이라이트",
+      "id": "MqZisOqx2RU",
+      "title": "오버워치 왕의길 엠레 문양이 보기 좋구나 #shorts",
       "player": "Trending"
     },
     {
-      "id": "-BHJzGXl7b4",
-      "title": "모든 스킨으로 손하트 하이라이트",
+      "id": "ImZqxn04mM8",
+      "title": "오버워치2 스타디움 템스지구 파라 계속 대기하고 있었지 #shorts",
       "player": "Trending"
     },
     {
-      "id": "gDHOy8lv19Q",
-      "title": "바스티온 날다",
+      "id": "LJzD2C9s9t4",
+      "title": "오버워치2 하이라이트 플레이 모음 352 (Overwatch2 Potg Play Collection 352) #shorts 버전1",
       "player": "Trending"
     },
     {
-      "id": "M5URfgVLKvA",
-      "title": "오버워치 극과극 하이라이트 연출씬(?)#overwatch #오버워치 #オーバーウォッチ",
+      "id": "E0gFQTPeYlo",
+      "title": "오버워치2 하이라이트 플레이 모음 352 (Overwatch2 Potg Play Collection 352) #shorts 버전2",
       "player": "Trending"
     },
     {
-      "id": "PZyBPboV-KI",
-      "title": "완전 귀여운 주노 &#39;손 하트&#39; 하이라이트 스킨별 모아보기 (예쁜 스킨 + 있는 스킨만) #shorts #overwatch",
+      "id": "XGo5qERn7XE",
+      "title": "오버워치2 하이라이트 플레이 모음 352 (Overwatch2 Potg Play Collection 352) #352",
       "player": "Trending"
     },
     {
-      "id": "9a_RjTXtG8A",
-      "title": "오버워치2 할리우드 엠레 대포가 끝이 아니지 #shorts",
+      "id": "Y08XClWcNtg",
+      "title": "오랜만에 FPS 느낌이 나는 신캐 『엠레』가 나왔습니다 [오버워치]",
       "player": "Trending"
     }
   ]
