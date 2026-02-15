@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>운빨웹존많겜: REBORN</title>
+    <style>
+        body { margin: 0; background: #000; color: #fff; font-family: 'Pretendard', sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { background: #1a1a1a; border: 2px solid #444; box-shadow: 0 0 20px rgba(0,0,0,0.5); cursor: crosshair; }
+        #ui-overlay { position: absolute; pointer-events: none; width: 600px; height: 800px; }
+        .menu-screen { position: absolute; top: 0; left: 0; width: 600px; height: 800px; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: auto; }
+        h1 { font-size: 48px; color: #f1c40f; text-shadow: 0 0 10px #f1c40f; margin-bottom: 50px; }
+        .btn { padding: 15px 40px; font-size: 20px; background: #e74c3c; border: none; color: white; border-radius: 30px; cursor: pointer; margin: 10px; transition: 0.2s; }
+        .btn:hover { transform: scale(1.1); background: #ff5e4d; }
+        .stage-btn { background: #3498db; width: 200px; }
+        #in-game-ui { position: absolute; top: 20px; left: 20px; display: none; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas" width="600" height="800"></canvas>
+
+    <div id="ui-overlay">
+        <div id="start-screen" class="menu-screen">
+            <h1>운빨웹존많겜</h1>
+            <button class="btn" onclick="showStageSelect()">게임 시작</button>
+            <button class="btn" style="background:#555">설정</button>
+        </div>
+
+        <div id="stage-screen" class="menu-screen hidden">
+            <h1 style="font-size:32px">스테이지 선택</h1>
+            <button class="btn stage-btn" onclick="startGame(1)">Stage 1 (Normal)</button>
+            <button class="btn stage-btn" style="background:#8e44ad" onclick="startGame(2)">Stage 2 (Hard)</button>
+            <button class="btn" style="background:#555" onclick="showStart()">뒤로가기</button>
+        </div>
+
+        <div id="in-game-ui">
+            <div style="font-size:24px; color:#f1c40f">💰 <span id="gold-text">100</span></div>
+            <div style="font-size:20px;">🌊 Wave: <span id="wave-text">1</span></div>
+            <div style="font-size:18px; color:#ff4d4d">👾 Mobs: <span id="mob-text">0</span>/50</div>
+        </div>
+    </div>
+
+<script>
+/** 🛠️ 엔지니어: 엔진 핵심 설정 **/
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let gameState = 'START'; // START, STAGE, PLAY, GAMEOVER
+let gold = 100;
+let wave = 1;
+let lastSpawnTime = 0;
+let lastWaveTime = 0;
+
+// 유닛 데이터 (기획자 설계)
+const UNIT_DATA = {
+    '검사': { color: '#ecf0f1', ability: '스턴', chance: 0.2, speed: 30 },
+    '궁수': { color: '#3498db', ability: '연사', speed: 10 },
+    '마법사': { color: '#9b59b6', ability: '광역', range: 80, speed: 50 },
+    '도적': { color: '#f1c40f', ability: '약탈', chance: 0.3, speed: 40 }
+};
+
+let units = [];
+let monsters = [];
+let particles = [];
+let board = Array(16).fill(null);
+
+/** 🎨 디자이너: 시각 효과 클래스 **/
+class Particle {
+    constructor(x, y, color) {
+        this.x = x; this.y = y; this.color = color;
+        this.size = Math.random() * 5 + 2;
+        this.vx = (Math.random() - 0.5) * 10;
+        this.vy = (Math.random() - 0.5) * 10;
+        this.life = 1.0;
+    }
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+        ctx.fill();
+        this.life -= 0.03;
+    }
+}
+
+/** 👨‍💻 프로그래머: 핵심 로직 구현 **/
+function showStageSelect() {
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('stage-screen').classList.remove('hidden');
+}
+
+function showStart() {
+    document.getElementById('stage-screen').classList.add('hidden');
+    document.getElementById('start-screen').classList.remove('hidden');
+}
+
+function startGame(stage) {
+    gameState = 'PLAY';
+    document.getElementById('stage-screen').classList.add('hidden');
+    document.getElementById('in-game-ui').style.display = 'block';
+    gold = 100;
+    wave = 1;
+    units = [];
+    monsters = [];
+    spawnUnit(); // 초기 유닛
+}
+
+function spawnUnit() {
+    const emptySlots = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
+    if (emptySlots.length > 0 && gold >= 10) {
+        gold -= 10;
+        const idx = emptySlots[Math.floor(Math.random() * emptySlots.length)];
+        const types = Object.keys(UNIT_DATA);
+        const name = types[Math.floor(Math.random() * types.length)];
+        const grade = 1;
+        
+        const x = (idx % 4) * 120 + 120;
+        const y = Math.floor(idx / 4) * 120 + 400;
+        
+        board[idx] = { name, grade, x, y, lastAttack: 0, ...UNIT_DATA[name] };
+        createExplosion(x, y, '#fff');
+    }
+}
+
+function createExplosion(x, y, color) {
+    for(let i=0; i<15; i++) particles.push(new Particle(x, y, color));
+}
+
+canvas.addEventListener('mousedown', (e) => {
+    if (gameState !== 'PLAY') return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    // 소환 버튼 영역 클릭 (하단 임의 지정)
+    if (my > 700) { spawnUnit(); return; }
+
+    // 합성 로직: 간단히 같은 유닛 클릭 시 다음 단계로 (프로토타입용)
+    board.forEach((u, i) => {
+        if (u && Math.hypot(u.x - mx, u.y - my) < 40) {
+            // 여기에 실제 드래그 합성 로직을 확장 가능
+            createExplosion(u.x, u.y, u.color);
+        }
+    });
+});
+
+/** 🛠️ 엔진: 렌더링 루프 **/
+function update(time) {
+    ctx.clearRect(0, 0, 600, 800);
+
+    if (gameState === 'PLAY') {
+        // 1. 몬스터 스폰
+        if (time - lastSpawnTime > 2000 / (1 + wave * 0.1)) {
+            monsters.push({ x: 0, y: 50, hp: 10 * wave, maxHp: 10 * wave, speed: 1 + wave*0.1 });
+            lastSpawnTime = time;
+        }
+
+        // 2. 몬스터 이동 (ㄷ자 경로)
+        monsters.forEach((m, i) => {
+            if (m.x < 550 && m.y === 50) m.x += m.speed;
+            else if (m.x >= 550 && m.y < 200) m.y += m.speed;
+            else if (m.y >= 200 && m.x > 50) m.x -= m.speed;
+            
+            ctx.fillStyle = '#ff4d4d';
+            ctx.fillRect(m.x-15, m.y-15, 30, 30);
+            // 체력바
+            ctx.fillStyle = '#000'; ctx.fillRect(m.x-15, m.y-25, 30, 5);
+            ctx.fillStyle = '#0f0'; ctx.fillRect(m.x-15, m.y-25, (m.hp/m.maxHp)*30, 5);
+        });
+
+        // 3. 유닛 공격 및 특수능력 (애니메이션 이펙트)
+        board.forEach(u => {
+            if (!u) return;
+            // 유닛 그리기
+            ctx.shadowBlur = 10; ctx.shadowColor = u.color;
+            ctx.fillStyle = u.color;
+            ctx.beginPath(); ctx.arc(u.x, u.y, 35, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#000'; ctx.fillText(u.name, u.x-15, u.y+5);
+
+            // 공격 로직
+            if (time - u.lastAttack > u.speed * 20 && monsters.length > 0) {
+                const target = monsters[0];
+                u.lastAttack = time;
+                
+                // 발사체/이펙트
+                ctx.strokeStyle = u.color;
+                ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
+                
+                // 데미지 및 특수능력 처리
+                target.hp -= (u.grade * 2);
+                if (u.ability === '약탈' && Math.random() < u.chance) gold += 1;
+                if (u.ability === '스턴' && Math.random() < u.chance) target.speed = 0.2; // 일시적 느려짐
+                
+                if (target.hp <= 0) {
+                    createExplosion(target.x, target.y, '#ff4d4d');
+                    monsters.shift();
+                    gold += 2;
+                }
+            }
+        });
+
+        // 4. 파티클 업데이트
+        particles = particles.filter(p => p.life > 0);
+        particles.forEach(p => p.draw());
+
+        // UI 업데이트
+        document.getElementById('gold-text').innerText = Math.floor(gold);
+        document.getElementById('wave-text').innerText = wave;
+        document.getElementById('mob-text').innerText = monsters.length;
+
+        // 하단 소환 바 UI
+        ctx.fillStyle = '#222'; ctx.fillRect(0, 720, 600, 80);
+        ctx.fillStyle = '#e74c3c'; ctx.font = 'bold 24px Arial';
+        ctx.fillText("TAP TO SPAWN (10G)", 180, 770);
+
+        if (monsters.length >= 50) {
+            alert("Game Over!");
+            gameState = 'START';
+            location.reload();
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
+// 초기 실행
+requestAnimationFrame(update);
+</script>
+</body>
+</html>
