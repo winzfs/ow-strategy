@@ -3,23 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>운빨웹존많겜: 모바일 에디션</title>
+    <title>운빨웹존많겜: 머지 마스터</title>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: 'Arial', sans-serif; overflow: hidden; touch-action: none; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #game-container { position: relative; width: 100vw; height: 100vh; max-width: 500px; max-height: 850px; }
-        canvas { background: #111; display: block; width: 100%; height: 100%; }
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; }
-        h1 { color: #f1c40f; text-shadow: 0 0 10px gold; font-size: 32px; }
-        .btn { padding: 15px 40px; background: #e74c3c; border: none; color: white; border-radius: 50px; font-size: 18px; cursor: pointer; margin-top: 20px; }
-        #ui-layer { position: absolute; top: 20px; left: 20px; pointer-events: none; z-index: 10; font-weight: bold; font-size: 18px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'Arial', sans-serif; overflow: hidden; touch-action: none; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; }
+        
+        /* 🛠️ 엔지니어: 화면 고정 레이아웃 */
+        #game-wrapper { position: relative; width: 100%; height: 100%; max-width: 500px; max-height: 900px; background: #111; overflow: hidden; border: 2px solid #333; }
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        #ui-layer { position: absolute; top: 15px; left: 15px; pointer-events: none; z-index: 10; text-shadow: 2px 2px 2px #000; }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        h1 { color: #f1c40f; font-size: 28px; margin-bottom: 20px; text-align: center; }
+        .btn { padding: 15px 40px; background: #e74c3c; border: none; color: white; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
+    <div id="game-wrapper">
         <div id="ui-layer" class="hidden">
-            <div style="color:#f1c40f">💰 <span id="gold-val">100</span></div>
+            <div style="color:#f1c40f; font-size: 20px;">💰 <span id="gold-val">100</span></div>
             <div style="color:#3498db">🌊 WAVE <span id="wave-val">1</span></div>
             <div style="color:#ff4d4d">👾 MOBS <span id="mob-val">0</span>/50</div>
         </div>
@@ -27,29 +31,21 @@
         <canvas id="gameCanvas"></canvas>
 
         <div id="start-screen" class="screen">
-            <h1>운빨웹존많겜 Mobile</h1>
-            <button class="btn" onclick="startGame()">게임 시작</button>
+            <h1>운빨웹존많겜<br>MERGE DEFENSE</h1>
+            <button class="btn" onclick="startGame()">전투 시작</button>
         </div>
 
         <div id="over-screen" class="screen hidden">
             <h1 style="color:#e74c3c">GAME OVER</h1>
-            <button class="btn" onclick="location.reload()">다시 시작</button>
+            <button class="btn" onclick="location.reload()">다시 도전</button>
         </div>
     </div>
 
 <script>
-/** 👨‍💻 프로그래머 & 엔지니어: 고성능 렌더링 및 터치 로직 **/
+/** 👨‍💻 프로그래머: 고성능 터치 & 합성 로직 **/
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const container = document.getElementById('game-container');
-
-// 화면 크기 대응
-function resize() {
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
-}
-window.addEventListener('resize', resize);
-resize();
+const wrapper = document.getElementById('game-wrapper');
 
 let gold = 100;
 let wave = 1;
@@ -60,47 +56,49 @@ let particles = [];
 let spawnTimer = 0;
 let lastTime = 0;
 
-// 드래그 상태 관리
-let dragTarget = null;
-let touchX = 0, touchY = 0;
+// 드래그 상태
+let dragIdx = null;
+let mx = 0, my = 0; // 마우스/터치 현재 좌표
 
-const UNIT_TYPES = [
-    { name: '검사', color: '#ecf0f1', range: 150, speed: 1000 },
-    { name: '궁수', color: '#3498db', range: 250, speed: 500 },
-    { name: '법사', color: '#9b59b6', range: 200, speed: 1500 },
-    { name: '도적', color: '#f1c40f', range: 130, speed: 1200 }
+const GRADES = [
+    { name: '일반', color: '#ffffff' },
+    { name: '희귀', color: '#3498db' },
+    { name: '영웅', color: '#9b59b6' },
+    { name: '전설', color: '#f1c40f' }
 ];
 
-// 보드 및 경로 설정 (기획자 설계)
-const BOARD_SIZE = 4;
-const TILE_SIZE = 80;
-const BOARD_X = (canvas.width - (TILE_SIZE * BOARD_SIZE)) / 2;
-const BOARD_Y = 350;
+const UNIT_TYPES = ['검사', '궁수', '법사', '도적'];
 
-// 몬스터 회전 경로 (보드 주변을 사각형으로 회전)
-const PATH = [
-    {x1: 30, y1: 150, x2: 450, y2: 150}, // Top
-    {x1: 450, y1: 150, x2: 450, y2: 750}, // Right
-    {x1: 450, y1: 750, x2: 30, y2: 750},  // Bottom
-    {x1: 30, y1: 750, x2: 30, y2: 150}    // Left
-];
+// 배치 설정
+let TILE_SIZE, BOARD_X, BOARD_Y;
+
+function resize() {
+    canvas.width = wrapper.clientWidth;
+    canvas.height = wrapper.clientHeight;
+    TILE_SIZE = Math.min(canvas.width / 4.5, 100);
+    BOARD_X = (canvas.width - (TILE_SIZE * 4)) / 2;
+    BOARD_Y = canvas.height * 0.45;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// 몬스터 순환 경로 설정
+function getPath() {
+    const margin = 30;
+    return [
+        {x1: margin, y1: 80, x2: canvas.width - margin, y2: 80},
+        {x1: canvas.width - margin, y1: 80, x2: canvas.width - margin, y2: BOARD_Y - 50},
+        {x1: canvas.width - margin, y1: BOARD_Y - 50, x2: margin, y2: BOARD_Y - 50},
+        {x1: margin, y1: BOARD_Y - 50, x2: margin, y2: 80}
+    ];
+}
 
 function startGame() {
     gameState = 'PLAY';
-    document.getElementById('start-screen').classList.add('hidden');
+    document.querySelector('.screen').classList.add('hidden');
     document.getElementById('ui-layer').classList.remove('hidden');
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
-}
-
-function spawnMonster() {
-    monsters.push({
-        x: PATH[0].x1, y: PATH[0].y1,
-        hp: 10 * wave, maxHp: 10 * wave,
-        pathIdx: 0,
-        dist: 0,
-        speed: 2 + (wave * 0.2)
-    });
 }
 
 function gameLoop(time) {
@@ -109,149 +107,156 @@ function gameLoop(time) {
     lastTime = time;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const path = getPath();
 
-    // 1. 몬스터 로직 (회전 경로)
+    // 1. 몬스터 생성 및 이동
     spawnTimer += dt;
-    if (spawnTimer > 1500) { spawnMonster(); spawnTimer = 0; }
+    if (spawnTimer > 1800) {
+        monsters.push({
+            x: path[0].x1, y: path[0].y1, pathIdx: 0,
+            hp: 15 * wave, maxHp: 15 * wave, speed: 1.5 + (wave * 0.1)
+        });
+        spawnTimer = 0;
+    }
 
-    monsters.forEach((m, idx) => {
-        let p = PATH[m.pathIdx];
-        let dx = p.x2 - p.x1;
-        let dy = p.y2 - p.y1;
+    monsters.forEach((m, i) => {
+        let p = path[m.pathIdx];
+        let dx = p.x2 - p.x1, dy = p.y2 - p.y1;
         let len = Math.sqrt(dx*dx + dy*dy);
-        
-        m.x += (dx/len) * m.speed;
-        m.y += (dy/len) * m.speed;
+        m.x += (dx/len) * m.speed; m.y += (dy/len) * m.speed;
 
         if (Math.hypot(m.x - p.x2, m.y - p.y2) < 5) {
-            m.pathIdx = (m.pathIdx + 1) % PATH.length;
-            m.x = PATH[m.pathIdx].x1;
-            m.y = PATH[m.pathIdx].y1;
+            m.pathIdx = (m.pathIdx + 1) % path.length;
+            m.x = path[m.pathIdx].x1; m.y = path[m.pathIdx].y1;
         }
 
-        // 몬스터 그리기
         ctx.fillStyle = '#ff4d4d';
-        ctx.fillRect(m.x-15, m.y-15, 30, 30);
+        ctx.fillRect(m.x-12, m.y-12, 24, 24);
         ctx.fillStyle = '#0f0';
-        ctx.fillRect(m.x-15, m.y-25, (m.hp/m.maxHp)*30, 5);
+        ctx.fillRect(m.x-12, m.y-20, (m.hp/m.maxHp)*24, 4);
     });
 
-    // 2. 보드판 및 유닛 그리기
+    // 2. 보드판 그리기
     for (let i = 0; i < 16; i++) {
-        const x = BOARD_X + (i % 4) * TILE_SIZE;
-        const y = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+        const bx = BOARD_X + (i % 4) * TILE_SIZE;
+        const by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
         
         ctx.strokeStyle = '#333';
-        ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
+        ctx.strokeRect(bx + 2, by + 2, TILE_SIZE - 4, TILE_SIZE - 4);
 
-        if (board[i] && dragTarget !== i) {
-            drawUnit(board[i], x + TILE_SIZE/2, y + TILE_SIZE/2);
-            updateUnitAttack(board[i], x + TILE_SIZE/2, y + TILE_SIZE/2, dt);
+        if (board[i] && dragIdx !== i) {
+            drawUnit(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2);
+            attackTarget(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2, dt);
         }
     }
 
-    // 3. 드래그 중인 유닛 그리기
-    if (dragTarget !== null) {
-        ctx.globalAlpha = 0.7;
-        drawUnit(board[dragTarget], touchX, touchY);
-        ctx.globalAlpha = 1.0;
+    // 3. 드래그 중인 유닛 (마우스 위치에 따라 그리기)
+    if (dragIdx !== null) {
+        ctx.save();
+        ctx.globalAlpha = 0.8;
+        drawUnit(board[dragIdx], mx, my);
+        ctx.restore();
     }
 
-    // 4. 소환 버튼 (하단)
-    ctx.fillStyle = '#222';
-    ctx.roundRect(50, canvas.height - 100, canvas.width - 100, 60, 30);
-    ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.textAlign = 'center';
-    ctx.fillText("유닛 소환 (10G)", canvas.width/2, canvas.height - 65);
+    // 4. 이펙트 및 UI
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.03;
+        ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+    });
+    particles = particles.filter(p => p.life > 0); ctx.globalAlpha = 1;
 
-    // UI 업데이트
     document.getElementById('gold-val').innerText = gold;
     document.getElementById('wave-val').innerText = wave;
     document.getElementById('mob-val').innerText = monsters.length;
 
-    if (monsters.length >= 50) {
-        gameState = 'OVER';
-        document.getElementById('over-screen').classList.remove('hidden');
-    } else {
-        requestAnimationFrame(gameLoop);
-    }
+    // 소환 버튼
+    const btnY = canvas.height - 80;
+    ctx.fillStyle = '#222';
+    ctx.roundRect(40, btnY, canvas.width - 80, 50, 25); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = 'bold 16px Arial';
+    ctx.fillText("랜덤 소환 (10G)", canvas.width/2, btnY + 32);
+
+    if (monsters.length >= 50) endGame();
+    else requestAnimationFrame(gameLoop);
 }
 
 function drawUnit(u, x, y) {
-    ctx.fillStyle = u.color;
-    ctx.beginPath(); ctx.arc(x, y, 30, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#000'; ctx.font = '12px Arial';
-    ctx.fillText(u.name, x, y + 5);
+    const gradeInfo = GRADES[u.grade];
+    ctx.fillStyle = gradeInfo.color;
+    ctx.beginPath(); ctx.arc(x, y, TILE_SIZE/2.8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#000'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center';
+    ctx.fillText(u.name, x, y - 2);
+    ctx.font = '9px Arial';
+    ctx.fillText(gradeInfo.name, x, y + 10);
 }
 
-function updateUnitAttack(u, ux, uy, dt) {
+function attackTarget(u, ux, uy, dt) {
     u.timer = (u.timer || 0) + dt;
-    if (u.timer > u.speed && monsters.length > 0) {
+    const speed = 1000 - (u.grade * 150);
+    if (u.timer > speed && monsters.length > 0) {
         const target = monsters[0];
-        if (Math.hypot(target.x - ux, target.y - uy) < u.range) {
+        if (Math.hypot(target.x - ux, target.y - uy) < 200) {
             u.timer = 0;
-            ctx.strokeStyle = u.color;
+            ctx.strokeStyle = GRADES[u.grade].color;
+            ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(ux, uy); ctx.lineTo(target.x, target.y); ctx.stroke();
-            target.hp -= 2;
+            target.hp -= (u.grade + 1) * 3;
             if (target.hp <= 0) { monsters.shift(); gold += 2; }
         }
     }
 }
 
-/** 🛠️ 엔지니어: 통합 드래그 로직 (Mouse & Touch) **/
-function getPos(e) {
+// 🛠️ 프로그래머: 정확한 터치 좌표 계산기
+function updatePointer(e) {
     const rect = canvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: clientX - rect.left, y: clientY - rect.top };
+    mx = clientX - rect.left;
+    my = clientY - rect.top;
 }
 
 function onStart(e) {
-    const pos = getPos(e);
-    touchX = pos.x; touchY = pos.y;
+    updatePointer(e);
+    // 소환 버튼 체크
+    if (my > canvas.height - 100) { spawnUnit(); return; }
 
-    // 소환 버튼 클릭
-    if (touchY > canvas.height - 120) {
-        spawnUnit(); return;
-    }
-
-    // 유닛 선택
+    // 보드 유닛 체크
     for (let i = 0; i < 16; i++) {
-        const x = BOARD_X + (i % 4) * TILE_SIZE;
-        const y = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        if (touchX > x && touchX < x + TILE_SIZE && touchY > y && touchY < y + TILE_SIZE) {
-            if (board[i]) dragTarget = i;
+        const bx = BOARD_X + (i % 4) * TILE_SIZE;
+        const by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) {
+            if (board[i]) dragIdx = i;
         }
     }
-}
-
-function onMove(e) {
-    if (dragTarget === null) return;
-    const pos = getPos(e);
-    touchX = pos.x; touchY = pos.y;
 }
 
 function onEnd() {
-    if (dragTarget === null) return;
+    if (dragIdx === null) return;
     
-    // 놓은 위치 확인
     let dropIdx = -1;
     for (let i = 0; i < 16; i++) {
-        const x = BOARD_X + (i % 4) * TILE_SIZE;
-        const y = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        if (touchX > x && touchX < x + TILE_SIZE && touchY > y && touchY < y + TILE_SIZE) {
-            dropIdx = i;
-        }
+        const bx = BOARD_X + (i % 4) * TILE_SIZE;
+        const by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) dropIdx = i;
     }
 
-    if (dropIdx !== -1 && dropIdx !== dragTarget) {
-        // 합성 또는 위치 교환 (기획: 여기서는 그냥 위치 이동)
-        let temp = board[dropIdx];
-        board[dropIdx] = board[dragTarget];
-        board[dragTarget] = temp;
+    if (dropIdx !== -1 && dropIdx !== dragIdx) {
+        const uA = board[dragIdx];
+        const uB = board[dropIdx];
+
+        // 📝 기획자: 합성 로직 적용
+        if (uB && uA.name === uB.name && uA.grade === uB.grade && uA.grade < 3) {
+            board[dropIdx] = { ...uA, grade: uA.grade + 1, timer: 0 };
+            board[dragIdx] = null;
+            createEffect(mx, my, GRADES[uA.grade + 1].color);
+        } else {
+            // 위치 교환
+            board[dragIdx] = uB;
+            board[dropIdx] = uA;
+        }
     }
-    dragTarget = null;
+    dragIdx = null;
 }
 
 function spawnUnit() {
@@ -259,16 +264,26 @@ function spawnUnit() {
     if (empty.length > 0 && gold >= 10) {
         gold -= 10;
         const idx = empty[Math.floor(Math.random() * empty.length)];
-        board[idx] = { ...UNIT_TYPES[Math.floor(Math.random() * UNIT_TYPES.length)] };
+        board[idx] = { name: UNIT_TYPES[Math.floor(Math.random() * 4)], grade: 0, timer: 0 };
     }
 }
 
-// 이벤트 리스너 등록
+function createEffect(x, y, color) {
+    for(let i=0; i<20; i++) {
+        particles.push({ x, y, color, vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15, life: 1 });
+    }
+}
+
+function endGame() {
+    gameState = 'OVER';
+    document.getElementById('over-screen').classList.remove('hidden');
+}
+
 canvas.addEventListener('mousedown', onStart);
-window.addEventListener('mousemove', onMove);
+window.addEventListener('mousemove', updatePointer);
 window.addEventListener('mouseup', onEnd);
-canvas.addEventListener('touchstart', onStart);
-window.addEventListener('touchmove', onMove);
+canvas.addEventListener('touchstart', (e) => { e.preventDefault(); onStart(e); }, {passive: false});
+window.addEventListener('touchmove', (e) => { e.preventDefault(); updatePointer(e); }, {passive: false});
 window.addEventListener('touchend', onEnd);
 
 </script>
