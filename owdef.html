@@ -3,38 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>운빨웹존많겜: 최적화 버전</title>
+    <title>운빨웹존많겜: 네온 리본</title>
     <style>
-        /* 🛠️ 엔지니어: 모바일 뷰포트 및 고정 레이아웃 수정 */
-        :root { --primary: #f1c40f; --danger: #e74c3c; --bg: #0a0a0a; }
+        :root { --p: #00f2ff; --s: #7000ff; --d: #ff0055; --bg: #050505; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-        
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
         #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            max-width: 500px;
-            max-height: 900px;
-            background: var(--bg);
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
+            position: relative; width: 100vw; height: 100vh; max-width: 500px; max-height: 900px;
+            background: var(--bg); overflow: hidden; display: flex; flex-direction: column;
+            border: 2px solid #1a1a1a;
         }
 
         canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
-        /* UI 레이어 */
-        #ui-header { position: absolute; top: 20px; left: 0; width: 100%; display: flex; justify-content: space-around; pointer-events: none; z-index: 10; }
-        .stat-box { background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 15px; border: 1px solid #333; text-align: center; }
-        .stat-label { font-size: 10px; color: #aaa; margin-bottom: 2px; }
-        .stat-value { font-size: 18px; font-weight: bold; font-family: 'Courier New', monospace; }
+        /* UI 레이어 - 네온 스타일 */
+        #ui-header { 
+            position: absolute; top: 30px; left: 0; width: 100%; 
+            display: flex; justify-content: space-around; pointer-events: none; z-index: 10;
+        }
+        .stat-box { 
+            background: rgba(255, 255, 255, 0.05); padding: 8px 15px; border-radius: 12px; 
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
+            min-width: 80px; text-align: center;
+        }
+        .stat-label { font-size: 9px; color: #888; letter-spacing: 1px; }
+        .stat-value { font-size: 18px; font-weight: 900; font-family: 'Arial Black', sans-serif; }
 
-        .screen { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; }
-        h1 { color: var(--primary); font-size: 32px; text-shadow: 0 0 15px var(--primary); margin-bottom: 30px; line-height: 1.2; }
-        .btn { padding: 18px 50px; background: var(--danger); border: none; color: white; border-radius: 50px; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 0 #c0392b; transition: 0.1s; }
-        .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #c0392b; }
+        /* 화면 전환 효과 */
+        .screen { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.95); 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
+        }
+        h1 { 
+            color: var(--p); font-size: 42px; font-family: 'Arial Black'; 
+            text-shadow: 0 0 20px var(--p); margin-bottom: 40px; text-align: center;
+        }
+        .btn-main { 
+            padding: 20px 60px; background: linear-gradient(45deg, var(--s), var(--p));
+            border: none; color: white; border-radius: 15px; font-size: 22px; font-weight: bold;
+            cursor: pointer; transition: 0.2s; box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+        }
+        .btn-main:active { transform: scale(0.95); }
         
         .hidden { display: none !important; }
     </style>
@@ -43,15 +53,15 @@
 
     <div id="game-container">
         <div id="ui-header" class="hidden">
-            <div class="stat-box">
+            <div class="stat-box" style="border-bottom: 2px solid var(--p)">
                 <div class="stat-label">GOLD</div>
-                <div class="stat-value" style="color:var(--primary)" id="gold-val">100</div>
+                <div class="stat-value" style="color:var(--p)" id="gold-val">100</div>
             </div>
-            <div class="stat-box">
+            <div class="stat-box" style="border-bottom: 2px solid var(--d)">
                 <div class="stat-label">LIFE</div>
-                <div class="stat-value" style="color:var(--danger)" id="life-val">50</div>
+                <div class="stat-value" style="color:var(--d)" id="life-val">50</div>
             </div>
-            <div class="stat-box">
+            <div class="stat-box" style="border-bottom: 2px solid #fff">
                 <div class="stat-label">WAVE</div>
                 <div class="stat-value" id="wave-val">1</div>
             </div>
@@ -60,19 +70,18 @@
         <canvas id="gameCanvas"></canvas>
 
         <div id="start-screen" class="screen">
-            <h1>운빨웹존많겜<br><span style="font-size:18px; color:#fff;">LUCKY WEB DEFENSE</span></h1>
-            <button class="btn" onclick="startGame()">전투 시작</button>
+            <h1>LUCKY<br><span style="color:#fff">DEFENSE</span></h1>
+            <button class="btn-main" onclick="startGame()">START GAME</button>
         </div>
 
         <div id="over-screen" class="screen hidden">
-            <h1 style="color:var(--danger)">DEFEAT</h1>
-            <p id="final-stats" style="color:#ccc; margin-bottom:20px;"></p>
-            <button class="btn" onclick="location.reload()">다시 시작</button>
+            <h1 style="color:var(--d)">GAME OVER</h1>
+            <button class="btn-main" onclick="location.reload()">RETRY</button>
         </div>
     </div>
 
 <script>
-/** 👨‍💻 프로그래머: 화면 동기화 및 물리 엔진 로직 **/
+/** 👨‍💻 전문가 팀의 통합 게임 엔진 **/
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
@@ -83,29 +92,33 @@ let gameState = 'START', spawnTimer = 0, lastTime = 0;
 let dragIdx = null, mx = 0, my = 0;
 
 const GRADES = [
-    { name: '일반', color: '#FFFFFF', power: 3 },
-    { name: '희귀', color: '#3498db', power: 7 },
-    { name: '영웅', color: '#9b59b6', power: 15 },
-    { name: '전설', color: '#f1c40f', power: 35 }
+    { name: 'COMMON', color: '#ffffff', power: 4, glow: '#fff' },
+    { name: 'RARE', color: '#00f2ff', power: 10, glow: '#00f2ff' },
+    { name: 'EPIC', color: '#7000ff', power: 25, glow: '#7000ff' },
+    { name: 'LEGEND', color: '#ff0055', power: 60, glow: '#ff0055' }
 ];
-const UNIT_NAMES = ['검사', '궁수', '법사', '도적'];
 
 let TILE_SIZE, BOARD_X, BOARD_Y, PATH;
 
 function initLayout() {
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
-    TILE_SIZE = Math.min(canvas.width / 4.6, 90);
+    TILE_SIZE = Math.min(canvas.width / 4.6, 95);
     BOARD_X = (canvas.width - (TILE_SIZE * 4)) / 2;
-    BOARD_Y = canvas.height * 0.48;
+    BOARD_Y = canvas.height * 0.42;
     
-    const m = 25;
-    const pathBtm = BOARD_Y - 40;
+    // 🛠️ 기획자: 보드판 주변을 완전히 감싸는 회전 경로
+    const offset = 40;
+    const pTop = BOARD_Y - offset;
+    const pBtm = BOARD_Y + (TILE_SIZE * 4) + offset;
+    const pLeft = BOARD_X - offset;
+    const pRight = BOARD_X + (TILE_SIZE * 4) + offset;
+
     PATH = [
-        {x1: m, y1: 100, x2: canvas.width - m, y2: 100},
-        {x1: canvas.width - m, y1: 100, x2: canvas.width - m, y2: pathBtm},
-        {x1: canvas.width - m, y1: pathBtm, x2: m, y2: pathBtm},
-        {x1: m, y1: pathBtm, x2: m, y2: 100}
+        {x1: pLeft, y1: pTop, x2: pRight, y2: pTop}, // 상
+        {x1: pRight, y1: pTop, x2: pRight, y2: pBtm}, // 우
+        {x1: pRight, y1: pBtm, x2: pLeft, y2: pBtm}, // 하
+        {x1: pLeft, y1: pBtm, x2: pLeft, y2: pTop}  // 좌
     ];
 }
 
@@ -125,13 +138,17 @@ function gameLoop(time) {
     const dt = time - lastTime;
     lastTime = time;
 
-    ctx.fillStyle = '#0a0a0a';
+    // 배경 렌더링
+    ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 1. 몬스터 로직
+    // 1. 몬스터 로직 (회전 경로)
     spawnTimer += dt;
-    if (spawnTimer > Math.max(500, 2000 - (wave * 100))) {
-        monsters.push({ x: PATH[0].x1, y: PATH[0].y1, pathIdx: 0, hp: 20 * wave, maxHp: 20 * wave, speed: 1.2 + (wave*0.1) });
+    if (spawnTimer > Math.max(400, 2000 - (wave * 150))) {
+        monsters.push({
+            x: PATH[0].x1, y: PATH[0].y1, pathIdx: 0,
+            hp: 25 * wave, maxHp: 25 * wave, speed: 1.5 + (wave*0.1)
+        });
         spawnTimer = 0;
     }
 
@@ -143,99 +160,111 @@ function gameLoop(time) {
 
         if (Math.hypot(m.x - p.x2, m.y - p.y2) < 5) {
             m.pathIdx++;
-            if (m.pathIdx >= PATH.length) { // 한 바퀴 완주
-                life--;
-                monsters.splice(i, 1);
-                return;
+            if (m.pathIdx >= PATH.length) {
+                life--; monsters.splice(i, 1); return;
             }
             m.x = PATH[m.pathIdx].x1; m.y = PATH[m.pathIdx].y1;
         }
 
-        ctx.fillStyle = '#ff4d4d';
+        // 몬스터 디자인
+        ctx.shadowBlur = 10; ctx.shadowColor = 'red';
+        ctx.fillStyle = '#ff0055';
         ctx.beginPath(); ctx.arc(m.x, m.y, 10, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#0f0';
-        ctx.fillRect(m.x-10, m.y-18, (m.hp/m.maxHp)*20, 3);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#222'; ctx.fillRect(m.x-12, m.y-20, 24, 4);
+        ctx.fillStyle = '#ff0055'; ctx.fillRect(m.x-12, m.y-20, (m.hp/m.maxHp)*24, 4);
     });
 
-    // 2. 보드판 & 유닛
+    // 2. 보드판 렌더링
     for (let i = 0; i < 16; i++) {
         const bx = BOARD_X + (i % 4) * TILE_SIZE;
         const by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
         
-        ctx.strokeStyle = (dragIdx !== null) ? '#444' : '#222';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(bx + 3, by + 3, TILE_SIZE - 6, TILE_SIZE - 6);
+        ctx.strokeStyle = '#1a1a1a';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx + 4, by + 4, TILE_SIZE - 8, TILE_SIZE - 8);
 
         if (board[i] && dragIdx !== i) {
-            drawUnit(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2);
+            // 유닛 아이들 애니메이션 (기울기 효과)
+            const tilt = Math.sin(time / 200) * 0.05;
+            drawUnit(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2, false, tilt);
             updateAttack(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2, dt);
         }
     }
 
     if (dragIdx !== null) drawUnit(board[dragIdx], mx, my, true);
 
-    // 3. 이펙트 및 스탯 갱신
+    // 3. 파티클 & UI
     updateParticles();
     document.getElementById('gold-val').innerText = gold;
     document.getElementById('life-val').innerText = life;
     document.getElementById('wave-val').innerText = wave;
 
-    // 4. 소환 버튼 (디자인 보강)
-    const btnY = canvas.height - 100;
-    ctx.fillStyle = (gold >= 10) ? '#2ecc71' : '#333';
-    ctx.beginPath(); ctx.roundRect(50, btnY, canvas.width - 100, 55, 27); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 18px Arial'; ctx.textAlign = 'center';
-    ctx.fillText(`랜덤 소환 (10G)`, canvas.width/2, btnY + 35);
+    // 🛠️ 소환 버튼 (화면 하단)
+    const btnY = canvas.height - 120;
+    const btnH = 70;
+    const grad = ctx.createLinearGradient(0, btnY, 0, btnY+btnH);
+    grad.addColorStop(0, gold >= 10 ? '#7000ff' : '#222');
+    grad.addColorStop(1, gold >= 10 ? '#00f2ff' : '#111');
+    
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.roundRect(40, btnY, canvas.width - 80, btnH, 20); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'center';
+    ctx.fillText("SUMMON UNIT (10G)", canvas.width/2, btnY + 42);
 
     if (life <= 0) endGame();
     else {
-        if (time % 30000 < 20) wave++; // 30초마다 웨이브 상승
+        if (time % 20000 < 20) wave++;
         requestAnimationFrame(gameLoop);
     }
 }
 
-function drawUnit(u, x, y, isDragging = false) {
+function drawUnit(u, x, y, isDrag = false, tilt = 0) {
     const g = GRADES[u.grade];
-    if (isDragging) { ctx.shadowBlur = 15; ctx.shadowColor = g.color; }
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(tilt);
+    
+    ctx.shadowBlur = isDrag ? 25 : 15;
+    ctx.shadowColor = g.glow;
     ctx.fillStyle = g.color;
-    ctx.beginPath(); ctx.arc(x, y, TILE_SIZE/3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, TILE_SIZE/3, 0, Math.PI*2); ctx.fill();
+    
     ctx.shadowBlur = 0;
-    ctx.fillStyle = '#000'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center';
-    ctx.fillText(u.name, x, y - 2);
-    ctx.font = '8px Arial'; ctx.fillText(g.name, x, y + 10);
+    ctx.fillStyle = '#000'; ctx.font = '900 12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(u.name[0], 0, 5); // 이름 첫글자만 표기해 심플하게
+    ctx.restore();
 }
 
 function updateAttack(u, ux, uy, dt) {
     u.timer = (u.timer || 0) + dt;
-    if (u.timer > (800 - u.grade*100) && monsters.length > 0) {
+    if (u.timer > (1000 - u.grade*200) && monsters.length > 0) {
         let target = null;
         for(let m of monsters) {
-            if(Math.hypot(m.x - ux, m.y - uy) < 180) { target = m; break; }
+            if(Math.hypot(m.x - ux, m.y - uy) < 220) { target = m; break; }
         }
         if (target) {
             u.timer = 0;
-            ctx.strokeStyle = GRADES[u.grade].color; ctx.lineWidth = 2;
+            ctx.strokeStyle = GRADES[u.grade].color; ctx.lineWidth = 3;
+            ctx.shadowBlur = 10; ctx.shadowColor = GRADES[u.grade].color;
             ctx.beginPath(); ctx.moveTo(ux, uy); ctx.lineTo(target.x, target.y); ctx.stroke();
+            ctx.shadowBlur = 0;
             target.hp -= GRADES[u.grade].power;
             if (target.hp <= 0) {
-                gold += 2; createExplosion(target.x, target.y, '#ff4d4d');
+                gold += 2; createExplosion(target.x, target.y, GRADES[u.grade].color);
                 monsters.splice(monsters.indexOf(target), 1);
             }
         }
     }
 }
 
-// 🛠️ 터치 조작 최적화
-function getPointer(e) {
+function handleStart(e) {
     const rect = canvas.getBoundingClientRect();
     const cx = e.touches ? e.touches[0].clientX : e.clientX;
     const cy = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: cx - rect.left, y: cy - rect.top };
-}
+    mx = cx - rect.left; my = cy - rect.top;
 
-function handleStart(e) {
-    const p = getPointer(e); mx = p.x; my = p.y;
-    if (my > canvas.height - 110) { spawnUnit(); return; }
+    if (my > canvas.height - 130) { spawnUnit(); return; }
     for (let i = 0; i < 16; i++) {
         const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
         if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) {
@@ -244,7 +273,12 @@ function handleStart(e) {
     }
 }
 
-function handleMove(e) { const p = getPointer(e); mx = p.x; my = p.y; }
+function handleMove(e) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    mx = cx - rect.left; my = cy - rect.top;
+}
 
 function handleEnd() {
     if (dragIdx === null) return;
@@ -253,13 +287,12 @@ function handleEnd() {
         const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
         if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) targetIdx = i;
     }
-
     if (targetIdx !== -1 && targetIdx !== dragIdx) {
         const a = board[dragIdx], b = board[targetIdx];
         if (b && a.name === b.name && a.grade === b.grade && a.grade < 3) {
             board[targetIdx] = { ...a, grade: a.grade + 1, timer: 0 };
             board[dragIdx] = null;
-            createExplosion(mx, my, GRADES[a.grade+1].color);
+            createExplosion(mx, my, GRADES[a.grade+1].color, 30);
         } else {
             board[dragIdx] = b; board[targetIdx] = a;
         }
@@ -272,18 +305,20 @@ function spawnUnit() {
     if (empty.length > 0 && gold >= 10) {
         gold -= 10;
         const idx = empty[Math.floor(Math.random() * empty.length)];
-        board[idx] = { name: UNIT_NAMES[Math.floor(Math.random()*4)], grade: 0, timer: 0 };
+        const names = ['KNIGHT', 'ARCHER', 'MAGE', 'ROGUE'];
+        board[idx] = { name: names[Math.floor(Math.random()*4)], grade: 0, timer: 0 };
+        createExplosion(BOARD_X + (idx%4)*TILE_SIZE + TILE_SIZE/2, BOARD_Y + Math.floor(idx/4)*TILE_SIZE + TILE_SIZE/2, '#fff', 20);
     }
 }
 
-function createExplosion(x, y, color) {
-    for(let i=0; i<15; i++) particles.push({ x, y, color, vx:(Math.random()-0.5)*10, vy:(Math.random()-0.5)*10, life:1 });
+function createExplosion(x, y, color, count = 15) {
+    for(let i=0; i<count; i++) particles.push({ x, y, color, vx:(Math.random()-0.5)*12, vy:(Math.random()-0.5)*12, life:1 });
 }
 function updateParticles() {
     particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+        p.x += p.vx; p.y += p.vy; p.life -= 0.03;
         ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
-        ctx.fillRect(p.x, p.y, 3, 3);
+        ctx.fillRect(p.x, p.y, 4, 4);
     });
     particles = particles.filter(p => p.life > 0); ctx.globalAlpha = 1;
 }
@@ -291,7 +326,6 @@ function updateParticles() {
 function endGame() {
     gameState = 'OVER';
     document.getElementById('over-screen').classList.remove('hidden');
-    document.getElementById('final-stats').innerText = `최종 웨이브: ${wave} | 골드 획득: ${gold}`;
 }
 
 canvas.addEventListener('mousedown', handleStart);
