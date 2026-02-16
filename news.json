@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-15 13:56",
+  "lastUpdated": "2026-02-16 05:20",
   "pro": [
     {
       "id": "N9Lx9-gqEMQ",
@@ -24,15 +24,25 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "JXNV0T5r0gM",
-      "title": "벤처 레킹볼 그 상황",
+      "id": "7tI0HGTxoNg",
+      "title": "아이브 리즈가 하는 그 게임",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
     {
+      "id": "nKocGEbOQgM",
+      "title": "나만 없어 꼴랑이 [오버워치]",
+      "player": "Official"
+    },
+    {
       "id": "GiK4U4nj-9c",
       "title": "[2026.02.12 / 별농일기2 구경하구 오버워치 합방!!! (마인크래프트 + 오버워치2)] - 엘피스 루디",
+      "player": "Official"
+    },
+    {
+      "id": "D2HS_HMKaE8",
+      "title": "제트팩 캣을 가장 잘 쓰는 방법",
       "player": "Official"
     },
     {
@@ -49,19 +59,29 @@
       "id": "16jNbW2mC8w",
       "title": "사람들 미치게 만드는 오버워치 최초의 고양이 영웅 &quot;제트팩 캣&quot;",
       "player": "Official"
-    },
-    {
-      "id": "YjXBM4SbNyA",
-      "title": "정상화된 오버워치",
-      "player": "Official"
-    },
-    {
-      "id": "9G3eMF_Nqqc",
-      "title": "완전히 다 바뀐 오버워치 [추가 패치노트 리뷰] | 옵치토크쇼",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "OTvAggQdIsY",
+      "title": "[오버워치2] 신규 영웅 &quot;엠레&quot; - 많이 좋은데...?",
+      "player": "Trending"
+    },
+    {
+      "id": "pS_Jc10ZxeM",
+      "title": "고양이 석양 개꿀잼이넹😆#오버워치2 #오버워치하이라이트 #옵치 #옵치2 #오버워치 #추천 #알고리즘",
+      "player": "Trending"
+    },
+    {
+      "id": "banM3yH8yr8",
+      "title": "오리사 정모 장소:저승#shorts #Overwatch #Orisa #전원처치 #하이라이트 #겜방#저승사자 #단체정모",
+      "player": "Trending"
+    },
+    {
+      "id": "04dm6XRjI4E",
+      "title": "오버워치 주노 리플레이 루나사피 #오버워치2 #overwatch2 #헬로키티 #산리오 #루나사피 #콜라보 #헬로키티 하이라이트",
+      "player": "Trending"
+    },
     {
       "id": "Yd8NRUdHQoE",
       "title": "얀트록스 #게임 #apex #apexlegends #게임 #발로란트 #gaming #발로란트 #leagueoflegends #오버워치2 #하이라이트 #병맛 #세븐틴 #하이라이트",
@@ -70,26 +90,6 @@
     {
       "id": "0CQnjkD8Ijw",
       "title": "쩔어 #게임 #apex #apexlegends #게임 #발로란트 #gaming #발로란트 #leagueoflegends #오버워치2 #오버워치2 #하이라이트 #병맛 #하이라이트",
-      "player": "Trending"
-    },
-    {
-      "id": "O8Am1swzhu0",
-      "title": "오버워치2 샴발리 수도원 소전 그래도 제법 데려갔어 #shorts",
-      "player": "Trending"
-    },
-    {
-      "id": "IN_pvq_OHJA",
-      "title": "오버워치2 스타디움 오아시스 오리사 각이 보이면 갈아버리기 #shorts",
-      "player": "Trending"
-    },
-    {
-      "id": "AwNAd5SOJUU",
-      "title": "오버워치2 스타디움 일리오스 정커퀸 칼 실수 했을 때 도망쳤어야지 #shorts",
-      "player": "Trending"
-    },
-    {
-      "id": "QZvnyDLr620",
-      "title": "점점 빠져드는 묘미가 있는 오버워치....",
       "player": "Trending"
     }
   ]
