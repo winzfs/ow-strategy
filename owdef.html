@@ -7,118 +7,101 @@
     <style>
         :root { --p: #00f2ff; --s: #7000ff; --d: #ff0055; --bg: #050505; }
         
-        /* 1. 브라우저 기본 동작 완전히 봉쇄 */
+        /* 1. 브라우저 스크롤 및 확대 절대 차단 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: none; margin: 0; padding: 0; }
         
         body, html { 
-            width: 100%; height: 100%; 
-            background: #000; /* 배경을 검정색으로 고정 */
-            overflow: hidden; position: fixed; 
+            width: 100%; height: 100%; height: 100dvh; 
+            background: #000; overflow: hidden; position: fixed; 
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* 2. 게임 메인 컨테이너 - 화면 중앙 강제 배치 */
-        #app {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100vw; height: 100vh;
-            display: flex; flex-direction: column;
+        /* 2. 게임 컨테이너: 9:16 비율 강제 유지 (화면 잘림 방지의 핵심) */
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: calc(100vh * 9 / 16); /* 세로 길이에 맞춘 가로 폭 제한 */
             background: var(--bg);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
+        /* 3. 캔버스: 컨테이너를 꽉 채우되 비율은 CSS가 관리 */
         canvas { 
             position: absolute; top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            z-index: 1; /* 최하단 */
+            width: 100%; height: 100%; z-index: 1; 
         }
 
-        /* 3. UI 레이어 - 유연한 배치 */
+        /* 4. UI 레이어 */
         .ui { position: relative; z-index: 10; width: 100%; pointer-events: none; }
-        
-        #top-bar { 
-            padding-top: env(safe-area-inset-top, 20px);
-            display: flex; justify-content: center; gap: 8px;
-        }
-        
-        #bottom-bar { 
-            margin-top: auto; 
-            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 20px);
-            display: flex; justify-content: center;
-        }
+        #top-bar { padding: calc(env(safe-area-inset-top) + 10px) 10px 0; display: flex; justify-content: center; gap: 5px; }
+        #bottom-bar { margin-top: auto; padding-bottom: calc(env(safe-area-inset-bottom) + 20px); display: flex; justify-content: center; }
 
-        .box { background: rgba(20, 20, 20, 0.95); padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(0,242,255,0.2); text-align: center; min-width: 80px; }
-        .label { font-size: 10px; color: #888; display: block; text-transform: uppercase; }
-        .val { font-size: 16px; font-weight: bold; color: #fff; }
+        .stat-box { background: rgba(10, 10, 10, 0.9); padding: 5px 10px; border-radius: 10px; border: 1px solid #333; min-width: 75px; text-align: center; }
+        .label { font-size: 9px; color: #888; display: block; }
+        .val { font-size: 14px; font-weight: bold; color: #fff; }
 
-        .btn-spawn { 
-            width: 85%; height: 60px; pointer-events: auto;
+        #spawn-btn { 
+            width: 80%; height: 55px; pointer-events: auto;
             background: linear-gradient(135deg, var(--s), var(--p));
-            border: none; color: white; border-radius: 18px; font-size: 20px; font-weight: bold;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            border: none; color: white; border-radius: 15px; font-size: 18px; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
-        /* 4. 화면 덮개 (로비/게임오버) */
-        .overlay { 
-            position: absolute; inset: 0; z-index: 100; 
-            background: var(--bg); display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; padding: 20px;
-        }
+        /* 5. 오버레이 화면 */
+        .screen { position: absolute; inset: 0; z-index: 100; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
         .hidden { display: none !important; }
+        h1 { color: var(--p); font-size: 38px; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px var(--p); line-height: 1; }
         
-        h1 { color: var(--p); font-size: 42px; text-align: center; margin-bottom: 20px; text-shadow: 0 0 15px var(--p); line-height: 0.9; }
-        .up-card { width: 100%; max-width: 300px; display: flex; justify-content: space-between; align-items: center; background: #111; padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #222; }
-        .btn-play { padding: 18px 60px; background: linear-gradient(135deg, var(--s), var(--p)); border: none; color: white; border-radius: 20px; font-size: 22px; font-weight: bold; }
-        .btn-up { padding: 10px 15px; background: #222; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 12px; }
+        .up-item { width: 100%; max-width: 280px; display: flex; justify-content: space-between; align-items: center; background: #111; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #222; }
+        .btn-main { padding: 16px 50px; background: linear-gradient(135deg, var(--s), var(--p)); border: none; color: white; border-radius: 15px; font-size: 20px; font-weight: bold; }
+        .btn-up { padding: 8px 12px; background: #222; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 11px; }
     </style>
 </head>
 <body>
 
-    <div id="app">
-        <canvas id="gameCanvas"></canvas>
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
 
-        <div id="top-bar" class="ui hidden">
-            <div class="box"><span class="label">Gold</span><span id="gold-val" class="val">100</span></div>
-            <div class="box"><span class="label">Life</span><span id="life-val" class="val" style="color:var(--d)">30</span></div>
-            <div class="box"><span class="label">Wave</span><span id="wave-val" class="val">1</span></div>
-        </div>
-
-        <div style="flex:1;"></div>
-
-        <div id="bottom-bar" class="ui hidden">
-            <button class="btn-spawn" id="spawn-btn">유닛 소환 (10G)</button>
-        </div>
-
-        <div id="lobby-screen" class="overlay">
-            <h1>LUCKY<br>ETERNAL</h1>
-            <div style="color:#888; margin-bottom:20px;">영혼석: <span id="soul-val" style="color:var(--p)">0</span></div>
-            <div style="width:100%; max-width:300px;">
-                <div class="up-card">
-                    <div><div style="color:#eee; font-weight:bold;">공격력 강화</div><div style="color:var(--p); font-size:12px;">Lv.<span id="atk-lv">1</span></div></div>
-                    <button class="btn-up" id="up-atk-btn">강화 (10)</button>
-                </div>
-                <div class="up-card">
-                    <div><div style="color:#eee; font-weight:bold;">초기 골드</div><div style="color:var(--p); font-size:12px;">Lv.<span id="gold-lv">1</span></div></div>
-                    <button class="btn-up" id="up-gold-btn">강화 (15)</button>
-                </div>
-            </div>
-            <br>
-            <button class="btn-play" id="start-btn">전투 시작</button>
-        </div>
-
-        <div id="over-screen" class="overlay hidden">
-            <h1 style="color:var(--d)">GAME OVER</h1>
-            <div id="result-text" style="color:#aaa; margin-bottom:30px; text-align: center; line-height: 1.5;"></div>
-            <button class="btn-play" id="restart-btn">로비로 이동</button>
-        </div>
+    <div id="top-bar" class="ui hidden">
+        <div class="stat-box"><span class="label">GOLD</span><span id="gold-val" class="val">100</span></div>
+        <div class="stat-box"><span class="label">LIFE</span><span id="life-val" class="val" style="color:var(--d)">30</span></div>
+        <div class="stat-box"><span class="label">WAVE</span><span id="wave-val" class="val">1</span></div>
     </div>
 
+    <div id="bottom-bar" class="ui hidden">
+        <button id="spawn-btn">유닛 소환 (10G)</button>
+    </div>
+
+    <div id="lobby-screen" class="screen">
+        <h1>LUCKY<br>ETERNAL</h1>
+        <div style="color:#666; margin-bottom:20px;">영혼석: <span id="soul-val" style="color:var(--p)">0</span></div>
+        <div class="up-item">
+            <div><div style="color:#eee; font-weight:bold;">공격력 강화</div><div style="color:var(--p); font-size:11px;">Lv.<span id="atk-lv">1</span></div></div>
+            <button class="btn-up" id="up-atk-btn">강화 (10)</button>
+        </div>
+        <div class="up-item">
+            <div><div style="color:#eee; font-weight:bold;">초기 골드</div><div style="color:var(--p); font-size:11px;">Lv.<span id="gold-lv">1</span></div></div>
+            <button class="btn-up" id="up-gold-btn">강화 (15)</button>
+        </div>
+        <br>
+        <button class="btn-main" id="start-btn">전투 시작</button>
+    </div>
+
+    <div id="over-screen" class="screen hidden">
+        <h1 style="color:var(--d)">GAME OVER</h1>
+        <div id="result-text" style="color:#aaa; margin-bottom:30px; text-align: center;"></div>
+        <button class="btn-main" id="restart-btn">로비로 이동</button>
+    </div>
+</div>
+
 <script>
-/** * [시스템] 초기화 및 리사이징 (잘림 방지)
- */
+/** 1. 기본 설정 및 데이터 */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const app = document.getElementById('app');
+const container = document.getElementById('game-container');
 
 let soulStones = parseInt(localStorage.getItem('soulStones')) || 0;
 let upgradeAtkLv = parseInt(localStorage.getItem('atkLv')) || 1;
@@ -130,35 +113,31 @@ let gameState = 'LOBBY';
 const GRADES = [
     { c: 'rgba(255,255,255,0.1)', s: '#ffffff', p: 15 },
     { c: 'rgba(0,242,255,0.15)', s: '#00f2ff', p: 40 },
-    { c: 'rgba(112,0,255,0.2)', s: '#7000ff', p: 90 },
-    { c: 'rgba(255,0,85,0.25)', s: '#ff0055', p: 250 }
+    { c: 'rgba(112,0,255,0.2)', s: '#7000ff', p: 100 },
+    { c: 'rgba(255,0,85,0.25)', s: '#ff0055', p: 300 }
 ];
 
 let TILE_SIZE, BOARD_X, BOARD_Y, PATH;
 
+// [중요] 어떤 기기에서도 동일한 비율을 보장하는 레이아웃 계산
 function initLayout() {
-    // 실제 브라우저 가시 영역 계산
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const w = container.clientWidth;
+    const h = container.clientHeight;
     canvas.width = w;
     canvas.height = h;
-    app.style.width = w + "px";
-    app.style.height = h + "px";
 
-    // 보드 크기 결정 (화면 세로 비율에 민감하게 반응)
-    TILE_SIZE = Math.min(w / 4.5, h / 9); 
+    // 타일을 화면 폭의 1/4보다 약간 작게 설정하여 여백 확보
+    TILE_SIZE = Math.min(w / 4.4, h / 8.5); 
     BOARD_X = (w - (TILE_SIZE * 4)) / 2;
     BOARD_Y = (h - (TILE_SIZE * 4)) / 2;
 
-    const off = TILE_SIZE * 0.5;
+    const off = TILE_SIZE * 0.4;
     const pT = BOARD_Y - off, pB = BOARD_Y + (TILE_SIZE * 4) + off;
     const pL = BOARD_X - off, pR = BOARD_X + (TILE_SIZE * 4) + off;
     PATH = [{x1:pL,y1:pT,x2:pR,y2:pT},{x1:pR,y1:pT,x2:pR,y2:pB},{x1:pR,y1:pB,x2:pL,y2:pB},{x1:pL,y1:pB,x2:pL,y2:pT}];
 }
 
-/**
- * [게임 엔진] 유닛, 공격, 몬스터
- */
+/** 2. 게임 기능 로직 */
 function spawnUnit() {
     if (gameState !== 'PLAY' || gold < 10) return;
     const empty = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
@@ -170,14 +149,14 @@ function spawnUnit() {
 
 function drawUnit(u, x, y) {
     const g = GRADES[u.grade];
-    const s = TILE_SIZE * 0.75;
+    const s = TILE_SIZE * 0.7;
+    // 오라
     ctx.fillStyle = g.c;
-    ctx.beginPath();
-    ctx.ellipse(x, y + s/3, s/1.6, s/12, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x, y + s/3, s/1.6, s/12, 0, 0, Math.PI * 2); ctx.fill();
+    // 본체
     ctx.fillStyle = g.s;
     ctx.beginPath(); ctx.arc(x, y, s/3.5, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#000'; ctx.font = `bold ${TILE_SIZE*0.18}px sans-serif`;
+    ctx.fillStyle = '#000'; ctx.font = `bold ${TILE_SIZE*0.18}px sans-serif`; ctx.textAlign = 'center';
     ctx.fillText(u.grade + 1, x, y + TILE_SIZE*0.06);
 }
 
@@ -186,10 +165,10 @@ function gameLoop(time) {
     const dt = time - lastTime; lastTime = time;
     ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 몬스터 생성 및 이동
+    // 몬스터
     spawnTimer += dt;
-    if (spawnTimer > Math.max(400, 2000 - (wave * 100))) {
-        monsters.push({ x: PATH[0].x1, y: PATH[0].y1, pathIdx: 0, hp: 70 * Math.pow(1.2, wave), maxHp: 70 * Math.pow(1.2, wave), speed: 1.6 + (wave * 0.05) });
+    if (spawnTimer > Math.max(400, 2000 - (wave * 120))) {
+        monsters.push({ x: PATH[0].x1, y: PATH[0].y1, pathIdx: 0, hp: 80 * Math.pow(1.2, wave), maxHp: 80 * Math.pow(1.2, wave), speed: 1.5 + (wave * 0.05) });
         spawnTimer = 0;
     }
     for (let i = monsters.length - 1; i >= 0; i--) {
@@ -201,14 +180,13 @@ function gameLoop(time) {
             if (m.pathIdx >= PATH.length) { life--; monsters.splice(i, 1); continue; }
             m.x = PATH[m.pathIdx].x1; m.y = PATH[m.pathIdx].y1;
         }
-        ctx.fillStyle = '#ff0055'; ctx.beginPath(); ctx.arc(m.x, m.y, TILE_SIZE*0.12, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ff0055'; ctx.beginPath(); ctx.arc(m.x, m.y, TILE_SIZE*0.1, 0, Math.PI*2); ctx.fill();
     }
 
-    // 타일 및 유닛 전투
-    ctx.textAlign = 'center';
+    // 보드 및 유닛
     for (let i = 0; i < 16; i++) {
         const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        ctx.strokeStyle = '#1a1a1a'; ctx.strokeRect(bx+2, by+2, TILE_SIZE-4, TILE_SIZE-4);
+        ctx.strokeStyle = '#222'; ctx.strokeRect(bx+1, by+1, TILE_SIZE-2, TILE_SIZE-2);
         if (board[i] && dragIdx !== i) {
             const ux = bx + TILE_SIZE/2, uy = by + TILE_SIZE/2;
             drawUnit(board[i], ux, uy);
@@ -234,9 +212,7 @@ function gameLoop(time) {
     if (life <= 0) endGame(); else requestAnimationFrame(gameLoop);
 }
 
-/**
- * [컨트롤] 게임 시작, 강화, 터치
- */
+/** 3. 인터페이스 제어 */
 function startGame() {
     gameState = 'PLAY';
     document.getElementById('lobby-screen').classList.add('hidden');
@@ -250,13 +226,13 @@ function startGame() {
 
 function endGame() {
     gameState = 'OVER';
-    const earned = Math.floor(wave * 3); soulStones += earned;
+    const earned = Math.floor(wave * 2); soulStones += earned;
     localStorage.setItem('soulStones', soulStones);
     document.getElementById('over-screen').classList.remove('hidden');
-    document.getElementById('result-text').innerText = `최종 WAVE: ${wave}\n영혼석 ${earned}개 획득 완료!`;
+    document.getElementById('result-text').innerText = `최종 WAVE: ${wave}\n영혼석 ${earned}개 획득!`;
 }
 
-function updateLobbyUI() {
+function updateUI() {
     document.getElementById('soul-val').innerText = soulStones;
     document.getElementById('atk-lv').innerText = upgradeAtkLv;
     document.getElementById('gold-lv').innerText = upgradeGoldLv;
@@ -265,23 +241,23 @@ function updateLobbyUI() {
 document.getElementById('start-btn').onclick = startGame;
 document.getElementById('spawn-btn').onclick = spawnUnit;
 document.getElementById('restart-btn').onclick = () => location.reload();
-document.getElementById('up-atk-btn').onclick = () => { if(soulStones>=10){ soulStones-=10; upgradeAtkLv++; localStorage.setItem('atkLv', upgradeAtkLv); updateLobbyUI(); } };
-document.getElementById('up-gold-btn').onclick = () => { if(soulStones>=15){ soulStones-=15; upgradeGoldLv++; localStorage.setItem('goldLv', upgradeGoldLv); updateLobbyUI(); } };
+document.getElementById('up-atk-btn').onclick = () => { if(soulStones>=10){ soulStones-=10; upgradeAtkLv++; localStorage.setItem('atkLv', upgradeAtkLv); updateUI(); } };
+document.getElementById('up-gold-btn').onclick = () => { if(soulStones>=15){ soulStones-=15; upgradeGoldLv++; localStorage.setItem('goldLv', upgradeGoldLv); updateUI(); } };
 
-const getPos = (e) => {
+const getXY = (e) => {
     const r = canvas.getBoundingClientRect();
     const t = e.touches ? e.touches[0] : e;
     return { x: t.clientX - r.left, y: t.clientY - r.top };
 };
-const down = (e) => {
-    const p = getPos(e); mx = p.x; my = p.y;
+canvas.addEventListener('mousedown', (e) => {
+    const p = getXY(e); mx = p.x; my = p.y;
     for (let i = 0; i < 16; i++) {
         const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
         if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE && board[i]) { dragIdx = i; break; }
     }
-};
-const move = (e) => { const p = getPos(e); mx = p.x; my = p.y; };
-const up = () => {
+});
+window.addEventListener('mousemove', (e) => { const p = getXY(e); mx = p.x; my = p.y; });
+window.addEventListener('mouseup', () => {
     if (dragIdx !== null) {
         let tidx = -1;
         for (let i = 0; i < 16; i++) {
@@ -290,26 +266,38 @@ const up = () => {
         }
         if (tidx !== -1 && tidx !== dragIdx) {
             const a = board[dragIdx], b = board[tidx];
-            if (b && a.grade === b.grade && a.grade < 3) { board[tidx] = { grade: a.grade+1, timer:0 }; board[dragIdx] = null; }
+            if (b && a.grade === b.grade && a.grade < 3) { board[tidx] = { grade: a.grade+1, timer: 0 }; board[dragIdx] = null; }
             else { board[dragIdx] = b; board[tidx] = a; }
         }
         dragIdx = null;
     }
-};
+});
+canvas.addEventListener('touchstart', (e) => {
+    const p = getXY(e); mx = p.x; my = p.y;
+    for (let i = 0; i < 16; i++) {
+        const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE && board[i]) { dragIdx = i; break; }
+    }
+    e.preventDefault();
+}, {passive: false});
+window.addEventListener('touchmove', (e) => { const p = getXY(e); mx = p.x; my = p.y; }, {passive: false});
+window.addEventListener('touchend', () => {
+    if (dragIdx !== null) {
+        let tidx = -1;
+        for (let i = 0; i < 16; i++) {
+            const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+            if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) tidx = i;
+        }
+        if (tidx !== -1 && tidx !== dragIdx) {
+            const a = board[dragIdx], b = board[tidx];
+            if (b && a.grade === b.grade && a.grade < 3) { board[tidx] = { grade: a.grade+1, timer: 0 }; board[dragIdx] = null; }
+            else { board[dragIdx] = b; board[tidx] = a; }
+        }
+        dragIdx = null;
+    }
+});
 
-canvas.addEventListener('mousedown', down);
-canvas.addEventListener('touchstart', (e) => { down(e); e.preventDefault(); }, {passive:false});
-window.addEventListener('mousemove', move);
-window.addEventListener('touchmove', (e) => { move(e); }, {passive:false});
-window.addEventListener('mouseup', up);
-window.addEventListener('touchend', up);
-
-// 초기 구동 및 0.1초 뒤 리사이징 (확실한 크기 확보)
-window.onload = () => { 
-    initLayout(); 
-    updateLobbyUI(); 
-    setTimeout(initLayout, 100); 
-};
+window.onload = () => { initLayout(); updateUI(); };
 window.onresize = initLayout;
 </script>
 </body>
