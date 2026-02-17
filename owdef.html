@@ -59,7 +59,6 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
 
-// 리소스 로드
 const unitImages = { 'A': new Image() };
 unitImages['A'].src = 'img/def/tr1.png';
 
@@ -69,12 +68,11 @@ let upgradeGoldLv = parseInt(localStorage.getItem('goldLv')) || 1;
 
 let gold, wave, life, monsters, board, particles, gameState = 'LOBBY', spawnTimer = 0, lastTime = 0, dragIdx = null, mx, my;
 
-// 등급별 정보 (오라 색상 등)
 const GRADES = [
-    { color: '#ffffff', power: 5 },  // 일반
-    { color: '#00f2ff', power: 15 }, // 희귀
-    { color: '#7000ff', power: 40 }, // 영웅
-    { color: '#ff0055', power: 100 } // 전설
+    { color: 'rgba(255,255,255,0.25)', power: 5, stroke: '#ffffff' },
+    { color: 'rgba(0,242,255,0.3)', power: 15, stroke: '#00f2ff' },
+    { color: 'rgba(112,0,255,0.35)', power: 40, stroke: '#7000ff' },
+    { color: 'rgba(255,0,85,0.4)', power: 100, stroke: '#ff0055' }
 ];
 
 let TILE_SIZE, BOARD_X, BOARD_Y, PATH, SPAWN_BTN_RECT;
@@ -160,9 +158,9 @@ function gameLoop(time) {
             m.x = PATH[m.pathIdx].x1; m.y = PATH[m.pathIdx].y1;
         }
         ctx.fillStyle = '#ff0055';
-        ctx.beginPath(); ctx.arc(m.x, m.y, 12, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#222'; ctx.fillRect(m.x-12, m.y-18, 24, 3);
-        ctx.fillStyle = '#0f0'; ctx.fillRect(m.x-12, m.y-18, (m.hp/m.maxHp)*24, 3);
+        ctx.beginPath(); ctx.arc(m.x, m.y, 11, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#222'; ctx.fillRect(m.x-10, m.y-16, 20, 3);
+        ctx.fillStyle = '#0f0'; ctx.fillRect(m.x-10, m.y-16, (m.hp/m.maxHp)*20, 3);
     }
 
     // 2. 보드 및 유닛
@@ -194,28 +192,29 @@ function gameLoop(time) {
     }
 }
 
-/** 🛠️ 유닛 그리기 (복구 및 단순한 오라 적용) **/
+/** 🛠️ 유닛 그리기 (더 작고 단순한 발밑 채우기) **/
 function drawUnit(u, x, y, isDrag = false) {
     const g = GRADES[u.grade];
     const size = TILE_SIZE * 0.8;
 
-    // --- 단순한 오라 (바닥 고리) ---
-    ctx.strokeStyle = g.color;
-    ctx.lineWidth = isDrag ? 4 : 2;
+    // --- 초단순 발밑 채우기 ---
+    ctx.fillStyle = g.color;
     ctx.beginPath();
-    ctx.arc(x, y + size/6, size/2.2, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    // 바닥 채우기 (매우 연하게)
-    ctx.fillStyle = g.color + "33"; // 33은 20% 투명도
+    // 유닛 발끝에 살짝 걸치는 작은 원
+    ctx.arc(x, y + size/3.5, size/3, 0, Math.PI * 2); 
     ctx.fill();
+
+    // 드래그 시에만 살짝 강조
+    if (isDrag) {
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+        ctx.stroke();
+    }
 
     const img = unitImages[u.name];
     if (img && img.complete && img.naturalWidth !== 0) {
         ctx.drawImage(img, x - size/2, y - size/2, size, size);
     } else {
-        // 이미지가 없을 때를 대비한 기본 원형 유닛
-        ctx.fillStyle = g.color;
+        ctx.fillStyle = g.stroke;
         ctx.beginPath(); ctx.arc(x, y, size/3, 0, Math.PI*2); ctx.fill();
         ctx.fillStyle = '#000'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText(u.name, x, y+6);
@@ -229,11 +228,11 @@ function updateAttack(u, ux, uy, dt) {
         let target = monsters.find(m => Math.hypot(m.x - ux, m.y - uy) < 180);
         if (target) {
             u.timer = 0;
-            ctx.strokeStyle = GRADES[u.grade].color; ctx.lineWidth = 2;
+            ctx.strokeStyle = GRADES[u.grade].stroke; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(ux, uy); ctx.lineTo(target.x, target.y); ctx.stroke();
             target.hp -= GRADES[u.grade].power * bonus;
             if (target.hp <= 0) {
-                gold += 2; createExplosion(target.x, target.y, GRADES[u.grade].color);
+                gold += 2; createExplosion(target.x, target.y, GRADES[u.grade].stroke);
                 monsters.splice(monsters.indexOf(target), 1);
             }
         }
@@ -258,7 +257,7 @@ function spawnUnit() {
     if (empty.length > 0 && gold >= 10) {
         gold -= 10;
         const idx = empty[Math.floor(Math.random() * empty.length)];
-        const names = ['K', 'A', 'M', 'R']; // 다양한 유닛 이름
+        const names = ['K', 'A', 'M', 'R'];
         board[idx] = { name: names[Math.floor(Math.random()*4)], grade: 0, timer: 0 };
     }
 }
@@ -275,7 +274,7 @@ function handleEnd() {
         if (b && a.name === b.name && a.grade === b.grade && a.grade < 3) {
             board[targetIdx] = { ...a, grade: a.grade + 1, timer: 0 };
             board[dragIdx] = null;
-            createExplosion(mx, my, GRADES[a.grade+1].color);
+            createExplosion(mx, my, GRADES[a.grade+1].stroke);
         } else { board[dragIdx] = b; board[targetIdx] = a; }
     }
     dragIdx = null;
