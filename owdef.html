@@ -20,19 +20,16 @@
             image-rendering: pixelated;
         }
 
-        /* UI 레이어 */
         .ui-panel { position: absolute; z-index: 10; pointer-events: none; width: 100%; }
         #top-bar { top: 15px; display: flex; justify-content: space-around; }
         .glass-box { background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); text-align: center; min-width: 75px; }
         .label { font-size: 9px; color: #888; margin-bottom: 1px; }
         .val { font-size: 15px; font-weight: bold; color: #fff; }
 
-        /* 화면 템플릿 */
         .screen { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; padding: 20px; }
         h1 { color: var(--p); font-size: 45px; margin-bottom: 5px; text-shadow: 0 0 15px var(--p); text-align: center; line-height: 1.1; }
         .sub-title { color: #888; margin-bottom: 40px; font-size: 18px; }
 
-        /* 업그레이드 UI */
         .upgrade-list { width: 100%; max-width: 400px; margin-bottom: 30px; }
         .upgrade-item { 
             display: flex; justify-content: space-between; align-items: center; 
@@ -81,13 +78,13 @@
 
         <div id="over-screen" class="screen hidden">
             <h1 style="color:var(--d)">DEFEAT</h1>
-            <div id="result-text" style="color:#aaa; margin-bottom:30px; text-align: center; font-size: 18px;"></div>
+            <div id="result-text" style="color:#aaa; margin-bottom:30px; text-align: center; font-size: 18px; white-space: pre-wrap;"></div>
             <button class="btn-action" onclick="goToLobby()">로비로 이동</button>
         </div>
     </div>
 
 <script>
-/** 🚀 엔진 설정 **/
+/** 🚀 엔진 및 리소스 **/
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
@@ -103,10 +100,10 @@ let gold, wave, life, monsters, board, particles;
 let gameState = 'LOBBY', spawnTimer = 0, lastTime = 0, dragIdx = null, mx, my;
 
 const GRADES = [
-    { name: '일반', color: '#fff', power: 5 },
-    { name: '희귀', color: '#00f2ff', power: 12 },
-    { name: '영웅', color: '#7000ff', power: 30 },
-    { name: '전설', color: '#ff0055', power: 70 }
+    { name: '일반', color: 'rgba(255, 255, 255, 0.5)', power: 5, glow: '#fff' },
+    { name: '희귀', color: 'rgba(0, 242, 255, 0.6)', power: 12, glow: '#00f2ff' },
+    { name: '영웅', color: 'rgba(112, 0, 255, 0.7)', power: 30, glow: '#7000ff' },
+    { name: '전설', color: 'rgba(255, 0, 85, 0.8)', power: 70, glow: '#ff0055' }
 ];
 
 let TILE_SIZE, BOARD_X, BOARD_Y, PATH, SPAWN_BTN_RECT;
@@ -123,9 +120,8 @@ function initLayout() {
 
     TILE_SIZE = Math.min(w / 4.1, 110); 
     BOARD_X = (w - (TILE_SIZE * 4)) / 2;
-    BOARD_Y = h * 0.18; // 보드판 위치 살짝 올림
+    BOARD_Y = h * 0.18; 
     
-    // 경로 (보드판 주위)
     const offset = 40;
     const pT = BOARD_Y - offset;
     const pB = BOARD_Y + (TILE_SIZE * 4) + offset;
@@ -138,15 +134,9 @@ function initLayout() {
         {x1: pL, y1: pB, x2: pL, y2: pT}
     ];
 
-    // 소환 버튼 위치 (경로 아래쪽 여유 공간)
     const btnW = Math.min(w - 60, 350);
     const btnH = 65;
-    SPAWN_BTN_RECT = {
-        x: (w - btnW) / 2,
-        y: pB + 20, // 경로 하단선(pB)에서 20px 아래
-        w: btnW,
-        h: btnH
-    };
+    SPAWN_BTN_RECT = { x: (w - btnW) / 2, y: pB + 20, w: btnW, h: btnH };
 }
 
 window.addEventListener('resize', initLayout);
@@ -232,7 +222,7 @@ function gameLoop(time) {
     }
     if (dragIdx !== null) drawUnit(board[dragIdx], mx, my, true);
 
-    // 3. 재배치된 소환 버튼 렌더링
+    // 3. 소환 버튼
     const r = SPAWN_BTN_RECT;
     ctx.fillStyle = gold >= 10 ? '#7000ff' : '#222';
     ctx.shadowBlur = gold >= 10 ? 15 : 0;
@@ -253,25 +243,37 @@ function gameLoop(time) {
     }
 }
 
+/** ✨ 유닛 그리기 (발밑 오라 효과 추가) **/
 function drawUnit(u, x, y, isDrag = false) {
     const g = GRADES[u.grade];
     const size = TILE_SIZE * 0.82;
-    ctx.save();
-    ctx.shadowBlur = isDrag ? 30 : 15;
-    ctx.shadowColor = g.color;
-    ctx.fillStyle = isDrag ? 'rgba(255,255,255,0.2)' : 'transparent';
-    ctx.beginPath(); ctx.arc(x, y, size/2, 0, Math.PI*2); ctx.fill();
-    ctx.restore();
 
+    // --- 발밑 오라(Aura) 연출 ---
+    ctx.save();
+    // 1. 바닥 광원 원형
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, size * 0.6);
+    grad.addColorStop(0, g.color); // 중심은 진하게
+    grad.addColorStop(1, 'transparent'); // 바깥은 투명하게
+    
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.ellipse(x, y + size/3, size/1.5, size/3, 0, 0, Math.PI*2); // 타원형으로 바닥에 깔리는 느낌
+    ctx.fill();
+
+    // 2. 외부 글로우 효과 (드래그 시 강조)
+    ctx.shadowBlur = isDrag ? 25 : 12;
+    ctx.shadowColor = g.glow;
+    
     const img = unitImages[u.name];
     if (img && img.complete && img.naturalWidth !== 0) {
         ctx.drawImage(img, x - size/2, y - size/2, size, size);
     } else {
-        ctx.fillStyle = g.color;
+        ctx.fillStyle = g.glow;
         ctx.beginPath(); ctx.arc(x, y, TILE_SIZE/2.5, 0, Math.PI*2); ctx.fill();
         ctx.fillStyle = '#000'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText(u.name, x, y+7);
     }
+    ctx.restore();
 }
 
 function updateAttack(u, ux, uy, dt) {
@@ -281,11 +283,11 @@ function updateAttack(u, ux, uy, dt) {
         let target = monsters.find(m => Math.hypot(m.x - ux, m.y - uy) < 200);
         if (target) {
             u.timer = 0;
-            ctx.strokeStyle = GRADES[u.grade].color; ctx.lineWidth = 3;
+            ctx.strokeStyle = GRADES[u.grade].glow; ctx.lineWidth = 3;
             ctx.beginPath(); ctx.moveTo(ux, uy); ctx.lineTo(target.x, target.y); ctx.stroke();
             target.hp -= GRADES[u.grade].power * bonus;
             if (target.hp <= 0) {
-                gold += 2; createExplosion(target.x, target.y, GRADES[u.grade].color);
+                gold += 2; createExplosion(target.x, target.y, GRADES[u.grade].glow);
                 monsters.splice(monsters.indexOf(target), 1);
             }
         }
@@ -297,18 +299,11 @@ function handleStart(e) {
     const cx = e.touches ? e.touches[0].clientX : e.clientX;
     const cy = e.touches ? e.touches[0].clientY : e.clientY;
     mx = cx - rect.left; my = cy - rect.top;
-
-    // 소환 버튼 클릭 판정
     const r = SPAWN_BTN_RECT;
-    if (mx > r.x && mx < r.x + r.w && my > r.y && my < r.y + r.h) {
-        spawnUnit(); return;
-    }
-
+    if (mx > r.x && mx < r.x + r.w && my > r.y && my < r.y + r.h) { spawnUnit(); return; }
     for (let i = 0; i < 16; i++) {
         const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) {
-            if (board[i]) dragIdx = i;
-        }
+        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) if (board[i]) dragIdx = i;
     }
 }
 
@@ -333,7 +328,7 @@ function handleEnd() {
         if (b && a.name === b.name && a.grade === b.grade && a.grade < 3) {
             board[targetIdx] = { ...a, grade: a.grade + 1, timer: 0 };
             board[dragIdx] = null;
-            createExplosion(mx, my, GRADES[a.grade+1].color);
+            createExplosion(mx, my, GRADES[a.grade+1].glow);
         } else { board[dragIdx] = b; board[targetIdx] = a; }
     }
     dragIdx = null;
