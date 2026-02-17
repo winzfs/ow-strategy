@@ -26,7 +26,7 @@
 
         /* 화면 템플릿 */
         .screen { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; padding: 20px; }
-        h1 { color: var(--p); font-size: 40px; margin-bottom: 10px; text-shadow: 0 0 15px var(--p); }
+        h1 { color: var(--p); font-size: 40px; margin-bottom: 10px; text-shadow: 0 0 15px var(--p); text-align: center; }
         .sub-title { color: #888; margin-bottom: 40px; }
 
         /* 업그레이드 섹션 */
@@ -87,7 +87,7 @@
 
         <div id="over-screen" class="screen hidden">
             <h1 style="color:var(--d)">DEFEAT</h1>
-            <div id="result-text" style="color:#aaa; margin-bottom:30px">최종 웨이브: 1</div>
+            <div id="result-text" style="color:#aaa; margin-bottom:30px; white-space: pre-wrap; text-align: center;">최종 웨이브: 1</div>
             <button class="btn-action" onclick="goToLobby()">로비로 이동</button>
         </div>
     </div>
@@ -98,7 +98,13 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
 
-// 저장된 데이터 (영구 성장)
+// 🖼️ 이미지 로딩 시스템 추가
+const unitImages = {
+    'A': new Image()
+};
+unitImages['A'].src = 'img/def/tr1.png';
+
+// 저장된 데이터
 let soulStones = parseInt(localStorage.getItem('soulStones')) || 0;
 let upgradeAtkLv = parseInt(localStorage.getItem('atkLv')) || 1;
 let upgradeGoldLv = parseInt(localStorage.getItem('goldLv')) || 1;
@@ -121,9 +127,8 @@ function initLayout() {
     canvas.height = container.clientHeight;
     TILE_SIZE = Math.min(canvas.width / 4.5, 90);
     BOARD_X = (canvas.width - (TILE_SIZE * 4)) / 2;
-    BOARD_Y = canvas.height * 0.35; // 보드를 약간 위로
+    BOARD_Y = canvas.height * 0.35;
     
-    // 몬스터 경로 (보드판 주변)
     const offset = 35;
     const pT = BOARD_Y - offset;
     const pB = BOARD_Y + (TILE_SIZE * 4) + offset;
@@ -173,7 +178,6 @@ function startGame() {
     document.getElementById('lobby-screen').classList.add('hidden');
     document.getElementById('top-bar').classList.remove('hidden');
     
-    // 초기화
     gold = 100 + (upgradeGoldLv - 1) * 10;
     wave = 1; life = 30; monsters = []; board = Array(16).fill(null); particles = [];
     lastTime = performance.now();
@@ -196,7 +200,7 @@ function gameLoop(time) {
     ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 1. 몬스터 (경로)
+    // 1. 몬스터 로직
     spawnTimer += dt;
     if (spawnTimer > Math.max(300, 2000 - (wave * 100))) {
         monsters.push({
@@ -224,7 +228,7 @@ function gameLoop(time) {
         ctx.fillStyle = '#0f0'; ctx.fillRect(m.x-12, m.y-18, (m.hp/m.maxHp)*24, 3);
     });
 
-    // 2. 보드 & 유닛
+    // 2. 보드 및 유닛 렌더링
     for (let i = 0; i < 16; i++) {
         const bx = BOARD_X + (i % 4) * TILE_SIZE;
         const by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
@@ -237,7 +241,7 @@ function gameLoop(time) {
     }
     if (dragIdx !== null) drawUnit(board[dragIdx], mx, my, true);
 
-    // 3. 컨트롤 존 (소환 버튼 하단 분리)
+    // 3. UI 버튼 영역
     const ctrlY = canvas.height - 120;
     ctx.fillStyle = '#000'; ctx.fillRect(0, ctrlY, canvas.width, 120);
     ctx.strokeStyle = '#222'; ctx.beginPath(); ctx.moveTo(0, ctrlY); ctx.lineTo(canvas.width, ctrlY); ctx.stroke();
@@ -248,7 +252,6 @@ function gameLoop(time) {
     ctx.fillStyle = '#fff'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(`유닛 소환 (10G)`, canvas.width/2, ctrlY + 57);
 
-    // 4. 이펙트 및 스탯
     updateParticles();
     document.getElementById('gold-val').innerText = Math.floor(gold);
     document.getElementById('life-val').innerText = life;
@@ -261,13 +264,30 @@ function gameLoop(time) {
     }
 }
 
+// 🎨 유닛 그리기 함수 (이미지 지원)
 function drawUnit(u, x, y, isDrag = false) {
     const g = GRADES[u.grade];
-    ctx.fillStyle = g.color;
-    ctx.shadowBlur = isDrag ? 20 : 10; ctx.shadowColor = g.color;
-    ctx.beginPath(); ctx.arc(x, y, TILE_SIZE/3, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = isDrag ? 20 : 10; 
+    ctx.shadowColor = g.color;
+
+    const img = unitImages[u.name];
+    const size = TILE_SIZE * 0.75;
+
+    if (img && img.complete && img.naturalWidth !== 0) {
+        // 이미지로 그리기
+        ctx.drawImage(img, x - size/2, y - size/2, size, size);
+        // 등급 표시용 테두리 (선택)
+        ctx.strokeStyle = g.color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x - size/2, y - size/2, size, size);
+    } else {
+        // 기존 방식 (도형)
+        ctx.fillStyle = g.color;
+        ctx.beginPath(); ctx.arc(x, y, TILE_SIZE/3, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#000'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(u.name, x, y+5);
+    }
     ctx.shadowBlur = 0;
-    ctx.fillStyle = '#000'; ctx.font = 'bold 12px sans-serif'; ctx.fillText(u.name[0], x, y+5);
 }
 
 function updateAttack(u, ux, uy, dt) {
@@ -308,8 +328,27 @@ function spawnUnit() {
     if (empty.length > 0 && gold >= 10) {
         gold -= 10;
         const idx = empty[Math.floor(Math.random() * empty.length)];
-        board[idx] = { name: ['K','A','M','R'][Math.floor(Math.random()*4)], grade: 0, timer: 0 };
+        const names = ['K', 'A', 'M', 'R'];
+        board[idx] = { name: names[Math.floor(Math.random()*4)], grade: 0, timer: 0 };
     }
+}
+
+function handleEnd() {
+    if (dragIdx === null) return;
+    let targetIdx = -1;
+    for (let i = 0; i < 16; i++) {
+        const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) targetIdx = i;
+    }
+    if (targetIdx !== -1 && targetIdx !== dragIdx) {
+        const a = board[dragIdx], b = board[targetIdx];
+        if (b && a.name === b.name && a.grade === b.grade && a.grade < 3) {
+            board[targetIdx] = { ...a, grade: a.grade + 1, timer: 0 };
+            board[dragIdx] = null;
+            createExplosion(mx, my, GRADES[a.grade+1].color);
+        } else { board[dragIdx] = b; board[targetIdx] = a; }
+    }
+    dragIdx = null;
 }
 
 function endGame() {
@@ -339,24 +378,6 @@ window.addEventListener('touchmove', (e)=>{e.preventDefault();
     mx = e.touches[0].clientX - rect.left; my = e.touches[0].clientY - rect.top;
 }, {passive:false});
 window.addEventListener('touchend', handleEnd);
-
-function handleEnd() {
-    if (dragIdx === null) return;
-    let targetIdx = -1;
-    for (let i = 0; i < 16; i++) {
-        const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) targetIdx = i;
-    }
-    if (targetIdx !== -1 && targetIdx !== dragIdx) {
-        const a = board[dragIdx], b = board[targetIdx];
-        if (b && a.name === b.name && a.grade === b.grade && a.grade < 3) {
-            board[targetIdx] = { ...a, grade: a.grade + 1, timer: 0 };
-            board[dragIdx] = null;
-            createExplosion(mx, my, GRADES[a.grade+1].color);
-        } else { board[dragIdx] = b; board[targetIdx] = a; }
-    }
-    dragIdx = null;
-}
 </script>
 </body>
 </html>
