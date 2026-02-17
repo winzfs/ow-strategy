@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-16 14:31",
+  "lastUpdated": "2026-02-17 05:13",
   "pro": [
     {
       "id": "N9Lx9-gqEMQ",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "mM6pnH9EMiI",
-      "title": "구멍이 뚫려 안이 다 보이는 마우스",
+      "id": "kDMlH8LDl5c",
+      "title": "오버워치 부활을 막는 핵쟁이들",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,8 +19,8 @@
   ],
   "streamer": [
     {
-      "id": "rnzENZ9WZvk",
-      "title": "오버워치에서 가장 하찮은 스킨 TOP1",
+      "id": "YtYJRA6v6bE",
+      "title": "역대 최고 GOAT급 오버워치 스킨 등장",
       "player": "일루전 (Illusion)"
     },
     {
@@ -31,8 +31,18 @@
   ],
   "official": [
     {
+      "id": "fSygEqLhFQc",
+      "title": "우린 이런 탱을 기다려왔다네.. 도미나 리뷰 | 옵치토크쇼",
+      "player": "Official"
+    },
+    {
       "id": "E1ujKukNQmU",
       "title": "쿼츠 운동 많이 된다",
+      "player": "Official"
+    },
+    {
+      "id": "IGpvak8tO54",
+      "title": "다시 부활하고 있는 갓겜 오버워치의 유일한 장애물",
       "player": "Official"
     },
     {
@@ -41,55 +51,45 @@
       "player": "Official"
     },
     {
-      "id": "GiK4U4nj-9c",
-      "title": "[2026.02.12 / 별농일기2 구경하구 오버워치 합방!!! (마인크래프트 + 오버워치2)] - 엘피스 루디",
+      "id": "k3l51_A4hJI",
+      "title": "The GOAT of all Mei Builds in Stadium | Overwatch",
       "player": "Official"
     },
     {
-      "id": "D2HS_HMKaE8",
-      "title": "제트팩 캣을 가장 잘 쓰는 방법",
-      "player": "Official"
-    },
-    {
-      "id": "_wIjZd83ipE",
-      "title": "They BUFFED This Ashe Build? Now it cooks | Stadium Overwatch",
-      "player": "Official"
-    },
-    {
-      "id": "1CuppRhlJm8",
-      "title": "오버워치 근간을 뒤흔들 신캐등장? 제트팩 캣 리뷰 | 옵치토크쇼",
+      "id": "gMsJh07xgRg",
+      "title": "오버워치 1시즌 제트팩 캣 스포트라이트",
       "player": "Official"
     }
   ],
   "trending": [
     {
-      "id": "BRuj8vO0nhg",
-      "title": "요즘 길고양이 + 석양 #오버워치 #오버워치2 #메드무비 #오버워치하이라이트 #오버워치클립 #nobatidao",
+      "id": "7xeE5SePZSg",
+      "title": "우리집 고양이가 사고침",
       "player": "Trending"
     },
     {
-      "id": "5KDSnuUFV14",
-      "title": "오버워치2 환상적인 대지분쇄",
+      "id": "hq4OQMVYrEw",
+      "title": "오버워치에 미X놈",
       "player": "Trending"
     },
     {
-      "id": "F4E9ao9zfeg",
-      "title": "브라 카운터",
+      "id": "RvW6y388Neo",
+      "title": "리퍼 억제기, 캐서디 하이라이트",
       "player": "Trending"
     },
     {
-      "id": "IVSbPUxQ1sM",
-      "title": "최고의 플레이 6",
+      "id": "MeVAltFF9cw",
+      "title": "상대 딜러 궁을 완벽하게 카운터 치는 미즈키 궁 [오버워치]",
       "player": "Trending"
     },
     {
-      "id": "t4HvscaLKwI",
-      "title": "오버워치 시즌1 138등 할배가 게임 박살내고 말아먹는 엠레플레이[오버워치]",
+      "id": "-zwB7FLpE-8",
+      "title": "일리아리 하이라이트[오버워치2]",
       "player": "Trending"
     },
     {
-      "id": "6VmhqZfIcI4",
-      "title": "오버워치 헬로키티 하이라이트 + 신화무기 주노 #오버워치2 #overwatchps #overwatch2 #オーバーウオッチ2 #헬로키티 #콜라보 #신화무기",
+      "id": "_4BUrBh-7EI",
+      "title": "오버워치2 오리사 이정도 난전이면 ㄷㄷ",
       "player": "Trending"
     }
   ]
