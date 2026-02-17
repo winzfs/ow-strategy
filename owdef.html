@@ -12,78 +12,88 @@
         
         body, html { 
             width: 100%; height: 100%; height: 100dvh; 
-            background: #000; overflow: hidden; position: fixed; 
+            background: #000; overflow: hidden; position: fixed;
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* 2. 게임 컨테이너: 9:16 비율 강제 유지 (화면 잘림 방지의 핵심) */
-        #game-container {
+        /* 2. 게임 영역 강제 고정 (비율 유지) */
+        #game-wrapper {
             position: relative;
             width: 100vw;
             height: 100vh;
-            max-width: calc(100vh * 9 / 16); /* 세로 길이에 맞춘 가로 폭 제한 */
+            max-width: calc(100vh * 9 / 16);
+            max-height: 100vh;
             background: var(--bg);
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        /* 3. 캔버스: 컨테이너를 꽉 채우되 비율은 CSS가 관리 */
-        canvas { 
-            position: absolute; top: 0; left: 0; 
-            width: 100%; height: 100%; z-index: 1; 
+        canvas { width: 100%; height: 100%; display: block; z-index: 1; }
+
+        /* 3. UI 레이어 - 절대 좌표로 캔버스 위에 배치 */
+        .ui-layer { 
+            position: absolute; inset: 0; 
+            z-index: 10; pointer-events: none; 
+            display: flex; flex-direction: column;
         }
 
-        /* 4. UI 레이어 */
-        .ui { position: relative; z-index: 10; width: 100%; pointer-events: none; }
-        #top-bar { padding: calc(env(safe-area-inset-top) + 10px) 10px 0; display: flex; justify-content: center; gap: 5px; }
-        #bottom-bar { margin-top: auto; padding-bottom: calc(env(safe-area-inset-bottom) + 20px); display: flex; justify-content: center; }
+        #top-bar { 
+            padding: calc(env(safe-area-inset-top) + 15px) 10px 0;
+            display: flex; justify-content: center; gap: 6px;
+        }
 
-        .stat-box { background: rgba(10, 10, 10, 0.9); padding: 5px 10px; border-radius: 10px; border: 1px solid #333; min-width: 75px; text-align: center; }
-        .label { font-size: 9px; color: #888; display: block; }
+        #bottom-bar { 
+            margin-top: auto;
+            padding-bottom: calc(env(safe-area-inset-bottom) + 25px);
+            display: flex; justify-content: center;
+        }
+
+        .glass-box { background: rgba(15, 15, 15, 0.9); padding: 5px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 75px; text-align: center; }
+        .label { font-size: 10px; color: #888; display: block; }
         .val { font-size: 14px; font-weight: bold; color: #fff; }
 
         #spawn-btn { 
-            width: 80%; height: 55px; pointer-events: auto;
+            width: 80%; height: 54px; pointer-events: auto;
             background: linear-gradient(135deg, var(--s), var(--p));
             border: none; color: white; border-radius: 15px; font-size: 18px; font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        /* 5. 오버레이 화면 */
+        /* 4. 화면 전환용 오버레이 */
         .screen { position: absolute; inset: 0; z-index: 100; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
         .hidden { display: none !important; }
-        h1 { color: var(--p); font-size: 38px; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px var(--p); line-height: 1; }
-        
-        .up-item { width: 100%; max-width: 280px; display: flex; justify-content: space-between; align-items: center; background: #111; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #222; }
-        .btn-main { padding: 16px 50px; background: linear-gradient(135deg, var(--s), var(--p)); border: none; color: white; border-radius: 15px; font-size: 20px; font-weight: bold; }
+        h1 { color: var(--p); font-size: 36px; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px var(--p); line-height: 1; }
+        .up-row { width: 100%; max-width: 280px; display: flex; justify-content: space-between; align-items: center; background: #111; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #222; }
+        .btn-main { padding: 16px 45px; background: linear-gradient(135deg, var(--s), var(--p)); border: none; color: white; border-radius: 15px; font-size: 19px; font-weight: bold; }
         .btn-up { padding: 8px 12px; background: #222; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 11px; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
+<div id="game-wrapper">
     <canvas id="gameCanvas"></canvas>
 
-    <div id="top-bar" class="ui hidden">
-        <div class="stat-box"><span class="label">GOLD</span><span id="gold-val" class="val">100</span></div>
-        <div class="stat-box"><span class="label">LIFE</span><span id="life-val" class="val" style="color:var(--d)">30</span></div>
-        <div class="stat-box"><span class="label">WAVE</span><span id="wave-val" class="val">1</span></div>
-    </div>
-
-    <div id="bottom-bar" class="ui hidden">
-        <button id="spawn-btn">유닛 소환 (10G)</button>
+    <div class="ui-layer">
+        <div id="top-bar" class="hidden">
+            <div class="glass-box"><span class="label">GOLD</span><span id="gold-val" class="val">100</span></div>
+            <div class="glass-box"><span class="label">LIFE</span><span id="life-val" class="val" style="color:var(--d)">30</span></div>
+            <div class="glass-box"><span class="label">WAVE</span><span id="wave-val" class="val">1</span></div>
+        </div>
+        <div id="bottom-bar" class="hidden">
+            <button id="spawn-btn">유닛 소환 (10G)</button>
+        </div>
     </div>
 
     <div id="lobby-screen" class="screen">
         <h1>LUCKY<br>ETERNAL</h1>
-        <div style="color:#666; margin-bottom:20px;">영혼석: <span id="soul-val" style="color:var(--p)">0</span></div>
-        <div class="up-item">
-            <div><div style="color:#eee; font-weight:bold;">공격력 강화</div><div style="color:var(--p); font-size:11px;">Lv.<span id="atk-lv">1</span></div></div>
+        <div style="color:#666; margin-bottom:15px; font-size:13px;">영혼석: <span id="soul-val" style="color:var(--p)">0</span></div>
+        <div class="up-row">
+            <div><div style="color:#eee; font-weight:bold; font-size:14px;">공격력 강화</div><div style="color:var(--p); font-size:11px;">Lv.<span id="atk-lv">1</span></div></div>
             <button class="btn-up" id="up-atk-btn">강화 (10)</button>
         </div>
-        <div class="up-item">
-            <div><div style="color:#eee; font-weight:bold;">초기 골드</div><div style="color:var(--p); font-size:11px;">Lv.<span id="gold-lv">1</span></div></div>
+        <div class="up-row">
+            <div><div style="color:#eee; font-weight:bold; font-size:14px;">초기 골드</div><div style="color:var(--p); font-size:11px;">Lv.<span id="gold-lv">1</span></div></div>
             <button class="btn-up" id="up-gold-btn">강화 (15)</button>
         </div>
         <br>
@@ -91,17 +101,20 @@
     </div>
 
     <div id="over-screen" class="screen hidden">
-        <h1 style="color:var(--d)">GAME OVER</h1>
-        <div id="result-text" style="color:#aaa; margin-bottom:30px; text-align: center;"></div>
+        <h1 style="color:var(--d)">DEFEAT</h1>
+        <div id="result-text" style="color:#aaa; margin-bottom:20px; text-align:center; font-size:14px;"></div>
         <button class="btn-main" id="restart-btn">로비로 이동</button>
     </div>
 </div>
 
 <script>
-/** 1. 기본 설정 및 데이터 */
+/** 1. 가상 해상도 엔진 설정 (가장 중요) */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const container = document.getElementById('game-container');
+
+// 가상 해상도 (어떤 폰이든 이 크기 내에 그림)
+const V_WIDTH = 360;
+const V_HEIGHT = 640;
 
 let soulStones = parseInt(localStorage.getItem('soulStones')) || 0;
 let upgradeAtkLv = parseInt(localStorage.getItem('atkLv')) || 1;
@@ -117,27 +130,24 @@ const GRADES = [
     { c: 'rgba(255,0,85,0.25)', s: '#ff0055', p: 300 }
 ];
 
-let TILE_SIZE, BOARD_X, BOARD_Y, PATH;
+// 보드 좌표 고정 (가상 해상도 기준)
+const TILE_SIZE = 76;
+const BOARD_X = (V_WIDTH - (TILE_SIZE * 4)) / 2;
+const BOARD_Y = (V_HEIGHT - (TILE_SIZE * 4)) / 2;
+const PATH = [
+    {x1:10, y1:BOARD_Y-25, x2:V_WIDTH-10, y2:BOARD_Y-25},
+    {x1:V_WIDTH-10, y1:BOARD_Y-25, x2:V_WIDTH-10, y2:BOARD_Y+(TILE_SIZE*4)+25},
+    {x1:V_WIDTH-10, y1:BOARD_Y+(TILE_SIZE*4)+25, x2:10, y2:BOARD_Y+(TILE_SIZE*4)+25},
+    {x1:10, y1:BOARD_Y+(TILE_SIZE*4)+25, x2:10, y2:BOARD_Y-25}
+];
 
-// [중요] 어떤 기기에서도 동일한 비율을 보장하는 레이아웃 계산
-function initLayout() {
-    const w = container.clientWidth;
-    const h = container.clientHeight;
-    canvas.width = w;
-    canvas.height = h;
-
-    // 타일을 화면 폭의 1/4보다 약간 작게 설정하여 여백 확보
-    TILE_SIZE = Math.min(w / 4.4, h / 8.5); 
-    BOARD_X = (w - (TILE_SIZE * 4)) / 2;
-    BOARD_Y = (h - (TILE_SIZE * 4)) / 2;
-
-    const off = TILE_SIZE * 0.4;
-    const pT = BOARD_Y - off, pB = BOARD_Y + (TILE_SIZE * 4) + off;
-    const pL = BOARD_X - off, pR = BOARD_X + (TILE_SIZE * 4) + off;
-    PATH = [{x1:pL,y1:pT,x2:pR,y2:pT},{x1:pR,y1:pT,x2:pR,y2:pB},{x1:pR,y1:pB,x2:pL,y2:pB},{x1:pL,y1:pB,x2:pL,y2:pT}];
+function resize() {
+    // 실제 캔버스의 해상도를 가상 해상도로 고정
+    canvas.width = V_WIDTH;
+    canvas.height = V_HEIGHT;
 }
 
-/** 2. 게임 기능 로직 */
+/** 2. 게임 코어 로직 */
 function spawnUnit() {
     if (gameState !== 'PLAY' || gold < 10) return;
     const empty = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
@@ -150,25 +160,26 @@ function spawnUnit() {
 function drawUnit(u, x, y) {
     const g = GRADES[u.grade];
     const s = TILE_SIZE * 0.7;
-    // 오라
     ctx.fillStyle = g.c;
     ctx.beginPath(); ctx.ellipse(x, y + s/3, s/1.6, s/12, 0, 0, Math.PI * 2); ctx.fill();
-    // 본체
     ctx.fillStyle = g.s;
     ctx.beginPath(); ctx.arc(x, y, s/3.5, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#000'; ctx.font = `bold ${TILE_SIZE*0.18}px sans-serif`; ctx.textAlign = 'center';
-    ctx.fillText(u.grade + 1, x, y + TILE_SIZE*0.06);
+    ctx.fillStyle = '#000'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(u.grade + 1, x, y + 5);
 }
 
 function gameLoop(time) {
     if (gameState !== 'PLAY') return;
     const dt = time - lastTime; lastTime = time;
-    ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // 배경 지우기
+    ctx.fillStyle = '#050505';
+    ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
 
-    // 몬스터
+    // 몬스터 로직
     spawnTimer += dt;
     if (spawnTimer > Math.max(400, 2000 - (wave * 120))) {
-        monsters.push({ x: PATH[0].x1, y: PATH[0].y1, pathIdx: 0, hp: 80 * Math.pow(1.2, wave), maxHp: 80 * Math.pow(1.2, wave), speed: 1.5 + (wave * 0.05) });
+        monsters.push({ x: PATH[0].x1, y: PATH[0].y1, pathIdx: 0, hp: 80 * Math.pow(1.2, wave), speed: 1.5 + (wave * 0.05) });
         spawnTimer = 0;
     }
     for (let i = monsters.length - 1; i >= 0; i--) {
@@ -180,13 +191,15 @@ function gameLoop(time) {
             if (m.pathIdx >= PATH.length) { life--; monsters.splice(i, 1); continue; }
             m.x = PATH[m.pathIdx].x1; m.y = PATH[m.pathIdx].y1;
         }
-        ctx.fillStyle = '#ff0055'; ctx.beginPath(); ctx.arc(m.x, m.y, TILE_SIZE*0.1, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ff0055'; ctx.beginPath(); ctx.arc(m.x, m.y, 8, 0, Math.PI*2); ctx.fill();
     }
 
-    // 보드 및 유닛
+    // 타일 및 유닛 공격
     for (let i = 0; i < 16; i++) {
         const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        ctx.strokeStyle = '#222'; ctx.strokeRect(bx+1, by+1, TILE_SIZE-2, TILE_SIZE-2);
+        ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
+        ctx.strokeRect(bx + 2, by + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        
         if (board[i] && dragIdx !== i) {
             const ux = bx + TILE_SIZE/2, uy = by + TILE_SIZE/2;
             drawUnit(board[i], ux, uy);
@@ -212,7 +225,7 @@ function gameLoop(time) {
     if (life <= 0) endGame(); else requestAnimationFrame(gameLoop);
 }
 
-/** 3. 인터페이스 제어 */
+/** 3. 인터페이스 및 저장 기능 */
 function startGame() {
     gameState = 'PLAY';
     document.getElementById('lobby-screen').classList.add('hidden');
@@ -226,79 +239,67 @@ function startGame() {
 
 function endGame() {
     gameState = 'OVER';
-    const earned = Math.floor(wave * 2); soulStones += earned;
+    const earned = Math.floor(wave * 2.5); soulStones += earned;
     localStorage.setItem('soulStones', soulStones);
     document.getElementById('over-screen').classList.remove('hidden');
-    document.getElementById('result-text').innerText = `최종 WAVE: ${wave}\n영혼석 ${earned}개 획득!`;
+    document.getElementById('result-text').innerText = `웨이브 ${wave} 생존\n영혼석 ${earned}개 획득!`;
 }
 
-function updateUI() {
+function updateLobbyUI() {
     document.getElementById('soul-val').innerText = soulStones;
     document.getElementById('atk-lv').innerText = upgradeAtkLv;
     document.getElementById('gold-lv').innerText = upgradeGoldLv;
 }
 
+// 이벤트 핸들러
 document.getElementById('start-btn').onclick = startGame;
 document.getElementById('spawn-btn').onclick = spawnUnit;
 document.getElementById('restart-btn').onclick = () => location.reload();
-document.getElementById('up-atk-btn').onclick = () => { if(soulStones>=10){ soulStones-=10; upgradeAtkLv++; localStorage.setItem('atkLv', upgradeAtkLv); updateUI(); } };
-document.getElementById('up-gold-btn').onclick = () => { if(soulStones>=15){ soulStones-=15; upgradeGoldLv++; localStorage.setItem('goldLv', upgradeGoldLv); updateUI(); } };
+document.getElementById('up-atk-btn').onclick = () => { if(soulStones>=10){ soulStones-=10; upgradeAtkLv++; localStorage.setItem('atkLv', upgradeAtkLv); updateLobbyUI(); } };
+document.getElementById('up-gold-btn').onclick = () => { if(soulStones>=15){ soulStones-=15; upgradeGoldLv++; localStorage.setItem('goldLv', upgradeGoldLv); updateLobbyUI(); } };
 
-const getXY = (e) => {
-    const r = canvas.getBoundingClientRect();
-    const t = e.touches ? e.touches[0] : e;
-    return { x: t.clientX - r.left, y: t.clientY - r.top };
+const getVirtualPos = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches ? e.touches[0] : e;
+    // 실제 클릭한 좌표를 가상 해상도 비율로 변환
+    const scaleX = V_WIDTH / rect.width;
+    const scaleY = V_HEIGHT / rect.height;
+    return { x: (touch.clientX - rect.left) * scaleX, y: (touch.clientY - rect.top) * scaleY };
 };
-canvas.addEventListener('mousedown', (e) => {
-    const p = getXY(e); mx = p.x; my = p.y;
-    for (let i = 0; i < 16; i++) {
-        const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE && board[i]) { dragIdx = i; break; }
-    }
-});
-window.addEventListener('mousemove', (e) => { const p = getXY(e); mx = p.x; my = p.y; });
-window.addEventListener('mouseup', () => {
-    if (dragIdx !== null) {
-        let tidx = -1;
-        for (let i = 0; i < 16; i++) {
-            const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-            if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) tidx = i;
-        }
-        if (tidx !== -1 && tidx !== dragIdx) {
-            const a = board[dragIdx], b = board[tidx];
-            if (b && a.grade === b.grade && a.grade < 3) { board[tidx] = { grade: a.grade+1, timer: 0 }; board[dragIdx] = null; }
-            else { board[dragIdx] = b; board[tidx] = a; }
-        }
-        dragIdx = null;
-    }
-});
-canvas.addEventListener('touchstart', (e) => {
-    const p = getXY(e); mx = p.x; my = p.y;
-    for (let i = 0; i < 16; i++) {
-        const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE && board[i]) { dragIdx = i; break; }
-    }
-    e.preventDefault();
-}, {passive: false});
-window.addEventListener('touchmove', (e) => { const p = getXY(e); mx = p.x; my = p.y; }, {passive: false});
-window.addEventListener('touchend', () => {
-    if (dragIdx !== null) {
-        let tidx = -1;
-        for (let i = 0; i < 16; i++) {
-            const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-            if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) tidx = i;
-        }
-        if (tidx !== -1 && tidx !== dragIdx) {
-            const a = board[dragIdx], b = board[tidx];
-            if (b && a.grade === b.grade && a.grade < 3) { board[tidx] = { grade: a.grade+1, timer: 0 }; board[dragIdx] = null; }
-            else { board[dragIdx] = b; board[tidx] = a; }
-        }
-        dragIdx = null;
-    }
-});
 
-window.onload = () => { initLayout(); updateUI(); };
-window.onresize = initLayout;
+const onDown = (e) => {
+    const p = getVirtualPos(e); mx = p.x; my = p.y;
+    for (let i = 0; i < 16; i++) {
+        const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE && board[i]) { dragIdx = i; break; }
+    }
+};
+const onMove = (e) => { const p = getVirtualPos(e); mx = p.x; my = p.y; };
+const onUp = () => {
+    if (dragIdx !== null) {
+        let tidx = -1;
+        for (let i = 0; i < 16; i++) {
+            const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+            if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) tidx = i;
+        }
+        if (tidx !== -1 && tidx !== dragIdx) {
+            const a = board[dragIdx], b = board[tidx];
+            if (b && a.grade === b.grade && a.grade < 3) { board[tidx] = { grade: a.grade+1, timer:0 }; board[dragIdx] = null; }
+            else { board[dragIdx] = b; board[tidx] = a; }
+        }
+        dragIdx = null;
+    }
+};
+
+canvas.addEventListener('mousedown', onDown);
+window.addEventListener('mousemove', onMove);
+window.addEventListener('mouseup', onUp);
+canvas.addEventListener('touchstart', (e) => { onDown(e); e.preventDefault(); }, {passive:false});
+window.addEventListener('touchmove', (e) => { onMove(e); }, {passive:false});
+window.addEventListener('touchend', onUp);
+
+window.onload = () => { resize(); updateLobbyUI(); };
+window.onresize = resize;
 </script>
 </body>
 </html>
