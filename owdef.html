@@ -14,23 +14,25 @@
             background: var(--bg); overflow: hidden; display: flex; flex-direction: column;
         }
 
-        /* 픽셀 선명도 최적화 */
         canvas { 
             display: block; width: 100%; height: 100%; touch-action: none; 
             image-rendering: -webkit-optimize-contrast;
             image-rendering: pixelated;
         }
 
+        /* UI 레이어 */
         .ui-panel { position: absolute; z-index: 10; pointer-events: none; width: 100%; }
         #top-bar { top: 15px; display: flex; justify-content: space-around; }
         .glass-box { background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); text-align: center; min-width: 75px; }
         .label { font-size: 9px; color: #888; margin-bottom: 1px; }
         .val { font-size: 15px; font-weight: bold; color: #fff; }
 
+        /* 화면 템플릿 */
         .screen { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; padding: 20px; }
         h1 { color: var(--p); font-size: 45px; margin-bottom: 5px; text-shadow: 0 0 15px var(--p); text-align: center; line-height: 1.1; }
         .sub-title { color: #888; margin-bottom: 40px; font-size: 18px; }
 
+        /* 업그레이드 UI */
         .upgrade-list { width: 100%; max-width: 400px; margin-bottom: 30px; }
         .upgrade-item { 
             display: flex; justify-content: space-between; align-items: center; 
@@ -64,48 +66,38 @@
         <div id="lobby-screen" class="screen">
             <h1>LUCKY<br>ETERNAL</h1>
             <div class="sub-title">영혼석: <span id="soul-val" style="color:var(--p)">0</span></div>
-            
             <div class="upgrade-list">
                 <div class="upgrade-item">
-                    <div class="upgrade-info">
-                        <div class="up-name">공격력 강화</div>
-                        <div class="up-lv">Lv.<span id="atk-lv">1</span> (+<span id="atk-bonus">0</span>%)</div>
-                    </div>
+                    <div class="upgrade-info"><div class="up-name">공격력 강화</div><div class="up-lv">Lv.<span id="atk-lv">1</span></div></div>
                     <button class="btn-action btn-small" onclick="upgradeAtk()">강화 (10개)</button>
                 </div>
                 <div class="upgrade-item">
-                    <div class="upgrade-info">
-                        <div class="up-name">초기 골드</div>
-                        <div class="up-lv">Lv.<span id="gold-lv">1</span> (+<span id="gold-bonus">0</span>)</div>
-                    </div>
+                    <div class="upgrade-info"><div class="up-name">초기 골드</div><div class="up-lv">Lv.<span id="gold-lv">1</span></div></div>
                     <button class="btn-action btn-small" onclick="upgradeGold()">강화 (15개)</button>
                 </div>
             </div>
-
             <button class="btn-action" onclick="startGame()">전투 시작</button>
         </div>
 
         <div id="over-screen" class="screen hidden">
             <h1 style="color:var(--d)">DEFEAT</h1>
-            <div id="result-text" style="color:#aaa; margin-bottom:30px; text-align: center; font-size: 18px; white-space: pre-wrap;"></div>
+            <div id="result-text" style="color:#aaa; margin-bottom:30px; text-align: center; font-size: 18px;"></div>
             <button class="btn-action" onclick="goToLobby()">로비로 이동</button>
         </div>
     </div>
 
 <script>
-/** 👨‍💻 유닛 이미지 및 사운드 등 리소스 관리 **/
-const unitImages = { 'A': new Image() };
-unitImages['A'].src = 'img/def/tr1.png';
-
-/** 💾 영구 저장 데이터 **/
-let soulStones = parseInt(localStorage.getItem('soulStones')) || 0;
-let upgradeAtkLv = parseInt(localStorage.getItem('atkLv')) || 1;
-let upgradeGoldLv = parseInt(localStorage.getItem('goldLv')) || 1;
-
-/** 🎮 게임 엔진 변수 **/
+/** 🚀 엔진 설정 **/
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
+
+const unitImages = { 'A': new Image() };
+unitImages['A'].src = 'img/def/tr1.png';
+
+let soulStones = parseInt(localStorage.getItem('soulStones')) || 0;
+let upgradeAtkLv = parseInt(localStorage.getItem('atkLv')) || 1;
+let upgradeGoldLv = parseInt(localStorage.getItem('goldLv')) || 1;
 
 let gold, wave, life, monsters, board, particles;
 let gameState = 'LOBBY', spawnTimer = 0, lastTime = 0, dragIdx = null, mx, my;
@@ -117,9 +109,8 @@ const GRADES = [
     { name: '전설', color: '#ff0055', power: 70 }
 ];
 
-let TILE_SIZE, BOARD_X, BOARD_Y, PATH;
+let TILE_SIZE, BOARD_X, BOARD_Y, PATH, SPAWN_BTN_RECT;
 
-/** 📏 레이아웃 및 해상도 보정 **/
 function initLayout() {
     const dpr = window.devicePixelRatio || 1;
     const w = container.clientWidth;
@@ -130,35 +121,42 @@ function initLayout() {
     ctx.scale(dpr, dpr);
     ctx.imageSmoothingEnabled = false;
 
-    TILE_SIZE = Math.min(w / 4.1, 120); 
+    TILE_SIZE = Math.min(w / 4.1, 110); 
     BOARD_X = (w - (TILE_SIZE * 4)) / 2;
-    BOARD_Y = h * 0.22; 
+    BOARD_Y = h * 0.18; // 보드판 위치 살짝 올림
     
+    // 경로 (보드판 주위)
     const offset = 40;
     const pT = BOARD_Y - offset;
     const pB = BOARD_Y + (TILE_SIZE * 4) + offset;
     const pL = BOARD_X - offset;
     const pR = BOARD_X + (TILE_SIZE * 4) + offset;
-
     PATH = [
         {x1: pL, y1: pT, x2: pR, y2: pT},
         {x1: pR, y1: pT, x2: pR, y2: pB},
         {x1: pR, y1: pB, x2: pL, y2: pB},
         {x1: pL, y1: pB, x2: pL, y2: pT}
     ];
+
+    // 소환 버튼 위치 (경로 아래쪽 여유 공간)
+    const btnW = Math.min(w - 60, 350);
+    const btnH = 65;
+    SPAWN_BTN_RECT = {
+        x: (w - btnW) / 2,
+        y: pB + 20, // 경로 하단선(pB)에서 20px 아래
+        w: btnW,
+        h: btnH
+    };
 }
 
 window.addEventListener('resize', initLayout);
 initLayout();
 updateLobbyUI();
 
-/** 💰 경제 및 업그레이드 시스템 **/
 function updateLobbyUI() {
     document.getElementById('soul-val').innerText = soulStones;
     document.getElementById('atk-lv').innerText = upgradeAtkLv;
-    document.getElementById('atk-bonus').innerText = (upgradeAtkLv - 1) * 5;
     document.getElementById('gold-lv').innerText = upgradeGoldLv;
-    document.getElementById('gold-bonus').innerText = (upgradeGoldLv - 1) * 10;
 }
 
 function upgradeAtk() { if (soulStones >= 10) { soulStones -= 10; upgradeAtkLv++; saveData(); updateLobbyUI(); } }
@@ -169,7 +167,6 @@ function saveData() {
     localStorage.setItem('goldLv', upgradeGoldLv);
 }
 
-/** ⚔️ 게임 흐름 제어 **/
 function startGame() {
     gameState = 'PLAY';
     document.getElementById('lobby-screen').classList.add('hidden');
@@ -188,7 +185,6 @@ function goToLobby() {
     updateLobbyUI();
 }
 
-/** 🔄 메인 게임 루프 **/
 function gameLoop(time) {
     if (gameState !== 'PLAY') return;
     const dt = time - lastTime;
@@ -197,7 +193,7 @@ function gameLoop(time) {
     ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 1. 몬스터 관리
+    // 1. 몬스터
     spawnTimer += dt;
     if (spawnTimer > Math.max(300, 2000 - (wave * 100))) {
         monsters.push({
@@ -223,7 +219,7 @@ function gameLoop(time) {
         ctx.fillStyle = '#0f0'; ctx.fillRect(m.x-15, m.y-22, (m.hp/m.maxHp)*30, 4);
     });
 
-    // 2. 보드판 및 유닛 관리
+    // 2. 보드판
     for (let i = 0; i < 16; i++) {
         const bx = BOARD_X + (i % 4) * TILE_SIZE;
         const by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
@@ -234,17 +230,17 @@ function gameLoop(time) {
             updateAttack(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2, dt);
         }
     }
-    // 드래그 중인 유닛을 가장 마지막에 그림
     if (dragIdx !== null) drawUnit(board[dragIdx], mx, my, true);
 
-    // 3. 하단 컨트롤 존
-    const ctrlY = canvas.height - 130;
-    ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0, ctrlY, canvas.width, 130);
-    const btnW = Math.min(canvas.width - 40, 400), btnH = 70;
+    // 3. 재배치된 소환 버튼 렌더링
+    const r = SPAWN_BTN_RECT;
     ctx.fillStyle = gold >= 10 ? '#7000ff' : '#222';
-    ctx.beginPath(); ctx.roundRect((canvas.width-btnW)/2, ctrlY + 25, btnW, btnH, 15); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(`유닛 소환 (10G)`, canvas.width/2, ctrlY + 68);
+    ctx.shadowBlur = gold >= 10 ? 15 : 0;
+    ctx.shadowColor = '#7000ff';
+    ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 12); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(`유닛 소환 (10G)`, r.x + r.w/2, r.y + r.h/2 + 8);
 
     updateParticles();
     document.getElementById('gold-val').innerText = Math.floor(gold);
@@ -257,19 +253,14 @@ function gameLoop(time) {
     }
 }
 
-/** 🎨 유닛 렌더링 (이미지 지원 + 오라 효과 + 테두리 제거) **/
 function drawUnit(u, x, y, isDrag = false) {
     const g = GRADES[u.grade];
     const size = TILE_SIZE * 0.82;
-
-    // 등급별 발밑 오라 효과 (테두리 대체)
     ctx.save();
     ctx.shadowBlur = isDrag ? 30 : 15;
     ctx.shadowColor = g.color;
     ctx.fillStyle = isDrag ? 'rgba(255,255,255,0.2)' : 'transparent';
-    ctx.beginPath();
-    ctx.arc(x, y, size/2, 0, Math.PI*2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, size/2, 0, Math.PI*2); ctx.fill();
     ctx.restore();
 
     const img = unitImages[u.name];
@@ -283,7 +274,6 @@ function drawUnit(u, x, y, isDrag = false) {
     }
 }
 
-/** 🏹 공격 시스템 **/
 function updateAttack(u, ux, uy, dt) {
     u.timer = (u.timer || 0) + dt;
     const bonus = 1 + (upgradeAtkLv - 1) * 0.05;
@@ -302,15 +292,18 @@ function updateAttack(u, ux, uy, dt) {
     }
 }
 
-/** 👆 터치/마우스 이벤트 관리 **/
 function handleStart(e) {
     const rect = canvas.getBoundingClientRect();
     const cx = e.touches ? e.touches[0].clientX : e.clientX;
     const cy = e.touches ? e.touches[0].clientY : e.clientY;
     mx = cx - rect.left; my = cy - rect.top;
-    
-    if (my > canvas.height - 110) { spawnUnit(); return; }
-    
+
+    // 소환 버튼 클릭 판정
+    const r = SPAWN_BTN_RECT;
+    if (mx > r.x && mx < r.x + r.w && my > r.y && my < r.y + r.h) {
+        spawnUnit(); return;
+    }
+
     for (let i = 0; i < 16; i++) {
         const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
         if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) {
@@ -324,8 +317,7 @@ function spawnUnit() {
     if (empty.length > 0 && gold >= 10) {
         gold -= 10;
         const idx = empty[Math.floor(Math.random() * empty.length)];
-        const names = ['K', 'A', 'M', 'R'];
-        board[idx] = { name: names[Math.floor(Math.random()*4)], grade: 0, timer: 0 };
+        board[idx] = { name: ['K', 'A', 'M', 'R'][Math.floor(Math.random()*4)], grade: 0, timer: 0 };
     }
 }
 
@@ -336,18 +328,13 @@ function handleEnd() {
         const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
         if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) targetIdx = i;
     }
-    
     if (targetIdx !== -1 && targetIdx !== dragIdx) {
         const a = board[dragIdx], b = board[targetIdx];
         if (b && a.name === b.name && a.grade === b.grade && a.grade < 3) {
-            // 합성 성공
             board[targetIdx] = { ...a, grade: a.grade + 1, timer: 0 };
             board[dragIdx] = null;
             createExplosion(mx, my, GRADES[a.grade+1].color);
-        } else { 
-            // 위치 교체
-            board[dragIdx] = b; board[targetIdx] = a; 
-        }
+        } else { board[dragIdx] = b; board[targetIdx] = a; }
     }
     dragIdx = null;
 }
@@ -359,12 +346,10 @@ function endGame() {
     document.getElementById('result-text').innerText = `최종 웨이브: ${wave}\n획득한 영혼석: ${earned}`;
 }
 
-/** ✨ 이펙트 유틸리티 **/
 function createExplosion(x,y,c){for(let i=0;i<12;i++)particles.push({x,y,c,vx:(Math.random()-0.5)*12,vy:(Math.random()-0.5)*12,life:1})}
 function updateParticles(){particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=0.04;ctx.fillStyle=p.c;ctx.globalAlpha=p.life;ctx.fillRect(p.x,p.y,4,4)});particles=particles.filter(p=>p.life>0);ctx.globalAlpha=1}
 function varColor(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
 
-/** 🎧 이벤트 리스너 통합 **/
 canvas.addEventListener('mousedown', handleStart);
 window.addEventListener('mousemove', (e)=>{
     const rect = canvas.getBoundingClientRect();
