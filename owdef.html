@@ -10,56 +10,41 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Malgun Gothic', sans-serif; }
         
         #game-container { position: relative; width: 100vw; height: 100vh; background: var(--bg); overflow: hidden; }
-        canvas { display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        canvas { display: block; width: 100%; height: 100%; z-index: 1; }
 
-        /* UI 레이어 */
-        #top-bar {
-            position: absolute; top: 20px; left: 0; width: 100%;
-            display: flex; justify-content: center; gap: 10px;
-            z-index: 10; pointer-events: none;
-        }
-        .glass-box { 
-            background: rgba(20, 20, 20, 0.8); padding: 8px 15px; 
-            border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); 
-            backdrop-filter: blur(8px); text-align: center; min-width: 80px; 
-        }
-        .label { font-size: 10px; color: #888; text-transform: uppercase; display: block; }
-        .val { font-size: 16px; font-weight: bold; color: #fff; }
-
-        .screen { 
-            position: absolute; inset: 0; background: var(--bg); 
-            display: flex; flex-direction: column; justify-content: center; 
-            align-items: center; z-index: 100; padding: 20px;
-        }
+        .ui-element { position: absolute; z-index: 10; }
         .hidden { display: none !important; }
 
-        h1 { color: var(--p); font-size: 42px; margin-bottom: 10px; text-shadow: 0 0 20px var(--p); text-align: center; line-height: 1.1; }
-        
+        /* 상단 바 */
+        #top-bar { top: 20px; left: 0; width: 100%; display: flex; justify-content: center; gap: 10px; pointer-events: none; }
+        .glass-box { background: rgba(20, 20, 20, 0.8); padding: 8px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px); text-align: center; min-width: 80px; }
+        .label { font-size: 10px; color: #888; display: block; }
+        .val { font-size: 16px; font-weight: bold; color: #fff; }
+
+        /* 하단 소환 버튼 */
+        #bottom-ui { bottom: 30px; left: 0; width: 100%; display: flex; justify-content: center; pointer-events: none; }
+        #spawn-btn { 
+            width: 85%; max-width: 320px; height: 60px; 
+            background: linear-gradient(135deg, var(--s), var(--p));
+            border: none; color: white; border-radius: 16px; font-size: 18px; font-weight: bold;
+            cursor: pointer; pointer-events: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        /* 스크린 */
+        .screen { inset: 0; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; padding: 20px; }
+        h1 { color: var(--p); font-size: 40px; margin-bottom: 10px; text-shadow: 0 0 20px var(--p); text-align: center; line-height: 1.1; }
         .upgrade-list { width: 100%; max-width: 340px; margin-bottom: 30px; }
-        .upgrade-item { 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: #111; padding: 12px 18px; border-radius: 15px; 
-            margin-bottom: 10px; border: 1px solid #222;
-        }
-        .up-info { text-align: left; }
-        .up-name { font-weight: bold; font-size: 15px; color: #eee; }
-        .up-lv { font-size: 13px; color: var(--p); }
-        
-        .btn-action { 
-            padding: 20px 60px; background: linear-gradient(135deg, var(--s), var(--p));
-            border: none; color: white; border-radius: 16px; font-size: 20px; font-weight: bold;
-            cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-        }
-        .btn-small { 
-            padding: 8px 12px; font-size: 12px; background: #252525; 
-            border: 1px solid #444; border-radius: 8px; color: #fff;
-        }
+        .upgrade-item { display: flex; justify-content: space-between; align-items: center; background: #111; padding: 12px 18px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #222; }
+        .up-name { font-weight: bold; font-size: 14px; color: #eee; }
+        .up-lv { font-size: 12px; color: var(--p); }
+        .btn-action { padding: 18px 50px; background: linear-gradient(135deg, var(--s), var(--p)); border: none; color: white; border-radius: 14px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-small { padding: 8px 12px; font-size: 11px; background: #252525; border: 1px solid #444; border-radius: 8px; color: #fff; }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <div id="top-bar" class="hidden">
+        <div id="top-bar" class="ui-element hidden">
             <div class="glass-box"><span class="label">GOLD</span><span class="val" id="gold-val">100</span></div>
             <div class="glass-box"><span class="label">LIFE</span><span class="val" id="life-val">30</span></div>
             <div class="glass-box"><span class="label">WAVE</span><span class="val" id="wave-val">1</span></div>
@@ -67,196 +52,89 @@
 
         <canvas id="gameCanvas"></canvas>
 
+        <div id="bottom-ui" class="ui-element hidden">
+            <button id="spawn-btn">유닛 소환 (10G)</button>
+        </div>
+
         <div id="lobby-screen" class="screen">
             <h1>LUCKY<br>ETERNAL</h1>
-            <div style="color:#666; margin-bottom:20px;">보유 영혼석: <span id="soul-val" style="color:var(--p)">0</span></div>
+            <div style="color:#666; margin-bottom:20px;">영혼석: <span id="soul-val" style="color:var(--p)">0</span></div>
             <div class="upgrade-list">
                 <div class="upgrade-item">
-                    <div class="up-info"><div class="up-name">공격력 강화</div><div class="up-lv">Lv.<span id="atk-lv">1</span></div></div>
-                    <button class="btn-small" onclick="upgradeAtk()">강화 (10개)</button>
+                    <div style="text-align:left"><div class="up-name">공격력 강화</div><div class="up-lv">Lv.<span id="atk-lv">1</span></div></div>
+                    <button class="btn-small" id="up-atk-btn">강화 (10개)</button>
                 </div>
                 <div class="upgrade-item">
-                    <div class="up-info"><div class="up-name">초기 골드</div><div class="up-lv">Lv.<span id="gold-lv">1</span></div></div>
-                    <button class="btn-small" onclick="upgradeGold()">강화 (15개)</button>
+                    <div style="text-align:left"><div class="up-name">초기 골드</div><div class="up-lv">Lv.<span id="gold-lv">1</span></div></div>
+                    <button class="btn-small" id="up-gold-btn">강화 (15개)</button>
                 </div>
             </div>
-            <button class="btn-action" onclick="startGame()">전투 시작</button>
+            <button class="btn-action" id="start-btn">전투 시작</button>
         </div>
 
         <div id="over-screen" class="screen hidden">
             <h1 style="color:var(--d)">DEFEAT</h1>
             <div id="result-text" style="color:#aaa; margin-bottom:30px; text-align: center;"></div>
-            <button class="btn-action" onclick="goToLobby()">로비로 이동</button>
+            <button class="btn-action" id="restart-btn">로비로 이동</button>
         </div>
     </div>
 
 <script>
+/** * 1. 초기화 및 상태 관리
+ */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
-
-const unitImg = new Image();
-unitImg.src = 'img/def/tr1.png';
+const unitImg = new Image(); unitImg.src = 'img/def/tr1.png';
 
 let soulStones = parseInt(localStorage.getItem('soulStones')) || 0;
 let upgradeAtkLv = parseInt(localStorage.getItem('atkLv')) || 1;
 let upgradeGoldLv = parseInt(localStorage.getItem('goldLv')) || 1;
 
 let gold, wave, life, monsters, board, particles;
-let gameState = 'LOBBY', spawnTimer = 0, lastTime = 0, dragIdx = null, mx, my;
+let gameState = 'LOBBY', spawnTimer = 0, lastTime = 0, dragIdx = null, mx = 0, my = 0;
 
 const GRADES = [
-    { color: 'rgba(255,255,255,0.2)', stroke: '#ffffff', power: 5 },
-    { color: 'rgba(0,242,255,0.25)', stroke: '#00f2ff', power: 15 },
-    { color: 'rgba(112,0,255,0.3)', stroke: '#7000ff', power: 45 },
-    { color: 'rgba(255,0,85,0.35)', stroke: '#ff0055', power: 120 }
+    { color: 'rgba(255,255,255,0.15)', stroke: '#ffffff', power: 7 },
+    { color: 'rgba(0,242,255,0.2)', stroke: '#00f2ff', power: 20 },
+    { color: 'rgba(112,0,255,0.25)', stroke: '#7000ff', power: 55 },
+    { color: 'rgba(255,0,85,0.3)', stroke: '#ff0055', power: 140 }
 ];
 
-let TILE_SIZE, BOARD_X, BOARD_Y, PATH, SPAWN_BTN_RECT;
+let TILE_SIZE, BOARD_X, BOARD_Y, PATH;
 
 function initLayout() {
-    const dpr = Math.min(window.devicePixelRatio, 2);
+    const dpr = window.devicePixelRatio || 1;
     const w = window.innerWidth;
     const h = window.innerHeight;
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     ctx.scale(dpr, dpr);
-
-    TILE_SIZE = Math.min(w / 4.4, 100); 
+    TILE_SIZE = Math.min(w / 4.4, 90);
     BOARD_X = (w - (TILE_SIZE * 4)) / 2;
-    BOARD_Y = h * 0.22; 
-    
-    const offset = 40;
-    const pT = BOARD_Y - offset, pB = BOARD_Y + (TILE_SIZE * 4) + offset;
-    const pL = BOARD_X - offset, pR = BOARD_X + (TILE_SIZE * 4) + offset;
+    BOARD_Y = h * 0.22;
+    const off = 40;
+    const pT = BOARD_Y - off, pB = BOARD_Y + (TILE_SIZE * 4) + off;
+    const pL = BOARD_X - off, pR = BOARD_X + (TILE_SIZE * 4) + off;
     PATH = [{x1:pL,y1:pT,x2:pR,y2:pT},{x1:pR,y1:pT,x2:pR,y2:pB},{x1:pR,y1:pB,x2:pL,y2:pB},{x1:pL,y1:pB,x2:pL,y2:pT}];
-    
-    const btnW = Math.min(w - 60, 300), btnH = 60;
-    SPAWN_BTN_RECT = { x: (w - btnW) / 2, y: pB + 20, w: btnW, h: btnH };
 }
 
-window.addEventListener('resize', initLayout);
-initLayout();
-updateLobbyUI();
-
-function updateLobbyUI() {
-    document.getElementById('soul-val').innerText = soulStones;
-    document.getElementById('atk-lv').innerText = upgradeAtkLv;
-    document.getElementById('gold-lv').innerText = upgradeGoldLv;
-}
-
-function upgradeAtk() { if (soulStones >= 10) { soulStones -= 10; upgradeAtkLv++; saveData(); updateLobbyUI(); } }
-function upgradeGold() { if (soulStones >= 15) { soulStones -= 15; upgradeGoldLv++; saveData(); updateLobbyUI(); } }
-function saveData() { localStorage.setItem('soulStones', soulStones); localStorage.setItem('atkLv', upgradeAtkLv); localStorage.setItem('goldLv', upgradeGoldLv); }
-
-function startGame() {
-    gameState = 'PLAY';
-    document.getElementById('lobby-screen').classList.add('hidden');
-    document.getElementById('top-bar').classList.remove('hidden');
-    gold = 100 + (upgradeGoldLv - 1) * 10;
-    wave = 1; life = 30; monsters = []; board = Array(16).fill(null); particles = [];
-    lastTime = performance.now();
-    requestAnimationFrame(gameLoop);
-}
-
-function goToLobby() {
-    gameState = 'LOBBY';
-    document.getElementById('over-screen').classList.add('hidden');
-    document.getElementById('top-bar').classList.add('hidden');
-    document.getElementById('lobby-screen').classList.remove('hidden');
-    updateLobbyUI();
-}
-
-function gameLoop(time) {
-    if (gameState !== 'PLAY') return;
-    const dt = time - lastTime;
-    lastTime = time;
-
-    ctx.fillStyle = '#050505';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // 1. 몬스터
-    spawnTimer += dt;
-    if (spawnTimer > Math.max(400, 2000 - (wave * 120))) {
-        monsters.push({ x: PATH[0].x1, y: PATH[0].y1, pathIdx: 0, hp: 30 * Math.pow(1.18, wave), maxHp: 30 * Math.pow(1.18, wave), speed: 1.3 + (wave * 0.05) });
-        spawnTimer = 0;
-    }
-    for (let i = monsters.length - 1; i >= 0; i--) {
-        const m = monsters[i];
-        const p = PATH[m.pathIdx];
-        const dx = p.x2 - p.x1, dy = p.y2 - p.y1;
-        const len = Math.sqrt(dx*dx + dy*dy);
-        m.x += (dx/len) * m.speed; m.y += (dy/len) * m.speed;
-        if (Math.hypot(m.x - p.x2, m.y - p.y2) < 5) {
-            m.pathIdx++;
-            if (m.pathIdx >= PATH.length) { life--; monsters.splice(i, 1); continue; }
-            m.x = PATH[m.pathIdx].x1; m.y = PATH[m.pathIdx].y1;
-        }
-        ctx.fillStyle = '#ff0055';
-        ctx.beginPath(); ctx.arc(m.x, m.y, 10, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#222'; ctx.fillRect(m.x-10, m.y-15, 20, 2);
-        ctx.fillStyle = '#0f0'; ctx.fillRect(m.x-10, m.y-15, (m.hp/m.maxHp)*20, 2);
-    }
-
-    // 2. 보드 및 유닛
-    for (let i = 0; i < 16; i++) {
-        const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        ctx.strokeStyle = '#1a1a1a'; ctx.strokeRect(bx+1, by+1, TILE_SIZE-2, TILE_SIZE-2);
-        if (board[i] && dragIdx !== i) {
-            drawUnit(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2);
-            updateAttack(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2, dt);
-        }
-    }
-    if (dragIdx !== null) drawUnit(board[dragIdx], mx, my, true);
-
-    // 3. 소환 버튼 (캔버스 드로잉)
-    const r = SPAWN_BTN_RECT;
-    ctx.fillStyle = gold >= 10 ? '#7000ff' : '#222';
-    ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 12); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(`유닛 소환 (10G)`, r.x + r.w/2, r.y + r.h/2 + 6);
-
-    updateParticles();
-    document.getElementById('gold-val').innerText = Math.floor(gold);
-    document.getElementById('life-val').innerText = life;
-    document.getElementById('wave-val').innerText = wave;
-
-    if (life <= 0) endGame(); 
-    else {
-        if (time % 15000 < 20) { wave++; gold += 15; }
-        requestAnimationFrame(gameLoop);
-    }
-}
-
-function drawUnit(u, x, y, isDrag = false) {
-    const g = GRADES[u.grade];
-    const size = TILE_SIZE * 0.8;
-
-    // --- 납작 타원 오라 ---
-    ctx.fillStyle = g.color;
-    ctx.beginPath();
-    ctx.ellipse(x, y + size/2.8, size/1.8, size/6, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // --- 유닛 본체 ---
-    if (unitImg.complete && unitImg.naturalWidth !== 0) {
-        ctx.drawImage(unitImg, x - size/2, y - size/2, size, size);
-    } else {
-        ctx.fillStyle = g.stroke;
-        ctx.beginPath(); ctx.arc(x, y, size/3.2, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#000'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText("UNIT", x, y+4);
-    }
-
-    if (isDrag) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-        ctx.strokeRect(x - TILE_SIZE/2, y - TILE_SIZE/2, TILE_SIZE, TILE_SIZE);
+/**
+ * 2. 게임 로직
+ */
+function spawnUnit() {
+    if (gameState !== 'PLAY' || gold < 10) return;
+    const emptyIdxs = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
+    if (emptyIdxs.length > 0) {
+        gold -= 10;
+        const target = emptyIdxs[Math.floor(Math.random() * emptyIdxs.length)];
+        board[target] = { grade: 0, timer: 0 };
     }
 }
 
 function updateAttack(u, ux, uy, dt) {
     u.timer = (u.timer || 0) + dt;
-    if (u.timer > (1000 - u.grade*150) && monsters.length > 0) {
+    if (u.timer > (1000 - u.grade * 150) && monsters.length > 0) {
         const bonus = 1 + (upgradeAtkLv - 1) * 0.05;
         let target = monsters.find(m => Math.hypot(m.x - ux, m.y - uy) < 180);
         if (target) {
@@ -272,78 +150,147 @@ function updateAttack(u, ux, uy, dt) {
     }
 }
 
-function spawnUnit() {
-    const empty = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
-    if (empty.length > 0 && gold >= 10) {
-        gold -= 10;
-        const idx = empty[Math.floor(Math.random() * empty.length)];
-        board[idx] = { grade: 0, timer: 0 }; // 소환 데이터 생성
+function drawUnit(u, x, y, isDrag = false) {
+    const g = GRADES[u.grade];
+    const s = TILE_SIZE * 0.8;
+    // 아주 얇게 눌린 타원형 오라
+    ctx.fillStyle = g.color;
+    ctx.beginPath();
+    ctx.ellipse(x, y + s/2.8, s/1.7, s/7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // 유닛
+    if (unitImg.complete && unitImg.naturalWidth !== 0) {
+        ctx.drawImage(unitImg, x - s/2, y - s/2, s, s);
+    } else {
+        ctx.fillStyle = g.stroke;
+        ctx.beginPath(); ctx.arc(x, y, s/3.5, 0, Math.PI*2); ctx.fill();
     }
 }
 
-function handleStart(e) {
-    const rect = canvas.getBoundingClientRect();
-    const cx = e.touches ? e.touches[0].clientX : e.clientX;
-    const cy = e.touches ? e.touches[0].clientY : e.clientY;
-    mx = (cx - rect.left); my = (cy - rect.top);
-    
-    // 소환 버튼 클릭 감지
-    const r = SPAWN_BTN_RECT;
-    if (mx > r.x && mx < r.x + r.w && my > r.y && my < r.y + r.h) {
-        spawnUnit();
-        return;
+function gameLoop(time) {
+    if (gameState !== 'PLAY') return;
+    const dt = time - lastTime; lastTime = time;
+    ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 몬스터
+    spawnTimer += dt;
+    if (spawnTimer > Math.max(400, 2000 - (wave * 120))) {
+        monsters.push({ x: PATH[0].x1, y: PATH[0].y1, pathIdx: 0, hp: 35 * Math.pow(1.18, wave), maxHp: 35 * Math.pow(1.18, wave), speed: 1.3 + (wave * 0.05) });
+        spawnTimer = 0;
     }
-    
+    for (let i = monsters.length - 1; i >= 0; i--) {
+        const m = monsters[i], p = PATH[m.pathIdx];
+        const dx = p.x2 - p.x1, dy = p.y2 - p.y1, len = Math.sqrt(dx*dx + dy*dy);
+        m.x += (dx/len) * m.speed; m.y += (dy/len) * m.speed;
+        if (Math.hypot(m.x - p.x2, m.y - p.y2) < 5) {
+            m.pathIdx++;
+            if (m.pathIdx >= PATH.length) { life--; monsters.splice(i, 1); continue; }
+            m.x = PATH[m.pathIdx].x1; m.y = PATH[m.pathIdx].y1;
+        }
+        ctx.fillStyle = '#ff0055'; ctx.beginPath(); ctx.arc(m.x, m.y, 9, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#222'; ctx.fillRect(m.x-10, m.y-14, 20, 2);
+        ctx.fillStyle = '#0f0'; ctx.fillRect(m.x-10, m.y-14, (m.hp/m.maxHp)*20, 2);
+    }
+
+    // 보드
     for (let i = 0; i < 16; i++) {
         const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) {
-            if (board[i]) dragIdx = i;
+        ctx.strokeStyle = '#151515'; ctx.strokeRect(bx+1, by+1, TILE_SIZE-2, TILE_SIZE-2);
+        if (board[i] && dragIdx !== i) {
+            drawUnit(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2);
+            updateAttack(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2, dt);
         }
     }
+    if (dragIdx !== null) drawUnit(board[dragIdx], mx, my, true);
+
+    updateParticles();
+    document.getElementById('gold-val').innerText = Math.floor(gold);
+    document.getElementById('life-val').innerText = life;
+    document.getElementById('wave-val').innerText = wave;
+    if (time % 15000 < 20) { wave++; gold += 15; }
+    if (life <= 0) endGame(); else requestAnimationFrame(gameLoop);
 }
 
-function handleEnd() {
-    if (dragIdx === null) return;
-    let targetIdx = -1;
-    for (let i = 0; i < 16; i++) {
-        const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) targetIdx = i;
-    }
-    if (targetIdx !== -1 && targetIdx !== dragIdx) {
-        const a = board[dragIdx], b = board[targetIdx];
-        if (b && a.grade === b.grade && a.grade < 3) {
-            board[targetIdx] = { grade: a.grade + 1, timer: 0 };
-            board[dragIdx] = null;
-            createExplosion(mx, my, GRADES[a.grade+1].stroke);
-        } else { board[dragIdx] = b; board[targetIdx] = a; }
-    }
-    dragIdx = null;
+/**
+ * 3. 이벤트 핸들러 및 UI 제어
+ */
+function startGame() {
+    gameState = 'PLAY';
+    document.getElementById('lobby-screen').classList.add('hidden');
+    document.getElementById('top-bar').classList.remove('hidden');
+    document.getElementById('bottom-ui').classList.remove('hidden');
+    gold = 100 + (upgradeGoldLv - 1) * 10;
+    wave = 1; life = 30; monsters = []; board = Array(16).fill(null); particles = [];
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
 }
 
 function endGame() {
     gameState = 'OVER';
     const earned = Math.floor(wave * 1.5); soulStones += earned; saveData();
     document.getElementById('top-bar').classList.add('hidden');
+    document.getElementById('bottom-ui').classList.add('hidden');
     document.getElementById('over-screen').classList.remove('hidden');
-    document.getElementById('result-text').innerText = `최종 웨이브: ${wave}\n획득 영혼석: +${earned}`;
+    document.getElementById('result-text').innerText = `웨이브 ${wave} 도달\n영혼석 +${earned}`;
 }
+
+function saveData() { localStorage.setItem('soulStones', soulStones); localStorage.setItem('atkLv', upgradeAtkLv); localStorage.setItem('goldLv', upgradeGoldLv); }
+
+function handlePointer(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    mx = clientX - rect.left; my = clientY - rect.top;
+    if (e.type === 'mousedown' || e.type === 'touchstart') {
+        for (let i = 0; i < 16; i++) {
+            const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+            if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE && board[i]) dragIdx = i;
+        }
+    } else if (e.type === 'mouseup' || e.type === 'touchend') {
+        if (dragIdx === null) return;
+        let targetIdx = -1;
+        for (let i = 0; i < 16; i++) {
+            const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+            if (mx > bx && mx < bx + TILE_SIZE && my > by && my < by + TILE_SIZE) targetIdx = i;
+        }
+        if (targetIdx !== -1 && targetIdx !== dragIdx) {
+            const a = board[dragIdx], b = board[targetIdx];
+            if (b && a.grade === b.grade && a.grade < 3) {
+                board[targetIdx] = { grade: a.grade + 1, timer: 0 };
+                board[dragIdx] = null;
+                createExplosion(mx, my, GRADES[a.grade+1].stroke);
+            } else { board[dragIdx] = b; board[targetIdx] = a; }
+        }
+        dragIdx = null;
+    }
+}
+
+// 초기화 및 리스너 등록
+window.addEventListener('resize', initLayout);
+document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('spawn-btn').addEventListener('click', spawnUnit);
+document.getElementById('restart-btn').addEventListener('click', () => location.reload());
+document.getElementById('up-atk-btn').addEventListener('click', () => { if(soulStones>=10){soulStones-=10; upgradeAtkLv++; saveData(); updateLobbyUI();} });
+document.getElementById('up-gold-btn').addEventListener('click', () => { if(soulStones>=15){soulStones-=15; upgradeGoldLv++; saveData(); updateLobbyUI();} });
+
+function updateLobbyUI() {
+    document.getElementById('soul-val').innerText = soulStones;
+    document.getElementById('atk-lv').innerText = upgradeAtkLv;
+    document.getElementById('gold-lv').innerText = upgradeGoldLv;
+}
+
+canvas.addEventListener('mousedown', handlePointer);
+canvas.addEventListener('touchstart', (e) => { handlePointer(e); e.preventDefault(); }, {passive:false});
+window.addEventListener('mousemove', handlePointer);
+window.addEventListener('touchmove', (e) => { handlePointer(e); e.preventDefault(); }, {passive:false});
+window.addEventListener('mouseup', handlePointer);
+window.addEventListener('touchend', handlePointer);
 
 function createExplosion(x,y,c){for(let i=0;i<8;i++)particles.push({x,y,c,vx:(Math.random()-0.5)*10,vy:(Math.random()-0.5)*10,life:1})}
 function updateParticles(){particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=0.05;ctx.fillStyle=p.c;ctx.globalAlpha=p.life;ctx.fillRect(p.x,p.y,3,3)});particles=particles.filter(p=>p.life>0);ctx.globalAlpha=1}
 
-canvas.addEventListener('mousedown', handleStart);
-window.addEventListener('mousemove', (e)=>{
-    const rect = canvas.getBoundingClientRect();
-    mx = (e.clientX - rect.left); my = (e.clientY - rect.top);
-});
-window.addEventListener('mouseup', handleEnd);
-canvas.addEventListener('touchstart', (e)=>{e.preventDefault(); handleStart(e)}, {passive:false});
-window.addEventListener('touchmove', (e)=>{
-    e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    mx = (e.touches[0].clientX - rect.left); my = (e.touches[0].clientY - rect.top);
-}, {passive:false});
-window.addEventListener('touchend', handleEnd);
+initLayout();
+updateLobbyUI();
 </script>
 </body>
 </html>
