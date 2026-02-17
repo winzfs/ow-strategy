@@ -8,85 +8,55 @@
         :root { --p: #00f2ff; --s: #7000ff; --d: #ff0055; --bg: #050505; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; font-family: 'Malgun Gothic', sans-serif; }
-        
-        #game-container {
-            position: relative; width: 100vw; height: 100vh; max-width: 100%; max-height: 100%;
-            background: var(--bg); overflow: hidden; display: flex; flex-direction: column;
-        }
-
-        canvas { 
-            display: block; width: 100%; height: 100%; touch-action: none; 
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: pixelated;
-        }
-
+        #game-container { position: relative; width: 100vw; height: 100vh; background: var(--bg); overflow: hidden; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; touch-action: none; image-rendering: pixelated; }
         .ui-panel { position: absolute; z-index: 10; pointer-events: none; width: 100%; }
         #top-bar { top: 15px; display: flex; justify-content: space-around; }
         .glass-box { background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); text-align: center; min-width: 75px; }
-        .label { font-size: 9px; color: #888; margin-bottom: 1px; }
+        .label { font-size: 9px; color: #888; }
         .val { font-size: 15px; font-weight: bold; color: #fff; }
-
         .screen { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; padding: 20px; }
-        h1 { color: var(--p); font-size: 45px; margin-bottom: 5px; text-shadow: 0 0 15px var(--p); text-align: center; line-height: 1.1; }
-        .sub-title { color: #888; margin-bottom: 40px; font-size: 18px; }
-
+        h1 { color: var(--p); font-size: 45px; text-shadow: 0 0 15px var(--p); text-align: center; }
         .upgrade-list { width: 100%; max-width: 400px; margin-bottom: 30px; }
-        .upgrade-item { 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: #111; padding: 18px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #222;
-            pointer-events: auto;
-        }
-        .upgrade-info { text-align: left; }
-        .up-name { font-weight: bold; font-size: 16px; color: #ddd; }
-        .up-lv { font-size: 13px; color: var(--p); }
-        
-        .btn-action { 
-            padding: 18px 50px; background: linear-gradient(45deg, var(--s), var(--p));
-            border: none; color: white; border-radius: 12px; font-size: 20px; font-weight: bold;
-            cursor: pointer; pointer-events: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .btn-small { padding: 10px 18px; font-size: 13px; background: #333; border-radius: 8px; }
+        .upgrade-item { display: flex; justify-content: space-between; align-items: center; background: #111; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #222; pointer-events: auto; }
+        .btn-action { padding: 18px 50px; background: linear-gradient(45deg, var(--s), var(--p)); border: none; color: white; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; pointer-events: auto; }
+        .btn-small { padding: 8px 15px; font-size: 12px; background: #333; border-radius: 8px; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-
     <div id="game-container">
         <div id="top-bar" class="ui-panel hidden">
             <div class="glass-box"><div class="label">GOLD</div><div class="val" id="gold-val" style="color:var(--p)">100</div></div>
             <div class="glass-box"><div class="label">LIFE</div><div class="val" id="life-val" style="color:var(--d)">30</div></div>
             <div class="glass-box"><div class="label">WAVE</div><div class="val" id="wave-val">1</div></div>
         </div>
-
         <canvas id="gameCanvas"></canvas>
-
         <div id="lobby-screen" class="screen">
             <h1>LUCKY<br>ETERNAL</h1>
-            <div class="sub-title">영혼석: <span id="soul-val" style="color:var(--p)">0</span></div>
+            <div style="color:#888; margin-bottom:20px;">영혼석: <span id="soul-val" style="color:var(--p)">0</span></div>
             <div class="upgrade-list">
                 <div class="upgrade-item">
-                    <div class="upgrade-info"><div class="up-name">공격력 강화</div><div class="up-lv">Lv.<span id="atk-lv">1</span></div></div>
+                    <div style="text-align:left"><div style="color:#ddd">공격력 Lv.<span id="atk-lv">1</span></div></div>
                     <button class="btn-action btn-small" onclick="upgradeAtk()">강화 (10개)</button>
                 </div>
                 <div class="upgrade-item">
-                    <div class="upgrade-info"><div class="up-name">초기 골드</div><div class="up-lv">Lv.<span id="gold-lv">1</span></div></div>
+                    <div style="text-align:left"><div style="color:#ddd">초기골드 Lv.<span id="gold-lv">1</span></div></div>
                     <button class="btn-action btn-small" onclick="upgradeGold()">강화 (15개)</button>
                 </div>
             </div>
             <button class="btn-action" onclick="startGame()">전투 시작</button>
         </div>
-
         <div id="over-screen" class="screen hidden">
             <h1 style="color:var(--d)">DEFEAT</h1>
-            <div id="result-text" style="color:#aaa; margin-bottom:30px; text-align: center; font-size: 18px; white-space: pre-wrap;"></div>
+            <div id="result-text" style="color:#aaa; margin-bottom:30px; text-align: center;"></div>
             <button class="btn-action" onclick="goToLobby()">로비로 이동</button>
         </div>
     </div>
 
 <script>
-/** 🚀 엔진 및 리소스 **/
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { alpha: false }); // 성능 최적화: 투명도 계산 최소화
 const container = document.getElementById('game-container');
 
 const unitImages = { 'A': new Image() };
@@ -96,23 +66,21 @@ let soulStones = parseInt(localStorage.getItem('soulStones')) || 0;
 let upgradeAtkLv = parseInt(localStorage.getItem('atkLv')) || 1;
 let upgradeGoldLv = parseInt(localStorage.getItem('goldLv')) || 1;
 
-let gold, wave, life, monsters, board, particles;
-let gameState = 'LOBBY', spawnTimer = 0, lastTime = 0, dragIdx = null, mx, my;
+let gold, wave, life, monsters, board, particles, gameState = 'LOBBY', spawnTimer = 0, lastTime = 0, dragIdx = null, mx, my;
 
 const GRADES = [
-    { name: '일반', color: 'rgba(255, 255, 255, 0.5)', power: 5, glow: '#fff' },
-    { name: '희귀', color: 'rgba(0, 242, 255, 0.6)', power: 12, glow: '#00f2ff' },
-    { name: '영웅', color: 'rgba(112, 0, 255, 0.7)', power: 30, glow: '#7000ff' },
-    { name: '전설', color: 'rgba(255, 0, 85, 0.8)', power: 70, glow: '#ff0055' }
+    { color: 'rgba(255,255,255,0.3)', glow: '#ffffff', power: 5 },
+    { color: 'rgba(0,242,255,0.3)', glow: '#00f2ff', power: 12 },
+    { color: 'rgba(112,0,255,0.3)', glow: '#7000ff', power: 30 },
+    { color: 'rgba(255,0,85,0.3)', glow: '#ff0055', power: 70 }
 ];
 
 let TILE_SIZE, BOARD_X, BOARD_Y, PATH, SPAWN_BTN_RECT;
 
 function initLayout() {
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio, 2); // 과도한 고해상도 방지 (성능 타협)
     const w = container.clientWidth;
     const h = container.clientHeight;
-
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     ctx.scale(dpr, dpr);
@@ -123,19 +91,11 @@ function initLayout() {
     BOARD_Y = h * 0.18; 
     
     const offset = 40;
-    const pT = BOARD_Y - offset;
-    const pB = BOARD_Y + (TILE_SIZE * 4) + offset;
-    const pL = BOARD_X - offset;
-    const pR = BOARD_X + (TILE_SIZE * 4) + offset;
-    PATH = [
-        {x1: pL, y1: pT, x2: pR, y2: pT},
-        {x1: pR, y1: pT, x2: pR, y2: pB},
-        {x1: pR, y1: pB, x2: pL, y2: pB},
-        {x1: pL, y1: pB, x2: pL, y2: pT}
-    ];
-
-    const btnW = Math.min(w - 60, 350);
-    const btnH = 65;
+    const pT = BOARD_Y - offset, pB = BOARD_Y + (TILE_SIZE * 4) + offset;
+    const pL = BOARD_X - offset, pR = BOARD_X + (TILE_SIZE * 4) + offset;
+    PATH = [{x1:pL,y1:pT,x2:pR,y2:pT},{x1:pR,y1:pT,x2:pR,y2:pB},{x1:pR,y1:pB,x2:pL,y2:pB},{x1:pL,y1:pB,x2:pL,y2:pT}];
+    
+    const btnW = Math.min(w - 60, 350), btnH = 65;
     SPAWN_BTN_RECT = { x: (w - btnW) / 2, y: pB + 20, w: btnW, h: btnH };
 }
 
@@ -151,11 +111,7 @@ function updateLobbyUI() {
 
 function upgradeAtk() { if (soulStones >= 10) { soulStones -= 10; upgradeAtkLv++; saveData(); updateLobbyUI(); } }
 function upgradeGold() { if (soulStones >= 15) { soulStones -= 15; upgradeGoldLv++; saveData(); updateLobbyUI(); } }
-function saveData() {
-    localStorage.setItem('soulStones', soulStones);
-    localStorage.setItem('atkLv', upgradeAtkLv);
-    localStorage.setItem('goldLv', upgradeGoldLv);
-}
+function saveData() { localStorage.setItem('soulStones', soulStones); localStorage.setItem('atkLv', upgradeAtkLv); localStorage.setItem('goldLv', upgradeGoldLv); }
 
 function startGame() {
     gameState = 'PLAY';
@@ -183,38 +139,34 @@ function gameLoop(time) {
     ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 1. 몬스터
+    // 1. 몬스터 (성능을 위해 필터링 처리 최적화)
     spawnTimer += dt;
     if (spawnTimer > Math.max(300, 2000 - (wave * 100))) {
-        monsters.push({
-            x: PATH[0].x1, y: PATH[0].y1, pathIdx: 0,
-            hp: 20 * Math.pow(1.2, wave), maxHp: 20 * Math.pow(1.2, wave), speed: 1.5 + (wave * 0.05)
-        });
+        monsters.push({ x: PATH[0].x1, y: PATH[0].y1, pathIdx: 0, hp: 20 * Math.pow(1.15, wave), maxHp: 20 * Math.pow(1.15, wave), speed: 1.5 + (wave * 0.05) });
         spawnTimer = 0;
     }
 
-    monsters.forEach((m, i) => {
+    for (let i = monsters.length - 1; i >= 0; i--) {
+        const m = monsters[i];
         const p = PATH[m.pathIdx];
         const dx = p.x2 - p.x1, dy = p.y2 - p.y1;
         const len = Math.sqrt(dx*dx + dy*dy);
         m.x += (dx/len) * m.speed; m.y += (dy/len) * m.speed;
         if (Math.hypot(m.x - p.x2, m.y - p.y2) < 5) {
             m.pathIdx++;
-            if (m.pathIdx >= PATH.length) { life--; monsters.splice(i, 1); return; }
+            if (m.pathIdx >= PATH.length) { life--; monsters.splice(i, 1); continue; }
             m.x = PATH[m.pathIdx].x1; m.y = PATH[m.pathIdx].y1;
         }
-        ctx.fillStyle = varColor('--d');
-        ctx.beginPath(); ctx.arc(m.x, m.y, 14, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#222'; ctx.fillRect(m.x-15, m.y-22, 30, 4);
-        ctx.fillStyle = '#0f0'; ctx.fillRect(m.x-15, m.y-22, (m.hp/m.maxHp)*30, 4);
-    });
+        ctx.fillStyle = '#ff0055';
+        ctx.beginPath(); ctx.arc(m.x, m.y, 12, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#222'; ctx.fillRect(m.x-12, m.y-18, 24, 3);
+        ctx.fillStyle = '#0f0'; ctx.fillRect(m.x-12, m.y-18, (m.hp/m.maxHp)*24, 3);
+    }
 
-    // 2. 보드판
+    // 2. 보드 및 유닛
     for (let i = 0; i < 16; i++) {
-        const bx = BOARD_X + (i % 4) * TILE_SIZE;
-        const by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
-        ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1;
-        ctx.strokeRect(bx+3, by+3, TILE_SIZE-6, TILE_SIZE-6);
+        const bx = BOARD_X + (i % 4) * TILE_SIZE, by = BOARD_Y + Math.floor(i / 4) * TILE_SIZE;
+        ctx.strokeStyle = '#151515'; ctx.strokeRect(bx+2, by+2, TILE_SIZE-4, TILE_SIZE-4);
         if (board[i] && dragIdx !== i) {
             drawUnit(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2);
             updateAttack(board[i], bx + TILE_SIZE/2, by + TILE_SIZE/2, dt);
@@ -222,15 +174,12 @@ function gameLoop(time) {
     }
     if (dragIdx !== null) drawUnit(board[dragIdx], mx, my, true);
 
-    // 3. 소환 버튼
+    // 3. 소환 버튼 (그림자 제거로 최적화)
     const r = SPAWN_BTN_RECT;
     ctx.fillStyle = gold >= 10 ? '#7000ff' : '#222';
-    ctx.shadowBlur = gold >= 10 ? 15 : 0;
-    ctx.shadowColor = '#7000ff';
     ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 12); ctx.fill();
-    ctx.shadowBlur = 0;
     ctx.fillStyle = '#fff'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(`유닛 소환 (10G)`, r.x + r.w/2, r.y + r.h/2 + 8);
+    ctx.fillText(`유닛 소환 (10G)`, r.x + r.w/2, r.y + r.h/2 + 7);
 
     updateParticles();
     document.getElementById('gold-val').innerText = Math.floor(gold);
@@ -243,47 +192,42 @@ function gameLoop(time) {
     }
 }
 
-/** ✨ 유닛 그리기 (발밑 오라 효과 추가) **/
+/** 🚀 성능 최적화된 유닛 그리기 (ShadowBlur 제거) **/
 function drawUnit(u, x, y, isDrag = false) {
     const g = GRADES[u.grade];
-    const size = TILE_SIZE * 0.82;
+    const size = TILE_SIZE * 0.8;
 
-    // --- 발밑 오라(Aura) 연출 ---
-    ctx.save();
-    // 1. 바닥 광원 원형
-    const grad = ctx.createRadialGradient(x, y, 0, x, y, size * 0.6);
-    grad.addColorStop(0, g.color); // 중심은 진하게
-    grad.addColorStop(1, 'transparent'); // 바깥은 투명하게
-    
-    ctx.fillStyle = grad;
+    // 1. 발밑 오라 (복잡한 Gradient 대신 단순 반투명 원으로 교체)
+    ctx.fillStyle = g.color;
     ctx.beginPath();
-    ctx.ellipse(x, y + size/3, size/1.5, size/3, 0, 0, Math.PI*2); // 타원형으로 바닥에 깔리는 느낌
+    ctx.arc(x, y + size/4, size/2, 0, Math.PI*2);
     ctx.fill();
 
-    // 2. 외부 글로우 효과 (드래그 시 강조)
-    ctx.shadowBlur = isDrag ? 25 : 12;
-    ctx.shadowColor = g.glow;
-    
+    // 2. 드래그 시 외곽선만 살짝 (그림자 대용)
+    if (isDrag) {
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
     const img = unitImages[u.name];
     if (img && img.complete && img.naturalWidth !== 0) {
         ctx.drawImage(img, x - size/2, y - size/2, size, size);
     } else {
         ctx.fillStyle = g.glow;
-        ctx.beginPath(); ctx.arc(x, y, TILE_SIZE/2.5, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#000'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(u.name, x, y+7);
+        ctx.beginPath(); ctx.arc(x, y, TILE_SIZE/3, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#000'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(u.name, x, y+6);
     }
-    ctx.restore();
 }
 
 function updateAttack(u, ux, uy, dt) {
     u.timer = (u.timer || 0) + dt;
-    const bonus = 1 + (upgradeAtkLv - 1) * 0.05;
-    if (u.timer > (1000 - u.grade*200) && monsters.length > 0) {
-        let target = monsters.find(m => Math.hypot(m.x - ux, m.y - uy) < 200);
+    if (u.timer > (1000 - u.grade*150) && monsters.length > 0) {
+        const bonus = 1 + (upgradeAtkLv - 1) * 0.05;
+        let target = monsters.find(m => Math.hypot(m.x - ux, m.y - uy) < 180);
         if (target) {
             u.timer = 0;
-            ctx.strokeStyle = GRADES[u.grade].glow; ctx.lineWidth = 3;
+            ctx.strokeStyle = GRADES[u.grade].glow; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(ux, uy); ctx.lineTo(target.x, target.y); ctx.stroke();
             target.hp -= GRADES[u.grade].power * bonus;
             if (target.hp <= 0) {
@@ -312,7 +256,7 @@ function spawnUnit() {
     if (empty.length > 0 && gold >= 10) {
         gold -= 10;
         const idx = empty[Math.floor(Math.random() * empty.length)];
-        board[idx] = { name: ['K', 'A', 'M', 'R'][Math.floor(Math.random()*4)], grade: 0, timer: 0 };
+        board[idx] = { name: 'A', grade: 0, timer: 0 };
     }
 }
 
@@ -336,27 +280,22 @@ function handleEnd() {
 
 function endGame() {
     gameState = 'OVER';
-    const earned = Math.floor(wave * 1.5); soulStones += earned; saveData();
+    const earned = Math.floor(wave * 1.2); soulStones += earned; saveData();
     document.getElementById('over-screen').classList.remove('hidden');
-    document.getElementById('result-text').innerText = `최종 웨이브: ${wave}\n획득한 영혼석: ${earned}`;
+    document.getElementById('result-text').innerText = `최종 웨이브: ${wave}\n영혼석 +${earned}`;
 }
 
-function createExplosion(x,y,c){for(let i=0;i<12;i++)particles.push({x,y,c,vx:(Math.random()-0.5)*12,vy:(Math.random()-0.5)*12,life:1})}
-function updateParticles(){particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=0.04;ctx.fillStyle=p.c;ctx.globalAlpha=p.life;ctx.fillRect(p.x,p.y,4,4)});particles=particles.filter(p=>p.life>0);ctx.globalAlpha=1}
-function varColor(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
+function createExplosion(x,y,c){for(let i=0;i<8;i++)particles.push({x,y,c,vx:(Math.random()-0.5)*10,vy:(Math.random()-0.5)*10,life:1})}
+function updateParticles(){particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=0.05;ctx.fillStyle=p.c;ctx.globalAlpha=p.life;ctx.fillRect(p.x,p.y,3,3)});particles=particles.filter(p=>p.life>0);ctx.globalAlpha=1}
 
 canvas.addEventListener('mousedown', handleStart);
-window.addEventListener('mousemove', (e)=>{
-    const rect = canvas.getBoundingClientRect();
-    mx = e.clientX - rect.left; my = e.clientY - rect.top;
-});
+window.addEventListener('mousemove', (e)=>{ const rect = canvas.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top; });
 window.addEventListener('mouseup', handleEnd);
 canvas.addEventListener('touchstart', (e)=>{e.preventDefault(); handleStart(e)}, {passive:false});
 window.addEventListener('touchmove', (e)=>{
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
-    mx = e.touches[0].clientX - rect.left;
-    my = e.touches[0].clientY - rect.top;
+    mx = e.touches[0].clientX - rect.left; my = e.touches[0].clientY - rect.top;
 }, {passive:false});
 window.addEventListener('touchend', handleEnd);
 </script>
