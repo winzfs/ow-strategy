@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-24 05:13",
+  "lastUpdated": "2026-02-24 15:11",
   "pro": [
     {
       "id": "jwmATplJWjQ",
@@ -12,8 +12,8 @@
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "ytoWvq9z0so",
-      "title": "아나는 이렇게 하시면 됩니다.",
+      "id": "S8Em3gDmNTE",
+      "title": "오늘은 핵이없기를 바라요",
       "player": "쪼낙 (Jjonak)"
     }
   ],
@@ -24,12 +24,32 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "WvkkuFDmRKw",
-      "title": "벌써 고여버린 제트팩 캣 대응법 모음",
+      "id": "DLzsjemsBOA",
+      "title": "유저 전부 틀렸다. 26:1시즌 주요영웅 통계 정리",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "SdcaZCz_Qzw",
+      "title": "기적의 순간 | CR vs FLC | OWCS Pre-Season Bootcamp",
+      "player": "Official"
+    },
+    {
+      "id": "5dtWOkz7vNM",
+      "title": "세계관 비틀기 | T1 vs TM | OWCS Pre-Season Bootcamp",
+      "player": "Official"
+    },
+    {
+      "id": "vb01SoaGwng",
+      "title": "라쿤의 거인 | CR vs PEPS | OWCS Pre-Season Bootcamp",
+      "player": "Official"
+    },
+    {
+      "id": "4SJmmThf_gs",
+      "title": "겐지 대전 | DAL vs T1 | OWCS Pre-Season Bootcamp",
+      "player": "Official"
+    },
     {
       "id": "Sq9Vl6VC0wk",
       "title": "대부분이 잘 모르는 마우스 훈련법",
@@ -39,29 +59,14 @@
       "id": "4SSe_UM4n2w",
       "title": "등허리를 타고 전해지는 낯선 온기 결국, 미즈키는..[더보기]",
       "player": "Official"
-    },
-    {
-      "id": "FeS-Jvilix8",
-      "title": "이제 누가 방송해주냐",
-      "player": "Official"
-    },
-    {
-      "id": "0J1MzkO-M3E",
-      "title": "【02/12】데드락 / 오버워치 러너리그 내전 구경하며 코칭",
-      "player": "Official"
-    },
-    {
-      "id": "Z3XNj6ybGzE",
-      "title": "🔥 빨간약으로 ZOWIE ZONE PC방 다녀왔습니다 + 구독자 이벤트까지 !",
-      "player": "Official"
-    },
-    {
-      "id": "IGpvak8tO54",
-      "title": "다시 부활하고 있는 갓겜 오버워치의 유일한 장애물",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "4soTeKwHWBI",
+      "title": "최고의 플레이 11",
+      "player": "Trending"
+    },
     {
       "id": "2w6qfvpV1O8",
       "title": "너모 재밌잖어~ #shortvideo #gaming #shorts #overwatch2  #오버워치2 #오버워치하이라이트 #배틀넷 #화요일은 #오버워치",
@@ -85,11 +90,6 @@
     {
       "id": "jphGHfg4ssk",
       "title": "오버워치2 오리사 장난아닌데",
-      "player": "Trending"
-    },
-    {
-      "id": "sFlqDC3pqUI",
-      "title": "오버워치 재트팩 캣 캐서디 하늘에서 석양이 빗발친다ㅋㅋㅋ",
       "player": "Trending"
     }
   ]
