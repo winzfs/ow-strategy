@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-06 01:13",
+  "lastUpdated": "2026-03-06 12:31",
   "pro": [
     {
       "id": "jwmATplJWjQ",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "b_3SlDSor38",
-      "title": "마음이 아파서 45도 고량주 시원하게 마셨습니다",
+      "id": "uFmndjTxWo8",
+      "title": "후렴 시작 1초 만에 알 수밖에 없는 노래",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,8 +19,8 @@
   ],
   "streamer": [
     {
-      "id": "skAbrc46w78",
-      "title": "프로즈 vs 말카디아",
+      "id": "PM9Sl6EXFx4",
+      "title": "유저마다 평이 갈리는 신캐 힐러 미즈키 성능 검증해보았습니다",
       "player": "일루전 (Illusion)"
     },
     {
@@ -33,6 +33,11 @@
     {
       "id": "9Gch7qRaDEE",
       "title": "Sakura + 8-Bit Skins Return! - Overwatch Shop Update",
+      "player": "Official"
+    },
+    {
+      "id": "855DfT1S15k",
+      "title": "오버워치x오토마타 콜라보 스킨이 출시됩니다!",
       "player": "Official"
     },
     {
@@ -54,42 +59,37 @@
       "id": "LDN9p4OdpmA",
       "title": "오버워치 영웅들의 황당한 대화 Part 102",
       "player": "Official"
-    },
-    {
-      "id": "3JuaIzFkKeE",
-      "title": "발로란트 vs 오버워치ㅠㅠㅠ #발로란트 #오버워치 #캐릭터",
-      "player": "Official"
     }
   ],
   "trending": [
     {
+      "id": "S0PRMfhoqW8",
+      "title": "다른 서버 납치 당하기 #overwatch #overwatch2",
+      "player": "Trending"
+    },
+    {
+      "id": "_XANUveUjQw",
+      "title": "요즘 오버워치 근황 : 둠피스트가 묶여서 게임을 못함 ㅋㅋㅋ",
+      "player": "Trending"
+    },
+    {
+      "id": "gaOiGWHRzuQ",
+      "title": "오버워치2  광물티어 애쉬 4킬 팟지영상  #shorts   #오버워치2 #오버워치2플레이영상 #오버워치하이라이트",
+      "player": "Trending"
+    },
+    {
+      "id": "bimPYBKfwt8",
+      "title": "오버워치) 너일루와",
+      "player": "Trending"
+    },
+    {
+      "id": "4SP-JyY_y3g",
+      "title": "진정한 석양을 보여주는 듀오_오버워치2 #금미르 #게임 #웃긴영상 #하이라이트 #오버워치2 #overwatch2 #캐서디 #제트팩캣 #석양",
+      "player": "Trending"
+    },
+    {
       "id": "FflX-Pgr6cA",
       "title": "오버워치) 너두???",
-      "player": "Trending"
-    },
-    {
-      "id": "SaaP3lNDfJI",
-      "title": "톡식뉴비 #shorts #valorant #발로란트",
-      "player": "Trending"
-    },
-    {
-      "id": "r5tSqsc7iYo",
-      "title": "오버워치 제트팩 캣 오리사 심판의 창 #overwatch #오버워치",
-      "player": "Trending"
-    },
-    {
-      "id": "SS56uY_f_oo",
-      "title": "옵치계의 네온 (안란 하이라이트)",
-      "player": "Trending"
-    },
-    {
-      "id": "j6Uj57tem4o",
-      "title": "경쟁모음  #게임 #오버워치2 #오버워치클립 #오버워치 #오버워치하이라이트 #옵치",
-      "player": "Trending"
-    },
-    {
-      "id": "CMemapWHi6M",
-      "title": "오버워치 왕의길 라마트라 너희들 끼리 합이 안 맞으면 어떻하니 ㅋㅋ #shorts",
       "player": "Trending"
     }
   ]
