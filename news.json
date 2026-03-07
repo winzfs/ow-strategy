@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-07 01:05",
+  "lastUpdated": "2026-03-07 12:24",
   "pro": [
     {
       "id": "jwmATplJWjQ",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "uFmndjTxWo8",
-      "title": "후렴 시작 1초 만에 알 수밖에 없는 노래",
+      "id": "LUu13R0wAFw",
+      "title": "관심 없던 사람도 끝까지 보게 만드는 과몰입 분노형 해설가",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,17 +19,32 @@
   ],
   "streamer": [
     {
-      "id": "PM9Sl6EXFx4",
-      "title": "유저마다 평이 갈리는 신캐 힐러 미즈키 성능 검증해보았습니다",
+      "id": "f33jeaMtRLs",
+      "title": "상당히 말캉한 키리코 스킨ㄷㄷ",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "TC6l98s_FUE",
-      "title": "1부 : 23년이 레전드인 이유 / 2부 딜러 마스터 찎기",
+      "id": "xI7efJSri04",
+      "title": "옵치 26년 첫 세계대회도 역시 한국이...!",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "cWf3YNRZ4Ac",
+      "title": "오버워치 둠피스트가 패배한 진짜 이유",
+      "player": "Official"
+    },
+    {
+      "id": "oJgwsBDDaS4",
+      "title": "[2026.03.05 / 오버워치 요즘 자주하죠? [w. 린,여운,묘현,시하] (오버워치2)] - 엘피스 루디",
+      "player": "Official"
+    },
+    {
+      "id": "CMe7bI0WtO8",
+      "title": "[2026] 오버워치 역할군 완벽 정리 (메인/서브 + 신규 역할 시스템)",
+      "player": "Official"
+    },
     {
       "id": "01ao_Ock9yc",
       "title": "제트팩 캣 밴률이 80% 라고요? 신규 영웅 공식 데이터 공개!ㅣ오버워치2",
@@ -44,52 +59,37 @@
       "id": "9Gch7qRaDEE",
       "title": "Sakura + 8-Bit Skins Return! - Overwatch Shop Update",
       "player": "Official"
-    },
-    {
-      "id": "855DfT1S15k",
-      "title": "오버워치x오토마타 콜라보 스킨이 출시됩니다!",
-      "player": "Official"
-    },
-    {
-      "id": "6Bk68HHwbk4",
-      "title": "메인딜러 많이 죽는 건지 확인하는 법",
-      "player": "Official"
-    },
-    {
-      "id": "4GSsADpLdPM",
-      "title": "미즈키의 시대가 열릴 것 같습니다",
-      "player": "Official"
     }
   ],
   "trending": [
     {
-      "id": "7ZZNYMQ1tG0",
-      "title": "오버워치2 오리사 막아 막아!",
+      "id": "HoxNmjhypW8",
+      "title": "마우가님 부담스러워요 #게임 #오버워치 #오버워치2 #오버워치하이라이트 #오버워치클립",
       "player": "Trending"
     },
     {
-      "id": "UKE8gWIR0ck",
-      "title": "오버워치) 나한테 그만좀오ㅓ",
+      "id": "2iMVXQoJE18",
+      "title": "멋쟁이 토마토 (2) #overwatch #overwatch2",
       "player": "Trending"
     },
     {
-      "id": "5Oe7MBoEGk0",
-      "title": "긁",
+      "id": "r83QyfT987E",
+      "title": "멋쟁이 토마토 (1) #overwatch #overwatch2",
       "player": "Trending"
     },
     {
-      "id": "S0PRMfhoqW8",
-      "title": "다른 서버 납치 당하기 #overwatch #overwatch2",
+      "id": "a_bUaDZxf74",
+      "title": "냥냥단에 합류하세요🐈",
       "player": "Trending"
     },
     {
-      "id": "_XANUveUjQw",
-      "title": "요즘 오버워치 근황 : 둠피스트가 묶여서 게임을 못함 ㅋㅋㅋ",
+      "id": "MCXS4g0gZUI",
+      "title": "최고의 플레이 17",
       "player": "Trending"
     },
     {
-      "id": "gaOiGWHRzuQ",
-      "title": "오버워치2  광물티어 애쉬 4킬 팟지영상  #shorts   #오버워치2 #오버워치2플레이영상 #오버워치하이라이트",
+      "id": "BlDYzDV6B-g",
+      "title": "오버워치 한조",
       "player": "Trending"
     }
   ]
