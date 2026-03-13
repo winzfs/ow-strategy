@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-13 01:08",
+  "lastUpdated": "2026-03-13 12:34",
   "pro": [
     {
       "id": "RKbwZs8aXn4",
@@ -7,20 +7,20 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "QvaGiIqKs0U",
-      "title": "요즘 경쟁전을 하는 유저들의 실력이 천차만별인 이유",
+      "id": "tH_AVbWqk4E",
+      "title": "탱커는 딜러의 개입니다",
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "LqGfqPmRxuI",
-      "title": "리뉴얼된 라쿤? 어느 정도일지 한번 보겠습니다.",
+      "id": "fISbNi9q6-4",
+      "title": "반전의 반전을 거듭하는 \"킬당 2만원 사건\"",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "Fbsp2ZfSKTQ",
-      "title": "역대급 하체를 가진 벤데타 스킨 출시",
+      "id": "4TS0VAVDDMc",
+      "title": "정장 벨트입은 라이프위버 스킨 🥵🥵 | 오버워치 x 니어 오토마타",
       "player": "일루전 (Illusion)"
     },
     {
@@ -31,6 +31,26 @@
   ],
   "official": [
     {
+      "id": "Rca41dmGuCA",
+      "title": "잿더미 속에서 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "i6jA-BjRF20",
+      "title": "저주를 깨는 자 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "gSLnCBWVEvw",
+      "title": "성공의 그림 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "jwPgEBM3lHk",
+      "title": "프로젝트: 제트팩 캣 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
+    {
       "id": "wR13qdgnAX4",
       "title": "탱커 힐러 밸런스 조정? 미드시즌 패치노트 살펴보기 | 옵치토크쇼",
       "player": "Official"
@@ -39,57 +59,37 @@
       "id": "L4eppyOUNiI",
       "title": "마침내 블리자드도 인정한 &#39;주노 장인&#39; (ft. 그마 형님들)",
       "player": "Official"
-    },
-    {
-      "id": "66jKoazQIJY",
-      "title": "오버워치를 망치는 지름길 | 장문철tv 673화",
-      "player": "Official"
-    },
-    {
-      "id": "cWf3YNRZ4Ac",
-      "title": "오버워치 둠피스트가 패배한 진짜 이유",
-      "player": "Official"
-    },
-    {
-      "id": "01ao_Ock9yc",
-      "title": "제트팩 캣 밴률이 80% 라고요? 신규 영웅 공식 데이터 공개!ㅣ오버워치",
-      "player": "Official"
-    },
-    {
-      "id": "ap1JdrtRr1A",
-      "title": "무산됐던 오버워치 TV 시리즈가 부활한다고?!",
-      "player": "Official"
     }
   ],
   "trending": [
     {
-      "id": "kngzQBr18e0",
-      "title": "오버워치) 묻고 라인으로가",
+      "id": "mlwnUmnSVEw",
+      "title": "일리아리 평타 너프 아니잖아?",
       "player": "Trending"
     },
     {
-      "id": "jnGmmrjWBsg",
-      "title": "오버워치 제트팩 캣 패치소식",
+      "id": "s2RUrephvHQ",
+      "title": "목줄 단 캐서디 (2) #overwatch #overwatch2",
       "player": "Trending"
     },
     {
-      "id": "7faxs5FIG_k",
-      "title": "♡주노♡하이라이트",
+      "id": "ceAEc_u-_RM",
+      "title": "목줄 단 캐서디 (1) #overwatch #overwatch2",
       "player": "Trending"
     },
     {
-      "id": "Ep90Q3dw_2g",
-      "title": "뚜따~ (5연속 처치)",
+      "id": "l9MfFUbfkVk",
+      "title": "아직도 맵에서 길 잃는다 #오버워치2",
       "player": "Trending"
     },
     {
-      "id": "WKcn3_W6OZA",
-      "title": "이거 건담 아님... 진짜로 ㄷㄷ",
+      "id": "QepACrDznEA",
+      "title": "#오버워치2 #정크랫 #하이라이트 by코리아세븐일레븐",
       "player": "Trending"
     },
     {
-      "id": "TVarqEaNxJk",
-      "title": "이터널리턴 하이라이트 - 1 [이터널리턴] #게임 #오버워치2 #eternalreturn #이터널리턴 #game #shorts #쇼츠",
+      "id": "yGmTaZUALAA",
+      "title": "#오버워치2 #젠야타 #지원 #하이라이트",
       "player": "Trending"
     }
   ]
