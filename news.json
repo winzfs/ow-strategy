@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-31 12:52",
+  "lastUpdated": "2026-04-01 01:26",
   "pro": [
     {
       "id": "lENGloLGqqs",
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "4QcZCtcRNH4",
-      "title": "모아나 마우가",
+      "id": "8SVlV6czDqE",
+      "title": "중위 티어에서만 좋은 딜러",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "2ZZRmXzlR5M",
+      "title": "Season 2 Hero Revealed! + Voidwalker Skins in Overwatch Shop!",
+      "player": "Official"
+    },
     {
       "id": "3lJHbccZslk",
       "title": "요즘 경쟁전 유저들 실력 편차가 심한 이유",
@@ -54,27 +59,12 @@
       "id": "80oBrCtnXzY",
       "title": "He INSTANTLY Charged At Me.... 😭| GOAL: 3,600 Subs 🎯PLS SUB! 🙏 #gaming #overwatch #overwatch2 #funny",
       "player": "Official"
-    },
-    {
-      "id": "bxAfWfEm-qc",
-      "title": "오버워치2 맛보기",
-      "player": "Official"
     }
   ],
   "trending": [
     {
-      "id": "W2TGhKH9ZVo",
-      "title": "재야의 고수들",
-      "player": "Trending"
-    },
-    {
       "id": "EhCq1TpHgu8",
       "title": "버튜버 솔직한돼지와 overwatch 즐겜워치 기타등등 놀기",
-      "player": "Trending"
-    },
-    {
-      "id": "CwYXvTbgmOQ",
-      "title": "오버워치 복귀",
       "player": "Trending"
     },
     {
@@ -88,8 +78,8 @@
       "player": "Trending"
     },
     {
-      "id": "XRagVOKNpoo",
-      "title": "밥 하고 싶은대로 혀~ #overwatch2 #shortvideo",
+      "id": "CUaUnmHJw9E",
+      "title": "오버워치2 오리사 화물만 밀어도 팀이 알아서 해주는 판",
       "player": "Trending"
     }
   ]
