@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-07 12:55",
+  "lastUpdated": "2026-04-08 01:21",
   "pro": [
     {
       "id": "CQBMiHoigXg",
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "bAOJ0VbxEjk",
-      "title": "이정도 브금이면 LCK 대적 가능하냐",
+      "id": "XBXgp8AgoUE",
+      "title": "긁기 초식 모음",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "fy-zx5H6-JQ",
+      "title": "아니 걍 이거 오버워치 공식패치로 해라ㅋㅋㅋ개재밌네(오버워치 만우절)",
+      "player": "Official"
+    },
     {
       "id": "JhEWIOnHd1Q",
       "title": "Anran New Face Revealed! - Overwatch Hero Change",
@@ -54,17 +59,12 @@
       "id": "Xpr_9qvg0Jg",
       "title": "솜브라 쓰레기 취급한다는 미국에 인성질만 10년 한 &#39;싸이코패스 한국인 솜브라&#39;가 수출되면 생기는 일 ㅋㅋㅋㅋ",
       "player": "Official"
-    },
-    {
-      "id": "DMBb3NZ1RLI",
-      "title": "오버워치야 날 속인거니?",
-      "player": "Official"
     }
   ],
   "trending": [
     {
-      "id": "ptV5KHPBR1o",
-      "title": "스위치판 키리코 에임 #오버워치 #overwatch #shorts",
+      "id": "GvSe4mwaqnc",
+      "title": "전원처치하고 전원일기 브금 부르기 #오버워치 #overwatch #shorts",
       "player": "Trending"
     },
     {
@@ -73,23 +73,23 @@
       "player": "Trending"
     },
     {
-      "id": "A9pqtrZSuxc",
-      "title": "주인장/논란/혐오 (2) #valorant",
-      "player": "Trending"
-    },
-    {
-      "id": "aL1BdAIuiBc",
-      "title": "6대6의 묘미",
-      "player": "Trending"
-    },
-    {
       "id": "G-vZ3fTsLXQ",
       "title": "버튜버 솔직한돼지",
       "player": "Trending"
     },
     {
-      "id": "wViIBaK0LCU",
-      "title": "최고의 플레이 26",
+      "id": "KuIYijvRHeE",
+      "title": "버튜버 솔직한돼지",
+      "player": "Trending"
+    },
+    {
+      "id": "ptV5KHPBR1o",
+      "title": "스위치판 키리코 에임 #오버워치 #overwatch #shorts",
+      "player": "Trending"
+    },
+    {
+      "id": "A9pqtrZSuxc",
+      "title": "주인장/논란/혐오 (2) #valorant",
       "player": "Trending"
     }
   ]
