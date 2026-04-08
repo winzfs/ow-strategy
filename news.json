@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-08 01:21",
+  "lastUpdated": "2026-04-08 12:56",
   "pro": [
     {
       "id": "CQBMiHoigXg",
@@ -12,24 +12,29 @@
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "tGPlRPxyuDc",
-      "title": "[OWCS] 운영이 뭔지 제대로 보여주는 팔콘.. 올해 우승 가나?!",
+      "id": "ye1dTWXNwuk",
+      "title": "지난번에 제가 팀밴했던 거 때문에 이러시는 거예요...?",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "GzTWc-1oT7Y",
-      "title": "제대로 정신줄 놓아버린 오버워치 만우절 모드",
+      "id": "t78d3TzihE8",
+      "title": "빵점크루 내전 (만우절) | 1시 트레일러",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "XBXgp8AgoUE",
-      "title": "긁기 초식 모음",
+      "id": "s1oYkjT0IVQ",
+      "title": "만우절 합방",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "r-zrp1yG7bg",
+      "title": "【04/01】오버워치 솔로 + 슬더스2 승천 등반 (2부)",
+      "player": "Official"
+    },
     {
       "id": "fy-zx5H6-JQ",
       "title": "아니 걍 이거 오버워치 공식패치로 해라ㅋㅋㅋ개재밌네(오버워치 만우절)",
@@ -54,27 +59,12 @@
       "id": "l0rQv-_gdWg",
       "title": "오버워치 유저 90%가 모르는 &quot;진짜&quot; 승리공식",
       "player": "Official"
-    },
-    {
-      "id": "Xpr_9qvg0Jg",
-      "title": "솜브라 쓰레기 취급한다는 미국에 인성질만 10년 한 &#39;싸이코패스 한국인 솜브라&#39;가 수출되면 생기는 일 ㅋㅋㅋㅋ",
-      "player": "Official"
     }
   ],
   "trending": [
     {
-      "id": "GvSe4mwaqnc",
-      "title": "전원처치하고 전원일기 브금 부르기 #오버워치 #overwatch #shorts",
-      "player": "Trending"
-    },
-    {
-      "id": "xEP5lswkf_o",
-      "title": "버튜버 솔직한돼지",
-      "player": "Trending"
-    },
-    {
-      "id": "G-vZ3fTsLXQ",
-      "title": "버튜버 솔직한돼지",
+      "id": "swvbK1P7WAI",
+      "title": "납치는 무서워 (2) #valorant",
       "player": "Trending"
     },
     {
@@ -83,13 +73,23 @@
       "player": "Trending"
     },
     {
-      "id": "ptV5KHPBR1o",
-      "title": "스위치판 키리코 에임 #오버워치 #overwatch #shorts",
+      "id": "TTTxJbjFLpc",
+      "title": "#오버워치2 #디바 #하이라이트 by죽는건니팔자야",
       "player": "Trending"
     },
     {
-      "id": "A9pqtrZSuxc",
-      "title": "주인장/논란/혐오 (2) #valorant",
+      "id": "l2moEp2onpY",
+      "title": "소중한 친구를 잃은 윈스턴#금미르 #웃긴영상 #하이라이트 #오버워치2 #옵치쇼츠 #overwatch2 #친구 #이별 #여행",
+      "player": "Trending"
+    },
+    {
+      "id": "_cdMD17xzAU",
+      "title": "생존 전문 라이프위버가 용검을 피하는 방법 [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "GvSe4mwaqnc",
+      "title": "전원처치하고 전원일기 브금 부르기 #오버워치 #overwatch #shorts",
       "player": "Trending"
     }
   ]
