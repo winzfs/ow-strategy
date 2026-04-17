@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-16 13:03",
+  "lastUpdated": "2026-04-17 01:25",
   "pro": [
     {
       "id": "zwAd1FonRlg",
@@ -31,6 +31,11 @@
   ],
   "official": [
     {
+      "id": "YD8UJaQIDdk",
+      "title": "오버워치 시즌 2, 복귀 포인트만 30초로 정리",
+      "player": "Official"
+    },
+    {
       "id": "XpMwS1Q9d9Q",
       "title": "닌텐도 스위치2 오버워치, 드디어 60프레임 지원 업데이트? 직접 해봤습니다! (닌텐도 스위치 2 오버워치 플레이)",
       "player": "Official"
@@ -54,14 +59,19 @@
       "id": "b3wXi4fPm-Y",
       "title": "제트팩 캣 역대급 스킨 떴다?! | &#39;오버워치 2시즌 정상&#39; 공식 트레일러",
       "player": "Official"
-    },
-    {
-      "id": "5G1Gzql_Awg",
-      "title": "2시즌 솔저 신화스킨, 겐지 신화무기! 예쁜 상점 스킨들과 신캐 시에라, 칭찬 카드 재도입?ㅣ오버워치 공식 트레일러 리뷰",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "8BYALHS6vu4",
+      "title": "감정기복 확실한 라이프위버 #오버워치 #overwatch #shorts",
+      "player": "Trending"
+    },
+    {
+      "id": "crcZ4gOmg8s",
+      "title": "키리코 &#39;왕좌에 올라&#39; 스킨별 하이라이트 예쁜 스킨만(여우 귀여움) #shorts #overwatch",
+      "player": "Trending"
+    },
     {
       "id": "rrnsND08BQU",
       "title": "미리 보고 구매하자! 디바의 르세라핌 콜라보 스킨 착용 모든 하이라이트 #shorts #overwatch",
@@ -80,16 +90,6 @@
     {
       "id": "J4OH_Z6-__c",
       "title": "20260415 오버워치2 애쉬 하이라이트",
-      "player": "Trending"
-    },
-    {
-      "id": "oGZgI6wGHoU",
-      "title": "라이프위버를 지구 끝까지 쫓아오는 레킹볼 ㄷㄷ [오버워치]",
-      "player": "Trending"
-    },
-    {
-      "id": "X1gLCJkBOxU",
-      "title": "메르시가 이렇게 예쁜데! 메르시의 르세라핌 콜라보 스킨 착용 모든 하이라이트 #shorts #overwatch",
       "player": "Trending"
     }
   ]
