@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-19 01:29",
+  "lastUpdated": "2026-04-19 12:36",
   "pro": [
     {
       "id": "zwAd1FonRlg",
@@ -7,20 +7,20 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "HDz2Gfek9xo",
-      "title": "중국보다 핵을 더 많이 쓰는 나라",
+      "id": "uPZVg_NUzEI",
+      "title": "힐은 안 하고 딜만 넣는 아나 어떻게 해야 될까요?",
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "Yq8suHQr6uM",
-      "title": "천양대회 에스카팀 코치",
+      "id": "xuFz1P_DG1I",
+      "title": "천양대회 마지막날..",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "sAVKXwjT-_Q",
-      "title": "은근 저평가된 오버워치 미모의 여캐",
+      "id": "0FUzClh1Xhc",
+      "title": "오버워치 우양이 부러운 이유...",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,11 @@
     }
   ],
   "official": [
+    {
+      "id": "zoo_frmItTY",
+      "title": "대답은 한명만 하네",
+      "player": "Official"
+    },
     {
       "id": "XoLZwqPib7E",
       "title": "SEASON 2 SUMMIT OFFICIAL TRAILER LIVE REACTION | OVERWATCH 2 🎮🎮🎮",
@@ -54,14 +59,14 @@
       "id": "XhBjGHOeW3M",
       "title": "특전이 대거 패시브로 들어온 시즌2 패치노트 리뷰  | 옵치토크쇼",
       "player": "Official"
-    },
-    {
-      "id": "XpMwS1Q9d9Q",
-      "title": "닌텐도 스위치2 오버워치, 드디어 60프레임 지원 업데이트? 직접 해봤습니다! (닌텐도 스위치 2 오버워치 플레이)",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "ZjgL79Jd8js",
+      "title": "드디어 2시즌 패치를 받고 정화를 할 수 있게 된 라이프위버! [오버워치]",
+      "player": "Trending"
+    },
     {
       "id": "sHiRKJjUaGI",
       "title": "Viol2t의 도파민기 행동#오버워치 #overwatch #overwatchclips #오버워치하이라이트 #owcs #owcshighlights #옵챔스 #zeta #shorts",
@@ -85,11 +90,6 @@
     {
       "id": "4Jlq_rdXz8E",
       "title": "숏컷이 매력적인 트레이서, 르세라핌 스킨 착용 모든 하이라이트(차트 역행) #shorts #overwatch",
-      "player": "Trending"
-    },
-    {
-      "id": "G3X4g2WqH3s",
-      "title": "일리아리 궁 이거 밸런스 어떻게 생각 하시나요",
       "player": "Trending"
     }
   ]
