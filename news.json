@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-18 12:36",
+  "lastUpdated": "2026-04-19 01:29",
   "pro": [
     {
       "id": "zwAd1FonRlg",
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "4JDOYhAyQzY",
-      "title": "대깨옵 척수액 관리자의 생존방법 (VS 빅헤드, 창식, 사야플레이어)",
+      "id": "go36tq8LuFE",
+      "title": "KDA 1 섭딜 VS KDA 1 5 멘딜",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "XoLZwqPib7E",
+      "title": "SEASON 2 SUMMIT OFFICIAL TRAILER LIVE REACTION | OVERWATCH 2 🎮🎮🎮",
+      "player": "Official"
+    },
     {
       "id": "IFl5vl9mU-s",
       "title": "옵치 공식도 저점매수한 곳 ㄷㄷ",
@@ -54,42 +59,37 @@
       "id": "XpMwS1Q9d9Q",
       "title": "닌텐도 스위치2 오버워치, 드디어 60프레임 지원 업데이트? 직접 해봤습니다! (닌텐도 스위치 2 오버워치 플레이)",
       "player": "Official"
-    },
-    {
-      "id": "kXUKt7RGbgk",
-      "title": "애니 토론회(체인소맨) + 오버워치 2 | 2026년 4월 13일",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "sHiRKJjUaGI",
+      "title": "Viol2t의 도파민기 행동#오버워치 #overwatch #overwatchclips #오버워치하이라이트 #owcs #owcshighlights #옵챔스 #zeta #shorts",
+      "player": "Trending"
+    },
+    {
+      "id": "wjH5zIvoRdY",
+      "title": "귀여운 디바, 르세라핌 1차 스킨 착용 모든 하이라이트(슈팅스타) #shorts #overwatch",
+      "player": "Trending"
+    },
+    {
+      "id": "xp8FZZEigtw",
+      "title": "겐지 피구 공개방 하이라이트 #2",
+      "player": "Trending"
+    },
+    {
+      "id": "k80yxAAGCQU",
+      "title": "오버워치2 라인하르트 이상하지만 뚫긴 했다",
+      "player": "Trending"
+    },
     {
       "id": "4Jlq_rdXz8E",
       "title": "숏컷이 매력적인 트레이서, 르세라핌 스킨 착용 모든 하이라이트(차트 역행) #shorts #overwatch",
       "player": "Trending"
     },
     {
-      "id": "uGp9phqHU-8",
-      "title": "딸깍하면 다 죽는 옵치 신캐 #overwatchsierra #overwatch",
-      "player": "Trending"
-    },
-    {
       "id": "G3X4g2WqH3s",
       "title": "일리아리 궁 이거 밸런스 어떻게 생각 하시나요",
-      "player": "Trending"
-    },
-    {
-      "id": "zYbTvZe6FyI",
-      "title": "귀여운 키리코, 르세라핌 스킨 착용 모든 하이라이트(여우길의 요정) #shorts #overwatch",
-      "player": "Trending"
-    },
-    {
-      "id": "hol0Qi5fCuU",
-      "title": "오버워치 하이라이트 플레이 모음 370 (Overwatch Potg Play Collection 370) #shorts 버전2",
-      "player": "Trending"
-    },
-    {
-      "id": "4HNcuTnW4Mk",
-      "title": "오버워치 하이라이트 플레이 모음 370 (Overwatch Potg Play Collection 370) #370",
       "player": "Trending"
     }
   ]
