@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-21 01:25",
+  "lastUpdated": "2026-04-21 12:59",
   "pro": [
     {
       "id": "zwAd1FonRlg",
@@ -7,29 +7,34 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "boXS82HuKZE",
-      "title": "힐은 안 하고 딜만 하는 아나 대처법",
+      "id": "AvoyGHf6r8k",
+      "title": "탱커가 가장 좋아하는 서브 딜러",
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "QfW40X9UFy0",
-      "title": "쪼낙이 \"현존 최강 모니터\"를 쓰면 벌어지는 대참사..",
+      "id": "PPEcQm-hWmc",
+      "title": "[1화] 은퇴한 프로게이머가 아마추어 코치를 한다면?ㅋㅋㅋㅋㅋ",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "CifOJWyZKfA",
-      "title": "우리가 알던 크레이지라쿤이 돌아왔습니다...힐러들 폼 미쳤다!!! | 오버워치 OWCS 2026 STAGE1 WEEK4 DAY2 FLC vs CR",
+      "id": "LtzOfFVEJME",
+      "title": "오버워치 마우가로 게임 박살내기",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "go36tq8LuFE",
-      "title": "KDA 1 섭딜 VS KDA 1 5 멘딜",
+      "id": "cJ9BglE3YLA",
+      "title": "던짐 논쟁과 아이치 새로운 모스트",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "NyCV4hQKLLo",
+      "title": "오버워치 교육해준다더니 또 현질 유도하는 이지상 ㅋㅋㅋ",
+      "player": "Official"
+    },
     {
       "id": "GxJTFqPkFW0",
       "title": "Sojourn at 100% Attack Speed | Stadium Overwatch",
@@ -51,11 +56,6 @@
       "player": "Official"
     },
     {
-      "id": "XhBjGHOeW3M",
-      "title": "특전이 대거 패시브로 들어온 시즌2 패치노트 리뷰  | 옵치토크쇼",
-      "player": "Official"
-    },
-    {
       "id": "XpMwS1Q9d9Q",
       "title": "닌텐도 스위치2 오버워치, 드디어 60프레임 지원 업데이트? 직접 해봤습니다! (닌텐도 스위치 2 오버워치 플레이)",
       "player": "Official"
@@ -63,33 +63,33 @@
   ],
   "trending": [
     {
-      "id": "isGUV62tCtI",
-      "title": "오버워치2 오리사로 한타",
+      "id": "cyqLVkwiASU",
+      "title": "오버워치 처음하는 뉴비가 겪는 일;;",
       "player": "Trending"
     },
     {
-      "id": "qODGYp2ut9w",
-      "title": "오버워치2 라인하르트편 이렇게도 먹는 플래시 포인트",
+      "id": "xn_L5sK-Be0",
+      "title": "&quot;얼음이 꽁꽁&quot; 메이 하이라이트 [오버워치]",
       "player": "Trending"
     },
     {
-      "id": "4pGjP_-SOfI",
-      "title": "상대 팀 채팅창 난리 난 힐러의 슈퍼세이브 #overwatch2 #game #potg #오버워치2",
+      "id": "Jrz7N7z9aLo",
+      "title": "고양이 우는 소리 좀 안 나게 하라악!",
       "player": "Trending"
     },
     {
-      "id": "iQ9zs8OxRR4",
-      "title": "신캐 시에라를 팀으로 만나 열심히 땡겨주는 라이프위버 [오버워치]",
+      "id": "N1nwkI2_1f8",
+      "title": "[천옵대] 김진솔 안란🪭하이라이트",
       "player": "Trending"
     },
     {
-      "id": "4UMcJgDIkcU",
-      "title": "4명 잡아줘따",
+      "id": "KTQDl1IK3-U",
+      "title": "주노의 신화 스킨 모든 단계 &#39;꽃잎 춤&#39; 하이라이트 #shorts #overwatch",
       "player": "Trending"
     },
     {
-      "id": "GM_HIq0QSoI",
-      "title": "[ 4K UHD ] 오버워치2 탈론 시즌1 155레벨,안란 구 버전 얼굴 마지막 피날레 하이라이트 풀 모음집",
+      "id": "rW8S17OSJ_g",
+      "title": "주노 신화 모든 색상별, 뚝배기별 &#39;꽃잎 춤&#39; 하이라이트 모음집 #overwatch",
       "player": "Trending"
     }
   ]
