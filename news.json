@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-28 01:53",
+  "lastUpdated": "2026-04-28 13:27",
   "pro": [
     {
       "id": "zwAd1FonRlg",
@@ -12,15 +12,15 @@
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "jG3S_CGw5Cw",
-      "title": "슈도 못 막는 쪼낙의 고점",
+      "id": "PeVDSp1smzs",
+      "title": "이번주부터는 피튀깁니다..",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "LUN00aUd8L4",
-      "title": "생각보다 심각한 수준의 해외 오버워치",
+      "id": "1hbXkI4_qzg",
+      "title": "오버워치 월드컵 국가대표 감독님 1vs1로 멘탈 터뜨렸습니다 ㅋㅋㅋㅋㅋ",
       "player": "일루전 (Illusion)"
     },
     {
@@ -31,8 +31,18 @@
   ],
   "official": [
     {
+      "id": "uIllicTnrxo",
+      "title": "미리 오버워치 5를 즐기는 탱커 | 장문철tv 709화",
+      "player": "Official"
+    },
+    {
       "id": "IRgB_8X5h_I",
       "title": "더 높이 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "Q8fTH0VZ9vo",
+      "title": "오버워치 팝업이 진행됩니다?",
       "player": "Official"
     },
     {
@@ -49,19 +59,19 @@
       "id": "4jAtNhV9pYA",
       "title": "5단 버프된 신캐 시에라 근황 ㄷㄷ  [오버워치]",
       "player": "Official"
-    },
-    {
-      "id": "IFl5vl9mU-s",
-      "title": "옵치 공식도 저점매수한 곳 ㄷㄷ",
-      "player": "Official"
-    },
-    {
-      "id": "XpMwS1Q9d9Q",
-      "title": "닌텐도 스위치2 오버워치, 드디어 60프레임 지원 업데이트? 직접 해봤습니다! (닌텐도 스위치 2 오버워치 플레이)",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "qbkhTmCayos",
+      "title": "#메르시 #최고의플레이 #shorts",
+      "player": "Trending"
+    },
+    {
+      "id": "_SKgJ6RtF7g",
+      "title": "주인장은 SR이 좋아 #배틀그라운드",
+      "player": "Trending"
+    },
     {
       "id": "t2J98rQLAiw",
       "title": "오버워치2 이정도면 선방이지 뭐 ㅋㅋ",
@@ -80,16 +90,6 @@
     {
       "id": "u_CxGIorRvI",
       "title": "각폭 우수사례 #overwatch",
-      "player": "Trending"
-    },
-    {
-      "id": "PmNccltuBBs",
-      "title": "오버워치2 리퍼궁은 덤으로 끊어주는 오리사",
-      "player": "Trending"
-    },
-    {
-      "id": "AYbY8pPHKQ0",
-      "title": "AI의 시대가 도래했다 #배틀그라운드",
       "player": "Trending"
     }
   ]
