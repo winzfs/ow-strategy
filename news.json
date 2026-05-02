@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-01 12:53",
+  "lastUpdated": "2026-05-02 01:47",
   "pro": [
     {
       "id": "_cHeDTO8ZvI",
@@ -24,8 +24,8 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "alICnv0SwcA",
-      "title": "마우가 시위 전조증상 모음",
+      "id": "KXY18T-YTm4",
+      "title": "티어리스트 까보자, 마우가 어딨냐?",
       "player": "아이치 (Ichi)"
     }
   ],
@@ -41,16 +41,6 @@
       "player": "Official"
     },
     {
-      "id": "uIllicTnrxo",
-      "title": "미리 오버워치 5를 즐기는 탱커 | 장문철tv 709화",
-      "player": "Official"
-    },
-    {
-      "id": "ollCo2pem9o",
-      "title": "희상의 폼이 심상치 않습니다...기대해봐도 되나요?? | 2026 오버워치 OWCS STAGE1 WEEK5 DAY2 CR vs RONG",
-      "player": "Official"
-    },
-    {
       "id": "Fpocj7bYHJc",
       "title": "아니 그니까 트레이서가 말이 안된다니까요?? | 2026 오버워치 OWCS STAGE1 WEEK5 DAY1 ZETA vs RONG",
       "player": "Official"
@@ -59,9 +49,29 @@
       "id": "zgqe10eAtQU",
       "title": "모르면 뒤쳐지는 오버워치 시즌2 패치 영웅 총정리 | 공식 통계 분석",
       "player": "Official"
+    },
+    {
+      "id": "NyCV4hQKLLo",
+      "title": "오버워치 교육해준다더니 또 현질 유도하는 이지상 ㅋㅋㅋ",
+      "player": "Official"
+    },
+    {
+      "id": "4jAtNhV9pYA",
+      "title": "5단 버프된 신캐 시에라 근황 ㄷㄷ  [오버워치]",
+      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "icsqciM_MXc",
+      "title": "2026 5 2 오버워치 하이라이트",
+      "player": "Trending"
+    },
+    {
+      "id": "wK0TytdZhQA",
+      "title": "오버워치2 버티기",
+      "player": "Trending"
+    },
     {
       "id": "RjmzQ_P8e3k",
       "title": "너네팀에 스파이 있다 ㅋ #overwatch2 #ow2 #오버워치하이라이트 #리퍼 #오버워치2",
@@ -80,16 +90,6 @@
     {
       "id": "10Sy8uS1dBI",
       "title": "에임 예측 미쳤다 ㄷㄷ#오버워치 #오버워치2  #쇼츠 #게임쇼츠 #에임 #예측샷 #하이라이트 #밍스 #FPS #오버워치하이라이트 #캐리 #게임클립 #shorts",
-      "player": "Trending"
-    },
-    {
-      "id": "EU4T7KKUEDM",
-      "title": "&#39;증오의 심판&#39; 하이라이트 정리 #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "2eNg7BgYhPs",
-      "title": "살벌한 자리야 본능적 쥐쉐키 모드 #shorts",
       "player": "Trending"
     }
   ]
