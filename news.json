@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-07 13:26",
+  "lastUpdated": "2026-05-08 01:59",
   "pro": [
     {
       "id": "jNgt70tvHHY",
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "p3LskCLQld4",
-      "title": "탱님.. 볼은 마우가를 못이겨요.. ㅣ이번 시즌 최고 피해자..",
+      "id": "vLPslAvkYlI",
+      "title": "서브메인은 가라, 옵치 새로운 역할 갈드컵 등장",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "EOrKTrHHoms",
+      "title": "What&#39;s Coming in Midseason? - Overwatch Anniversary, New Mythic, Fortnite Collab, &amp; More?",
+      "player": "Official"
+    },
     {
       "id": "mI0nf7l7sRQ",
       "title": "힐러 조합이 엉망이면 생기는 일 | 장문철tv 717화",
@@ -46,11 +51,6 @@
       "player": "Official"
     },
     {
-      "id": "vmNDeB2ad2I",
-      "title": "오버워치 탱커 노조 가입 하겠습니다..",
-      "player": "Official"
-    },
-    {
       "id": "Ynoj5ULvvNA",
       "title": "New Mercy, D.va, Tracer Esports Skins - Overwatch Shop Update",
       "player": "Official"
@@ -62,6 +62,16 @@
     }
   ],
   "trending": [
+    {
+      "id": "Huy3zSguWh8",
+      "title": "The mech legs at the start? 😱 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "O5djGLFNXiM",
+      "title": "이맛에 이 맛집 찾아가죠~ #오버워치2 #오버워치 #오버워치하이라이트 #하이라이트 #게임방송 #게임 #오버워치클립 #옵치 #옵치2 #팟지",
+      "player": "Trending"
+    },
     {
       "id": "iVlDQXLart4",
       "title": "오버워치2 힐이빵빵해",
@@ -80,16 +90,6 @@
     {
       "id": "_b1gi_SvOFM",
       "title": "라인하르트 경쟁전 에임핵",
-      "player": "Trending"
-    },
-    {
-      "id": "P5FzUqUZMh0",
-      "title": "새로운 제국｜2026 OWCS 코리아 스테이지1 하이라이트",
-      "player": "Trending"
-    },
-    {
-      "id": "xv6u-HtVhf4",
-      "title": "오버워치2 젠야타 하이라이트 by기아없이는못살아",
       "player": "Trending"
     }
   ]
