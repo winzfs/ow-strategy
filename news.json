@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-11 14:24",
+  "lastUpdated": "2026-05-12 01:59",
   "pro": [
     {
       "id": "2rV1UM4jvs4",
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "UR_dCUGekzA",
-      "title": "연승 신기록의 제타 VS 리빌링 라쿤.. 이 메타에 어떻게 풀세트를? ㅣ아시아 결승",
+      "id": "R_Sv94Fq_kE",
+      "title": "라쿤이 보여준 26년식 옵치 날빌",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "q56G_JlM4xU",
+      "title": "사퍼 공식",
+      "player": "Official"
+    },
     {
       "id": "7pk8zvaUKAA",
       "title": "Overwatch 10th Anniversary Event Revealed! - New Skins, Loot Boxes, &amp; More",
@@ -46,11 +51,6 @@
       "player": "Official"
     },
     {
-      "id": "B7DDuyc6aPg",
-      "title": "[2026.05.08 / 끝을 보기위해 그들이 모였다 (R.E.P.O + 오버워치2)] - 엘피스 루디",
-      "player": "Official"
-    },
-    {
       "id": "42wxFXHI1WA",
       "title": "제트캣팩 첫 플레이",
       "player": "Official"
@@ -63,6 +63,16 @@
   ],
   "trending": [
     {
+      "id": "S8_BjARWD1o",
+      "title": "소전 재밌다!",
+      "player": "Trending"
+    },
+    {
+      "id": "soOeu3GjdhE",
+      "title": "촬영 후 남은 벤데타 제작진이 맛있게 먹었습니다 #정커퀸 #오버워치2 #오버워치 #overwatch2 #정커퀸 #마우가 #하이라이트 #레전드 #모음 #카운터 #뽀록 #이터널리턴",
+      "player": "Trending"
+    },
+    {
       "id": "gT01mGMPzCQ",
       "title": "오버워치2 망치 나가신다!",
       "player": "Trending"
@@ -73,11 +83,6 @@
       "player": "Trending"
     },
     {
-      "id": "MsKtVuspCHg",
-      "title": "남자의 심장을 끓게하는 안란의 정신 #shorts",
-      "player": "Trending"
-    },
-    {
       "id": "M_ZWurcw4Xk",
       "title": "오버워치 시그마 강착 맞추기 #오버워치 #하이라이트 #시그마 #shorts",
       "player": "Trending"
@@ -85,11 +90,6 @@
     {
       "id": "3M8tb-3Ixf0",
       "title": "사람들이 “얼마나 망했길래?” 하고 눌러봄.#오버워치 #엠레 #최고의플레이 #쇼츠 #오버워치2 #하이라이트 #shorts",
-      "player": "Trending"
-    },
-    {
-      "id": "zKdLRP0Kj9g",
-      "title": "분명 팀원을 땡겼지만 죽는 해외 서버에 납치 당한 라이프위버 [오버워치]",
       "player": "Trending"
     }
   ]
