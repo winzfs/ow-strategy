@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-12 13:51",
+  "lastUpdated": "2026-05-13 02:03",
   "pro": [
     {
       "id": "LO0AZUWmKYw",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "4Td1VL6U9rA",
-      "title": "아나의 신도 놀란 수류탄 특전 활용",
+      "id": "zTj_NSbiXlc",
+      "title": "오버워치에서 핑을 무조건 써야 되는 이유",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,20 +19,25 @@
   ],
   "streamer": [
     {
-      "id": "g4O4fdM2p5M",
-      "title": "마우가는 이렇게 하는겁니다",
+      "id": "6gCmCVvP2ZM",
+      "title": "대격변이 일어날지도 모르는 오버워치 미드시즌 패치...다이브 메타 관짝 선언??",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "-DOFNJmZ7dI",
-      "title": "33을 잇는 그 1티어조합 \"냥바스\". 경쟁전에서 통할까?",
+      "id": "MaVGO_J6Iwg",
+      "title": "최악의 밸패, 밴율 데이터 분석, 관전기능추가ㅣ26:2 미드시즌 총정리",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
     {
-      "id": "LgNrrAsFqVQ",
-      "title": "닌텐도 스위치2 콘솔 가격 10%인상과 오버워치 10주년 이벤트",
+      "id": "1intaeLlSCM",
+      "title": "-ALL NEW SKINS- Overwatch 10th Anniversary Update! - Bunny Skins, Ana Mythic, &amp; MORE!",
+      "player": "Official"
+    },
+    {
+      "id": "vOeBL7ZuJKY",
+      "title": "뉴비라면 꼭 봐야할 영웅 설명 - 탱커편(1) | 옵치토크쇼",
       "player": "Official"
     },
     {
@@ -54,14 +59,24 @@
       "id": "00zEq78t9zI",
       "title": "대회 메타픽은 메인탱 vs 서브탱 ? | 옵치토크쇼 CR vs FLC",
       "player": "Official"
-    },
-    {
-      "id": "9-UyUEyfZJU",
-      "title": "-New Skins- Revealed for Overwatch Midseason + 10th Anniversary!",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "nBzuUUGL0eE",
+      "title": "오늘 새로 추가된 하이라이트와 감정 표현 #shorts #overwatch",
+      "player": "Trending"
+    },
+    {
+      "id": "Z_4xTZZCIPI",
+      "title": "포타리 오버워치2 하이라이트 [26.05.10]",
+      "player": "Trending"
+    },
+    {
+      "id": "jOxwUKTZi38",
+      "title": "마우가랑 시너지 좋은 딜러",
+      "player": "Trending"
+    },
     {
       "id": "wRsux39lgIk",
       "title": "오버워치2 막 들어온다 막자!",
@@ -75,21 +90,6 @@
     {
       "id": "zsjpXHOt0Po",
       "title": "바나나 정신 #오버워치 #오버워치 #게임 #웃긴영상 #하이라이트 #옵치쇼츠 #옵치2 #윈스턴 #궁극기 #매드무비",
-      "player": "Trending"
-    },
-    {
-      "id": "HOXOLFhHCRk",
-      "title": "맥장군 쪼낙 경쟁전 플레이 하이라이트 #쪼낙 #jjonak",
-      "player": "Trending"
-    },
-    {
-      "id": "Wz2vYoHwFfs",
-      "title": "팟지 35",
-      "player": "Trending"
-    },
-    {
-      "id": "LTQ7ykEZdq0",
-      "title": "#gaming #games #gameplay #overwatch2 #오버워치2 #오버워치하이라이트",
       "player": "Trending"
     }
   ]
