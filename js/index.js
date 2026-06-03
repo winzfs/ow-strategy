@@ -19,7 +19,14 @@ import {
   closeParty,
   watchParties,
 } from './party.js';
-import { getProfile, getAverageRating, getPublicBattleTagName, saveProfile, rateUser } from './profile.js';
+import {
+  getProfile,
+  getAverageRating,
+  getPublicBattleTagName,
+  saveProfile,
+  rateUser,
+  hasRatedUser,
+} from './profile.js';
 import {
   getSentRequestPostIds,
   hasPendingIncomingMatch,
@@ -354,9 +361,7 @@ function createPartyCard(party) {
   const desc = createTextElement('p', party.desc || '내용 없음', 'party-card-desc');
 
   const actions = document.createElement('div');
-  actions.style.display = 'flex';
-  actions.style.gap = '8px';
-  actions.style.flexWrap = 'wrap';
+  actions.className = 'party-card-actions';
 
   if (state.user?.uid === party.uid) {
     const closeButton = document.createElement('button');
@@ -450,12 +455,8 @@ function renderFilters() {
   });
 }
 
-function createRatingRow(targetUid, label) {
-  const row = document.createElement('div');
-  row.className = 'rating-row';
-
-  const title = createTextElement('span', label || '상대 평가', 'status-pill');
-  row.append(title);
+function renderRatingButtons(row, targetUid, matchId) {
+  row.replaceChildren();
 
   for (let score = 1; score <= 5; score += 1) {
     const button = document.createElement('button');
@@ -465,16 +466,42 @@ function createRatingRow(targetUid, label) {
     button.title = `${score}점`;
     button.addEventListener('click', async () => {
       try {
-        await rateUser(targetUid, score);
+        await rateUser(targetUid, score, { matchId });
         showToast(`${score}점 평가를 남겼습니다.`, 'success');
         row.replaceChildren(createTextElement('span', '평가 완료', 'status-pill'));
       } catch (error) {
         console.error('[rating:submit]', error);
-        showToast('평가 저장에 실패했습니다.', 'error');
+        showToast(error.message || '평가 저장에 실패했습니다.', 'error');
       }
     });
     row.append(button);
   }
+}
+
+function createRatingRow(targetUid, label, matchId) {
+  const row = document.createElement('div');
+  row.className = 'rating-row';
+  const ratingContextId = matchId || 'global';
+
+  row.append(createTextElement('span', label || '상대 평가', 'status-pill'));
+  const status = createTextElement('span', '평가 여부 확인 중...', 'request-meta');
+  row.append(status);
+
+  hasRatedUser(targetUid, { matchId: ratingContextId })
+    .then((alreadyRated) => {
+      if (alreadyRated) {
+        row.replaceChildren(createTextElement('span', '평가 완료', 'status-pill'));
+        return;
+      }
+
+      row.replaceChildren(createTextElement('span', label || '상대 평가', 'status-pill'));
+      renderRatingButtons(row, targetUid, ratingContextId);
+    })
+    .catch((error) => {
+      console.error('[rating:check]', error);
+      row.replaceChildren(createTextElement('span', label || '상대 평가', 'status-pill'));
+      renderRatingButtons(row, targetUid, ratingContextId);
+    });
 
   return row;
 }
@@ -491,9 +518,7 @@ function createAcceptedMatchCard(match) {
   const body = createTextElement('p', `${otherBtag || '상대'} 님과 매칭되었습니다. 배틀태그를 복사해서 게임에서 초대해보세요.`, 'request-meta');
 
   const actions = document.createElement('div');
-  actions.style.display = 'flex';
-  actions.style.gap = '8px';
-  actions.style.flexWrap = 'wrap';
+  actions.className = 'match-card-actions';
 
   const copyButton = document.createElement('button');
   copyButton.className = 'btn btn-primary';
@@ -515,7 +540,7 @@ function createAcceptedMatchCard(match) {
   removeButton.addEventListener('click', () => removeMatch(match.id));
 
   actions.append(copyButton, removeButton);
-  card.append(title, body, actions, createRatingRow(otherUid, `${getPublicBattleTagName(otherBtag)} 평가`));
+  card.append(title, body, actions, createRatingRow(otherUid, `${getPublicBattleTagName(otherBtag)} 평가`, match.id));
   return card;
 }
 
@@ -534,7 +559,6 @@ function renderNotifications() {
   const related = getRelatedMatches();
   const incoming = related.filter((match) => match.toUid === state.user.uid);
   const accepted = related.filter((match) => match.status === 'accepted');
-  const pendingIncoming = incoming.filter((match) => match.status === 'pending');
   const hasNew = hasPendingIncomingMatch(related.map((match) => ({ data: () => match })), state.user.uid) || accepted.length > 0;
 
   const navBadge = qs('#nav-new-badge');
@@ -562,9 +586,7 @@ function renderNotifications() {
     const meta = createTextElement('p', `${match.reqPos || ''} / ${match.reqTier || ''} ${match.reqTierNum || ''} / 상태: ${match.status}`, 'request-meta');
 
     const actions = document.createElement('div');
-    actions.style.display = 'flex';
-    actions.style.gap = '8px';
-    actions.style.flexWrap = 'wrap';
+    actions.className = 'request-card-actions';
 
     if (match.status === 'pending') {
       const acceptButton = document.createElement('button');
