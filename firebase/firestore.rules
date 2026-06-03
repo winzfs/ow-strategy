@@ -1,0 +1,90 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // TODO: Replace email-based admin checks with custom claims or /admins/{uid} docs.
+    function isAdmin() {
+      return signedIn() && request.auth.token.email in ['jazzhjm@gmail.com'];
+    }
+
+    function verifiedEmail() {
+      return signedIn() && request.auth.token.email_verified == true;
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /parties/{partyId} {
+      allow read: if true;
+      allow create: if verifiedEmail()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.deleted == false;
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.uid == request.auth.uid)
+        || (signedIn() && request.resource.data.diff(resource.data).changedKeys().hasOnly(['members', 'updatedAt']));
+      allow delete: if isAdmin();
+    }
+
+    match /matches/{matchId} {
+      allow read: if signedIn()
+        && (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid || isAdmin());
+      allow create: if verifiedEmail()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if signedIn()
+        && (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid || isAdmin());
+      allow delete: if signedIn()
+        && (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid || isAdmin());
+    }
+
+    match /community/{postId} {
+      allow read: if true;
+      allow create: if verifiedEmail()
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.uid == request.auth.uid)
+        || (signedIn() && request.resource.data.diff(resource.data).changedKeys().hasOnly(['likes', 'updatedAt']));
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if verifiedEmail()
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    match /presences/{presenceId} {
+      allow read: if true;
+      allow create, update: if signedIn() || presenceId.matches('guest_.*');
+      allow delete: if isAdmin();
+    }
+
+    match /ratings/{ratingId} {
+      allow read: if true;
+      allow create: if verifiedEmail()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.score >= 1
+        && request.resource.data.score <= 5;
+      allow update, delete: if isAdmin();
+    }
+
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if verifiedEmail()
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+  }
+}
