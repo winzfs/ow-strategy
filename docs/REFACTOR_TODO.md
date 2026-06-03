@@ -66,9 +66,14 @@
 
 - [x] 파티 수락 트랜잭션 구조 추가
 - [x] 중복 신청 방지용 matchId 구조 추가
+- [x] 신청 생성 시 기존 신청/파티 상태를 트랜잭션으로 검증
+- [x] pending/accepted 중복 신청 방지
+- [x] 자기 파티/종료/만료/마감 파티 신청 방지
 - [x] 평점 트랜잭션 추가
 - [x] `ratings/{fromUid_toUid_matchId}` 구조 추가
 - [x] 평점 중복 방지 로직 추가
+- [x] 매칭 성공 카드에서 `match.id`를 평점 저장에 전달
+- [x] 이미 평가한 매칭은 평가 버튼 대신 `평가 완료` 표시
 - [x] `firebase/firestore.rules` 초안 작성
 - [x] 평점 Rules 강화
 
@@ -140,12 +145,12 @@ index.js
 현재 데이터 레이어는 `ratings/{fromUid_toUid_matchId}` 중복 방지 구조를 지원합니다.
 화면 쪽에서 `matchId` 전달이 항상 정확한지 검증해야 합니다.
 
-- [ ] `createRatingRow(targetUid, label, matchId)` 형태로 UI 함수 정리
-- [ ] 매칭 성공 카드에서 `match.id`가 정확히 전달되는지 확인
-- [ ] 이미 평가한 매칭은 평가 버튼 대신 `평가 완료` 표시
-- [ ] `hasRatedUser(targetUid, { matchId })`를 화면 초기 렌더링에 적용
+- [x] `createRatingRow(targetUid, label, matchId)` 형태로 UI 함수 정리
+- [x] 매칭 성공 카드에서 `match.id`가 정확히 전달되는지 확인
+- [x] 이미 평가한 매칭은 평가 버튼 대신 `평가 완료` 표시
+- [x] `hasRatedUser(targetUid, { matchId })`를 화면 초기 렌더링에 적용
 - [ ] 평점 저장 성공 후 `users/{uid}` 평균이 즉시 갱신되는지 확인
-- [ ] 본인 평가 방지 UI 처리
+- [x] 본인 평가 방지 UI 처리: `rateUser()`의 본인 평가 차단에 의존하며, 실패 시 안내 표시
 
 ---
 
@@ -334,12 +339,11 @@ discordInviteUrl: ''
 ## 6. 다음 작업 추천 순서
 
 1. 신고 기능 추가
-2. 평점 UI에서 matchId 전달 검증
-3. `index.js`를 UI 모듈들로 추가 분리
-4. Firestore Rules를 실제 적용 가능한 수준으로 세분화
-5. 인라인 스타일 제거
-6. 디스코드 CTA 실제 링크 연결
-7. 브라우저 테스트 후 자동배포 재활성화 판단
+2. `index.js`를 UI 모듈들로 추가 분리
+3. Firestore Rules를 실제 적용 가능한 수준으로 세분화
+4. 인라인 스타일 제거
+5. 디스코드 CTA 실제 링크 연결
+6. 브라우저 테스트 후 자동배포 재활성화 판단
 
 ---
 
@@ -349,4 +353,5 @@ discordInviteUrl: ''
 - `firebase/firestore.rules`는 저장소에만 있는 초안일 수 있음. 실제 Firebase 프로젝트에 적용 여부는 별도 확인 필요.
 - `js/index.js`가 다시 커지고 있으므로 다음 기능 추가 전 분리 권장.
 - 신고 기능은 운영 서비스 안정성 측면에서 다음 우선 작업으로 권장.
-- 평점 중복 방지 구조는 추가됐지만, 화면에서 `matchId`가 항상 정확히 들어가는지 확인 필요.
+- 신청 생성은 트랜잭션으로 기존 신청/파티 상태를 검증하도록 보강됨.
+- 평점 UI는 매칭별 `match.id`를 전달하고, 이미 평가한 매칭은 `평가 완료`로 표시함.
