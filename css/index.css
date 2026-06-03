@@ -1,0 +1,17 @@
+/*
+ * Index page entry stylesheet
+ *
+ * This file is prepared for the next phase where index.html links external CSS.
+ */
+
+@import url('./variables.css');
+@import url('./common.css');
+@import url('./layout.css');
+@import url('./party.css');
+
+/* Hide legacy debug UI in production once this stylesheet is connected. */
+#debug-console,
+#debug-console-toggle,
+button[data-debug-toggle='true'] {
+  display: none !important;
+}
