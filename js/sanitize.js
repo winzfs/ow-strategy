@@ -19,6 +19,15 @@ export function stripControlChars(value) {
   return String(value ?? '').replace(/[\u0000-\u001F\u007F]/g, '');
 }
 
+export function stripHTMLUnsafeChars(value) {
+  return String(value ?? '')
+    .replaceAll('<', '')
+    .replaceAll('>', '')
+    .replaceAll('&', '')
+    .replaceAll('"', '')
+    .replaceAll("'", '');
+}
+
 export function normalizeText(value, options = {}) {
   const { maxLength = 500, trim = true } = options;
   const text = stripControlChars(value);
@@ -27,7 +36,7 @@ export function normalizeText(value, options = {}) {
 }
 
 export function normalizeBattleTag(value) {
-  return normalizeText(value, { maxLength: 40 });
+  return stripHTMLUnsafeChars(normalizeText(value, { maxLength: 40 }));
 }
 
 export function isValidBattleTag(value) {
