@@ -194,26 +194,91 @@ body {
   box-shadow: 0 8px 18px rgba(220, 38, 38, 0.16);
 }
 
+/* Search filter panel: compact commercial filter UI */
 .party-filter-panel {
-  padding: 18px;
+  padding: 16px 16px 14px;
+  border-radius: 20px !important;
 }
 
 .party-filter-title {
-  margin-bottom: 14px;
+  display: flex;
+  min-height: 36px;
+  flex-direction: column;
+  justify-content: center;
+  border-left: 0 !important;
+  border-bottom: 1px solid #eee4d8;
+  margin: 0 0 14px !important;
+  padding: 0 0 12px !important;
+}
+
+.party-filter-title strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #201812;
+  font-size: 18px !important;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.party-filter-title strong::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 22px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f28a00, #ffb04a);
+}
+
+.party-filter-title small {
+  margin: 5px 0 0 16px !important;
+  color: #6b5c50 !important;
+  font-size: 12px !important;
+  font-weight: 750;
+}
+
+.filter-section {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  margin: 0;
+}
+
+.filter-section + .filter-section {
+  margin-top: 12px !important;
+}
+
+.filter-section .form-label {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  color: #2a2019;
+  font-size: 13px;
+  font-weight: 950;
+  margin: 0;
 }
 
 .filter-divider {
-  margin: 14px 0;
+  margin: 12px 0 !important;
+  background: #eee4d8 !important;
+}
+
+.filter-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
 }
 
 .filter-tag {
-  min-height: 36px;
+  min-height: 34px;
   border-color: #ded2c3;
   background: #fffdf9;
   color: #3c3027;
   box-shadow: none;
   font-size: 12.5px;
-  padding: 6px 11px;
+  font-weight: 900;
+  padding: 6px 10px;
 }
 
 .filter-tag:hover:not(.active) {
@@ -230,8 +295,22 @@ body {
 
 .filter-icon,
 .filter-tag img {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
+}
+
+.party-filter-panel #btn-filter-reset {
+  min-height: 38px;
+  margin-top: 13px;
+  border-style: dashed;
+  background: #fffaf3;
+  color: #5f5146;
+  box-shadow: none;
+}
+
+.party-filter-panel #btn-filter-reset:hover {
+  border-color: rgba(242, 138, 0, 0.45);
+  color: #201812;
 }
 
 .party-card {
@@ -376,7 +455,20 @@ body {
     width: 100%;
   }
 
+  .filter-section {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .filter-section .form-label {
+    min-height: auto;
+  }
+
   .filter-chip-group {
     gap: 7px;
+  }
+
+  .filter-tag {
+    flex: 0 0 auto;
   }
 }
