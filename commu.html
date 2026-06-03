@@ -3,262 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오버워치 허브 커뮤니티 - 통합 최종본</title>
-    <style>
-        :root { --accent: #ff9c00; --bg-dark: #111; }
-        body { background: var(--bg-dark); color: white; font-family: 'Pretendard', sans-serif; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
-        
-        /* 네비게이션 */
-        nav { background: #000; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
-        .nav-left { display: flex; gap: 20px; align-items: center; }
-        .nav-tabs { display: flex; gap: 20px; align-items: center; }
-        .nav-tabs a { color:#888; text-decoration: none; font-weight: 600; font-size: 14px; }
-        
-        .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
-        .box { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; position: relative; }
-        
-        /* 버튼 및 입력창 */
-        .btn-main { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
-        .btn-sub { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; }
-        input, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; font-family: inherit; }
-        
-        /* 사이드바 (마이페이지) */
-        #sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100%; background: #1a1a1a; z-index: 1000; transition: 0.3s; box-shadow: 5px 0 15px rgba(0,0,0,0.5); padding: 20px; box-sizing: border-box; }
-        #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; }
-        
-        /* 마이페이지 아코디언 스타일 */
-        .my-posts-header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            cursor: pointer; padding: 10px 0; border-bottom: 1px solid #333; margin-top: 10px;
-        }
-        .my-posts-header:hover { color: var(--accent); }
-        #my-posts-list { 
-            overflow-y: auto; max-height: calc(100% - 280px); 
-            margin-top: 10px; display: none; /* 처음엔 숨김 처리 */
-        }
-
-        .post-info { font-size: 12px; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .comment-item { margin-bottom: 8px; padding: 8px; background: #111; border-radius: 6px; font-size: 13px; border-left: 3px solid var(--accent); }
-    </style>
+    <title>오버워치 허브 커뮤니티</title>
+    <link rel="stylesheet" href="css/commu.css">
 </head>
 <body>
-
-<nav>
-    <div class="nav-left">
-        <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">☰</button>
-        <div class="nav-tabs">
-            <a href="index.html">파티찾기</a>
-            <div style="color:var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 2px;">커뮤니티</div>
+    <nav class="app-nav">
+        <div class="nav-left">
+            <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="마이페이지 열기">☰</button>
+            <div class="nav-tabs">
+                <a class="nav-tab" href="index.html">파티찾기</a>
+                <span class="nav-tab is-active">커뮤니티</span>
+            </div>
         </div>
-    </div>
-    <div id="auth-ui"></div>
-</nav>
+        <div id="auth-ui"></div>
+    </nav>
 
-<div id="sidebar">
-    <h3 style="color:var(--accent);">MY PAGE</h3>
-    <div id="my-info" style="margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:15px;">
-        <h2 id="my-btag-display" style="font-size:16px;">-</h2>
-        <div id="sidebar-logout-container"></div>
-    </div>
-    
-    <div class="my-posts-header" onclick="toggleMyPosts()">
-        <h4 style="font-size:14px; color:#888; margin:0;">📝 내가 쓴 게시글</h4>
-        <span id="my-posts-arrow" style="font-size:10px;">▶</span>
-    </div>
-    <div id="my-posts-list"></div>
-</div>
-<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <aside id="sidebar" class="sidebar-panel" aria-label="마이페이지">
+        <div class="card" style="margin:0; border-radius:0; border-width:0 0 1px 0;">
+            <h3 style="color:var(--color-accent); margin-top:0;">MY PAGE</h3>
+            <h2 id="my-btag-display" style="font-size:16px; margin-bottom:12px;">-</h2>
+            <div id="sidebar-logout-container"></div>
+        </div>
 
-<div class="container">
-    <div class="box">
-        <h4 style="color:var(--accent); margin:0 0 10px 0;">💬 자유게시판</h4>
-        <input type="text" id="comm-title" placeholder="제목">
-        <textarea id="comm-content" placeholder="오버워치 이야기를 나누어보세요!" rows="4"></textarea>
-        <button class="btn-main" id="btn-comm-post">글 등록하기</button>
-    </div>
-    <div id="comm-list"></div>
-</div>
+        <div class="sidebar-menu">
+            <button id="my-posts-toggle" class="sidebar-menu-item" type="button" style="width:calc(100% - 24px); border:0; text-align:left;">
+                <span>📝 내가 쓴 게시글</span>
+                <span id="my-posts-arrow" style="font-size:10px;">▶</span>
+            </button>
+            <div id="my-posts-list" class="my-posts-list" hidden></div>
+        </div>
+    </aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDoc, getDocs, deleteDoc, updateDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <main class="container">
+        <section class="community-write-panel">
+            <h4 style="color:var(--color-accent); margin:0 0 10px 0;">💬 자유게시판</h4>
+            <label class="sr-only" for="comm-title">제목</label>
+            <input class="form-input" type="text" id="comm-title" placeholder="제목" maxlength="80">
+            <label class="sr-only" for="comm-content">내용</label>
+            <textarea class="form-textarea" id="comm-content" placeholder="오버워치 이야기를 나누어보세요!" rows="4" maxlength="2000"></textarea>
+            <button class="btn btn-primary btn-block" id="btn-comm-post" type="button">글 등록하기</button>
+        </section>
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyA96CFg3o1TpD5lu-0rYMlIp16Ev8URDuw", 
-        authDomain: "ow-party-97936.firebaseapp.com", 
-        projectId: "ow-party-97936", 
-        storageBucket: "ow-party-97936.firebasestorage.app", 
-        messagingSenderId: "15782204013", 
-        appId: "1:15782204013:web:5c74ef2e603c311fc82564" 
-    };
-    
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+        <section id="comm-list" class="community-list" aria-live="polite"></section>
+    </main>
 
-    const ADMIN_EMAILS = ["jazzhjm@gmail.com", "jazzhjm@gmaol.com"];
-    let myBtag = "익명";
-    let openCommentId = null;
-
-    onAuthStateChanged(auth, async (user) => {
-        const authUI = document.getElementById('auth-ui');
-        const sidebarLogout = document.getElementById('sidebar-logout-container');
-        if (user) {
-            const userSnap = await getDoc(doc(db, "users", user.uid));
-            myBtag = userSnap.exists() ? userSnap.data().btag : "익명 요원";
-            document.getElementById('my-btag-display').innerText = myBtag;
-            authUI.innerHTML = `<button onclick="auth.signOut().then(()=>location.reload())" class="btn-sub">로그아웃</button>`;
-            sidebarLogout.innerHTML = `<button class="btn-sub" style="width:100%;" onclick="auth.signOut().then(()=>location.reload())">로그아웃</button>`;
-            loadMyPosts();
-        } else {
-            authUI.innerHTML = `<button onclick="location.href='index.html'" class="btn-sub">로그인</button>`;
-            sidebarLogout.innerHTML = `<button class="btn-main" onclick="location.href='index.html'">로그인</button>`;
-        }
-        startListing();
-    });
-
-    // 1. 게시글 실시간 리스팅
-    function startListing() {
-        const q = query(collection(db, "community"), orderBy("createdAt", "desc"));
-        onSnapshot(q, (snap) => {
-            const list = document.getElementById('comm-list');
-            const user = auth.currentUser;
-            const isAdmin = user && ADMIN_EMAILS.includes(user.email);
-
-            list.innerHTML = snap.docs.map(docSnap => {
-                const d = docSnap.data();
-                const id = docSnap.id;
-                const likes = d.likes || [];
-                const isOpened = (openCommentId === id);
-                return `
-                    <div class="box" id="post-${id}">
-                        <div class="post-info">
-                            <span><b style="color:var(--accent)">${d.author}</b> • 방금 전</span>
-                            ${(user && user.uid === d.uid || isAdmin) ? `<button onclick="window.delPost('${id}')" style="background:none;border:none;color:#ff3c3c;cursor:pointer;font-size:11px;">삭제</button>` : ''}
-                        </div>
-                        <h4 style="margin:5px 0;">${d.title}</h4>
-                        <p style="font-size:14px;color:#ccc;white-space:pre-wrap;">${d.content}</p>
-                        <div style="display:flex; gap:18px; margin-top:15px; padding-top:15px; border-top:1px solid #222;">
-                            <span onclick="window.toggleLike('${id}', '${d.uid}')" style="cursor:pointer; font-size:13px; color:#666">🧡 추천 ${likes.length}</span>
-                            <span onclick="window.toggleComments('${id}')" style="cursor:pointer; font-size:13px; color:#666;">💬 댓글 ${d.commentCount || 0}</span>
-                        </div>
-                        <div id="cmt-sec-${id}" style="display:${isOpened ? 'block' : 'none'}; margin-top:15px; background:#111; padding:12px; border-radius:10px;">
-                            <div id="cmt-list-${id}"></div>
-                            <div style="display:flex; gap:8px; margin-top:10px;">
-                                <input type="text" id="cmt-in-${id}" placeholder="댓글 입력..." style="margin:0; font-size:12px; height:35px;">
-                                <button onclick="window.addComment('${id}')" class="btn-main" style="width:65px; margin:0; height:35px; font-size:12px; padding:0;">등록</button>
-                            </div>
-                        </div>
-                    </div>`;
-            }).join('');
-            if(openCommentId) window.loadCommentList(openCommentId);
-        });
-    }
-
-    // 2. 내 글 목록 로드 (사이드바 - 통계 포함)
-    async function loadMyPosts() {
-        const user = auth.currentUser;
-        if(!user) return;
-        const list = document.getElementById('my-posts-list');
-        const q = query(collection(db, "community"), where("uid", "==", user.uid));
-        const snap = await getDocs(q);
-        const docs = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => b.createdAt - a.createdAt);
-        
-        list.innerHTML = docs.length ? docs.map(d => `
-            <div style="background:#222; padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px; cursor:pointer; border:1px solid #333;" onclick="location.href='#post-${d.id}'; toggleSidebar();">
-                <div style="font-weight:600; color:#eee; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.title}</div>
-                <div style="color:#666; font-size:10px; margin-top:4px;">🧡 ${d.likes?.length || 0}  💬 ${d.commentCount || 0}</div>
-            </div>`).join('') : "<p style='font-size:11px;color:#444;text-align:center;'>작성한 글이 없습니다.</p>";
-    }
-
-    // 3. 내 글 아코디언 토글 (처음엔 닫힘 상태에서 시작)
-    window.toggleMyPosts = () => {
-        const list = document.getElementById('my-posts-list');
-        const arrow = document.getElementById('my-posts-arrow');
-        if(list.style.display === 'none' || list.style.display === '') {
-            list.style.display = 'block';
-            arrow.innerText = '▼';
-        } else {
-            list.style.display = 'none';
-            arrow.innerText = '▶';
-        }
-    };
-
-    // 4. 사이드바 전체 토글
-    window.toggleSidebar = () => {
-        const sb = document.getElementById('sidebar');
-        const isOpen = sb.style.left === '0px';
-        sb.style.left = isOpen ? '-300px' : '0px';
-        document.getElementById('sidebar-overlay').style.display = isOpen ? 'none' : 'block';
-        if(!isOpen) loadMyPosts();
-    };
-
-    // 5. 댓글 목록 로딩 (상태 유지용)
-    window.loadCommentList = async (postId) => {
-        const cmtList = document.getElementById(`cmt-list-${postId}`);
-        if(!cmtList) return;
-        const q = query(collection(db, "comments"), where("postId", "==", postId));
-        const snap = await getDocs(q);
-        const docs = snap.docs.map(d => d.data()).sort((a,b) => a.createdAt - b.createdAt);
-        cmtList.innerHTML = docs.length ? docs.map(c => `<div class="comment-item"><b>${c.author}</b>: ${c.content}</div>`).join('') : "<p style='font-size:11px;color:#444;text-align:center;'>댓글이 없습니다.</p>";
-    };
-
-    // 6. 댓글창 토글
-    window.toggleComments = (id) => {
-        const sec = document.getElementById(`cmt-sec-${id}`);
-        if(sec.style.display === 'none') {
-            openCommentId = id;
-            sec.style.display = 'block';
-            window.loadCommentList(id);
-        } else {
-            openCommentId = null;
-            sec.style.display = 'none';
-        }
-    };
-
-    // 7. 댓글 등록 (게시글 통계 업데이트 포함)
-    window.addComment = async (id) => {
-        const user = auth.currentUser;
-        const input = document.getElementById(`cmt-in-${id}`);
-        if(!user || !input.value.trim()) return alert("내용을 입력해주세요.");
-        try {
-            await addDoc(collection(db, "comments"), { postId: id, uid: user.uid, author: myBtag.split('#')[0], content: input.value, createdAt: Date.now() });
-            const ref = doc(db, "community", id);
-            const snap = await getDoc(ref);
-            await updateDoc(ref, { commentCount: (snap.data().commentCount || 0) + 1 });
-            input.value = "";
-            window.loadCommentList(id);
-        } catch(e) { alert("댓글 등록 실패!"); }
-    };
-
-    // 8. 추천(좋아요) 토글
-    window.toggleLike = async (postId, authorUid) => {
-        const user = auth.currentUser;
-        if (!user) return alert("로그인 필요!");
-        if (user.uid === authorUid) return alert("본인 글은 추천할 수 없습니다.");
-        const ref = doc(db, "community", postId);
-        const snap = await getDoc(ref);
-        const likes = snap.data().likes || [];
-        await updateDoc(ref, { likes: likes.includes(user.uid) ? arrayRemove(user.uid) : arrayUnion(user.uid) });
-    };
-
-    // 9. 게시글 등록
-    document.getElementById('btn-comm-post').onclick = async () => {
-        const user = auth.currentUser;
-        const title = document.getElementById('comm-title').value.trim();
-        const content = document.getElementById('comm-content').value.trim();
-        if(!user || !title || !content) return alert("제목과 내용을 모두 입력하세요.");
-        try {
-            await addDoc(collection(db, "community"), { uid: user.uid, author: myBtag.split('#')[0], title, content, createdAt: Date.now(), likes: [], commentCount: 0 });
-            document.getElementById('comm-title').value = "";
-            document.getElementById('comm-content').value = "";
-            alert("게시글이 등록되었습니다.");
-        } catch(e) { alert("등록 실패!"); }
-    };
-
-    // 10. 게시글 삭제 (본인 혹은 관리자)
-    window.delPost = async (id) => { if(confirm("정말로 삭제하시겠습니까?")) await deleteDoc(doc(db, "community", id)); };
-</script>
+    <script type="module" src="js/commu.js"></script>
 </body>
 </html>
