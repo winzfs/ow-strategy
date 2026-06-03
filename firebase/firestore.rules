@@ -19,6 +19,23 @@ service cloud.firestore {
       return signedIn() && request.auth.token.email_verified == true;
     }
 
+    function hasOnlyAllowedRatingFields() {
+      return request.resource.data.keys().hasOnly(['fromUid', 'toUid', 'matchId', 'score', 'createdAt']);
+    }
+
+    function isValidRatingCreate(ratingId) {
+      return verifiedEmail()
+        && hasOnlyAllowedRatingFields()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.toUid is string
+        && request.resource.data.toUid != request.auth.uid
+        && request.resource.data.matchId is string
+        && request.resource.data.score is number
+        && request.resource.data.score >= 1
+        && request.resource.data.score <= 5
+        && ratingId == request.resource.data.fromUid + '_' + request.resource.data.toUid + '_' + request.resource.data.matchId;
+    }
+
     match /users/{userId} {
       allow read: if true;
       allow create, update: if isOwner(userId) || isAdmin();
@@ -73,10 +90,7 @@ service cloud.firestore {
 
     match /ratings/{ratingId} {
       allow read: if true;
-      allow create: if verifiedEmail()
-        && request.resource.data.fromUid == request.auth.uid
-        && request.resource.data.score >= 1
-        && request.resource.data.score <= 5;
+      allow create: if isValidRatingCreate(ratingId);
       allow update, delete: if isAdmin();
     }
 
