@@ -19,6 +19,10 @@ service cloud.firestore {
       return signedIn() && request.auth.token.email_verified == true;
     }
 
+    function changedOnly(fields) {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(fields);
+    }
+
     function hasOnlyAllowedRatingFields() {
       return request.resource.data.keys().hasOnly(['fromUid', 'toUid', 'matchId', 'score', 'createdAt']);
     }
@@ -36,9 +40,29 @@ service cloud.firestore {
         && ratingId == request.resource.data.fromUid + '_' + request.resource.data.toUid + '_' + request.resource.data.matchId;
     }
 
+    function isRatingAggregateCreate() {
+      return verifiedEmail()
+        && request.resource.data.keys().hasOnly(['rateCount', 'rateTotal', 'updatedAt'])
+        && request.resource.data.rateCount == 1
+        && request.resource.data.rateTotal is number
+        && request.resource.data.rateTotal >= 1
+        && request.resource.data.rateTotal <= 5;
+    }
+
+    function isRatingAggregateUpdate() {
+      return verifiedEmail()
+        && changedOnly(['rateCount', 'rateTotal', 'updatedAt'])
+        && request.resource.data.rateCount == resource.data.rateCount + 1
+        && request.resource.data.rateTotal is number
+        && resource.data.rateTotal is number
+        && request.resource.data.rateTotal >= resource.data.rateTotal + 1
+        && request.resource.data.rateTotal <= resource.data.rateTotal + 5;
+    }
+
     match /users/{userId} {
       allow read: if true;
-      allow create, update: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) || isAdmin() || isRatingAggregateCreate();
+      allow update: if isOwner(userId) || isAdmin() || isRatingAggregateUpdate();
       allow delete: if isAdmin();
     }
 
@@ -48,8 +72,7 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.deleted == false;
       allow update: if isAdmin()
-        || (signedIn() && resource.data.uid == request.auth.uid)
-        || (signedIn() && request.resource.data.diff(resource.data).changedKeys().hasOnly(['members', 'updatedAt']));
+        || (signedIn() && resource.data.uid == request.auth.uid);
       allow delete: if isAdmin();
     }
 
@@ -71,7 +94,9 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid;
       allow update: if isAdmin()
         || (signedIn() && resource.data.uid == request.auth.uid)
-        || (signedIn() && request.resource.data.diff(resource.data).changedKeys().hasOnly(['likes', 'updatedAt']));
+        || (signedIn() && changedOnly(['likes', 'updatedAt']))
+        || (signedIn() && changedOnly(['commentCount', 'updatedAt'])
+          && request.resource.data.commentCount == resource.data.commentCount + 1);
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
