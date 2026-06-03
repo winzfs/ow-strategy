@@ -2,6 +2,25 @@
 
 이 문서는 AI가 저장소를 다시 볼 때 바로 이어서 작업할 수 있도록 현재 구조와 남은 점검 항목을 정리한다.
 
+## 작업 배경
+
+이 저장소는 원래 `index owhub.html` 단일 파일에 화면, 스타일, Firebase 연동, 파티찾기 로직이 모두 들어가 있었다.
+현재 진행 중인 작업은 기존 HTML을 유지보수 가능한 구조로 리팩토링하는 것이다.
+
+목표 구조:
+
+- `index.html`: 화면 뼈대만 담당
+- `css/*`: 스타일 분리
+- `js/index.js`: 메인 페이지 컨트롤러
+- `js/party.js`: 파티 생성/신청/수락/종료
+- `js/profile.js`: 프로필/별점
+- `js/notification.js`: 알림/신청 상태
+- `js/sanitize.js`: 사용자 입력 정규화/보안 처리
+- `js/ui.js`: 공통 DOM/UI 헬퍼
+
+중요: `index owhub.html`은 구버전 원본 또는 레거시 참고 파일로 보고, 최신 작업 기준은 `index.html + css/* + js/*` 구조다.
+단, 리팩토링 누락 기능이 있을 수 있으므로 구버전 파일을 바로 삭제하지 말고 기능 대조 후 정리한다.
+
 ## 현재 확인한 최신 구조
 
 - `index.html`: OWHub 메인 화면. 파티찾기, 내 정보, 알림, 디스코드 CTA 진입점.
@@ -9,8 +28,10 @@
 - `js/index.js`: 메인 페이지 컨트롤러. 인증, 프로필, 파티 목록, 파티 생성, 신청/알림 UI를 연결.
 - `js/party.js`: 파티 생성, 신청, 수락, 종료 로직.
 - `js/profile.js`: 프로필 저장, 별점 평가 로직.
+- `js/notification.js`: 신청/알림 상태 관리.
 - `js/sanitize.js`: 사용자 입력 정규화 및 HTML escape 유틸.
-- `index owhub.html`: 구버전 단일 파일로 보임. 최신 구조와 혼동하지 말 것.
+- `js/ui.js`: 공통 UI/DOM 유틸.
+- `index owhub.html`: 구버전 단일 파일. 리팩토링 대조용으로만 참고.
 
 ## 이미 개선되어 있는 부분
 
@@ -19,6 +40,33 @@
 - `party.js`의 `acceptMatch()`는 `runTransaction()`으로 파티 수락 동시성 처리를 하고 있음.
 - `profile.js`의 `rateUser()`는 `ratings` 컬렉션과 transaction으로 중복 평가 방지를 하고 있음.
 - `createMatchRequest()`는 `user.uid + postId` 기반 고정 match id를 사용해 무한 중복 문서 생성을 어느 정도 막고 있음.
+
+## 리팩토링 대조 TODO
+
+### A. 구버전 기능 → 최신 구조 이식 여부 확인
+
+`index owhub.html`에 있던 기능이 최신 구조로 모두 옮겨졌는지 하나씩 대조한다.
+
+- [ ] 파티 모집 폼: 배틀태그, 포지션, 티어, 세부 티어, 최대 인원, 설명.
+- [ ] 파티 목록 렌더링: 파티장명, 별점, 생성 시간, 포지션, 티어, 인원, 설명, 신청/마감/종료 버튼.
+- [ ] 포지션/티어 다중 필터.
+- [ ] 파티 카드 안의 포지션/티어 클릭 시 필터 적용.
+- [ ] 내 정보: 배틀태그, 탱커/딜러/지원 티어 저장.
+- [ ] 알림: 받은 신청, 보낸 신청, 수락/거절/취소 흐름.
+- [ ] 파티 수락 후 members 추가.
+- [ ] 팀원 평가 UI와 평가 완료 상태.
+- [ ] 실시간 활동 지수/모집 중 파티 수 표시.
+- [ ] 디스코드 CTA 링크/상태 문구.
+- [ ] 모바일 사이드바/햄버거 메뉴.
+- [ ] SEO 메타 태그/OG 이미지/사이트 인증 태그.
+- [ ] footer 이용약관/개인정보 처리방침 링크.
+
+### B. 구버전에서 버려도 되는 기능/로직 표시
+
+- [ ] 실제 접속자 수처럼 보일 수 있는 부스트 로직은 제거하거나 `활동 지수` 표현으로만 유지.
+- [ ] 구버전 inline style 중 최신 CSS로 이미 대체된 것은 이식하지 않음.
+- [ ] 구버전 전역 `window.*` 함수는 최신 모듈 구조에서는 되도록 사용하지 않음.
+- [ ] 구버전 `innerHTML` 렌더링 패턴은 그대로 옮기지 말고 DOM 생성/textContent 방식으로 교체.
 
 ## TODO: 우선순위 높음
 
@@ -80,11 +128,11 @@
 - [ ] Firebase config는 public key이지만, secret이 들어가지 않았는지 재확인.
 - [ ] 관리자 이메일을 코드에 하드코딩하지 않고 config/rules와 일관되게 관리할 방법 검토.
 
-### 7. 구버전 파일 정리
+### 7. 레거시 파일 정리
 
-- [ ] `index owhub.html`이 실제 배포에 쓰이지 않는지 확인.
-- [ ] 안 쓰는 파일이면 `legacy/`로 이동하거나 삭제.
-- [ ] 남겨야 한다면 파일 상단에 `LEGACY - DO NOT EDIT` 주석 추가.
+- [ ] `index owhub.html`에서 최신 구조로 아직 안 옮겨진 기능이 있는지 대조.
+- [ ] 모두 이식 완료되면 `legacy/`로 이동하거나 삭제.
+- [ ] 남겨야 한다면 파일 상단에 `LEGACY - DO NOT EDIT / 최신 작업은 index.html + js/* 기준` 주석 추가.
 
 ### 8. 테스트 체크리스트 추가
 
@@ -97,7 +145,9 @@
 
 ## 다음 AI 작업 시작 지점
 
-1. `js/party.js`의 `createMatchRequest()`를 transaction 기반으로 바꾼다.
-2. `js/index.js`에서 `innerHTML` 사용 지점을 확인하고 사용자 입력값은 DOM 생성/textContent 방식으로 교체한다.
-3. Firestore rules 파일이 저장소에 있는지 찾고, 없으면 `firestore.rules` 초안을 만든다.
-4. `index owhub.html`이 구버전인지 최종 확인하고 정리한다.
+1. `index owhub.html`과 `index.html/js/index.js/js/party.js/js/profile.js/js/notification.js`를 기능 단위로 대조한다.
+2. 누락된 기능이 있으면 최신 모듈 구조에 맞춰 이식한다.
+3. `js/party.js`의 `createMatchRequest()`를 transaction 기반으로 바꾼다.
+4. `js/index.js`에서 `innerHTML` 사용 지점을 확인하고 사용자 입력값은 DOM 생성/textContent 방식으로 교체한다.
+5. Firestore rules 파일이 저장소에 있는지 찾고, 없으면 `firestore.rules` 초안을 만든다.
+6. 이식 완료 후 `index owhub.html`을 legacy 처리한다.
