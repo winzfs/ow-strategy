@@ -56,6 +56,25 @@
 
     <main class="container">
         <section class="page is-active active" data-page="list" id="page-list">
+            <section class="activity-panel" aria-label="활동 상태">
+                <div>
+                    <p class="activity-label">실시간 활동 지수</p>
+                    <strong class="activity-number" id="activity-count">0</strong>
+                    <p class="activity-copy" id="activity-copy">활동 상태를 불러오는 중입니다.</p>
+                </div>
+                <div class="activity-side">
+                    <span class="status-pill">모집 중 <b id="activity-party-count">0</b></span>
+                </div>
+            </section>
+
+            <section class="discord-cta-card">
+                <div>
+                    <strong>디스코드에서 더 빠르게 파티 찾기</strong>
+                    <p id="discord-cta-status">디스코드 초대 링크를 준비 중입니다.</p>
+                </div>
+                <a id="discord-cta-link" class="btn btn-primary" href="#">디스코드 참여</a>
+            </section>
+
             <section class="card card-highlight">
                 <h2 style="margin-top:0; color:var(--color-accent);">파티 모집</h2>
                 <div id="party-form" class="party-form-grid"></div>
@@ -103,5 +122,6 @@
     </main>
 
     <script type="module" src="js/index.js"></script>
+    <script type="module" src="js/main-enhancements.js"></script>
 </body>
 </html>
