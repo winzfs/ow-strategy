@@ -11,6 +11,10 @@ function qs(selector, root = document) {
   return root.querySelector(selector);
 }
 
+function hasMainController() {
+  return Boolean(window.OWHub?.main?.renderNotifications);
+}
+
 function ensureToastRoot() {
   let root = qs('#toast-root');
   if (root) return root;
@@ -42,6 +46,8 @@ function setProfileSummary(text) {
 }
 
 function renderLoggedOut(panel) {
+  if (hasMainController()) return;
+
   panel.innerHTML = `
     <div class="auth-fallback-box">
       <p class="auth-fallback-title">OW HUB 로그인</p>
@@ -54,6 +60,7 @@ function renderLoggedOut(panel) {
   `;
 
   qs('#btn-login')?.addEventListener('click', async function () {
+    if (hasMainController()) return;
     try {
       await loginWithEmail(getValue('login-email'), getValue('login-password'));
       toast('로그인되었습니다.', 'success');
@@ -64,6 +71,7 @@ function renderLoggedOut(panel) {
   });
 
   qs('#btn-register')?.addEventListener('click', async function () {
+    if (hasMainController()) return;
     try {
       await registerWithEmail(getValue('login-email'), getValue('login-password'));
       toast('회원가입이 완료되었습니다. 인증 메일을 확인해주세요.', 'success');
@@ -74,6 +82,7 @@ function renderLoggedOut(panel) {
   });
 
   qs('#btn-reset-password')?.addEventListener('click', async function () {
+    if (hasMainController()) return;
     try {
       await resetPassword(getValue('login-email'));
       toast('비밀번호 재설정 메일을 보냈습니다.', 'success');
@@ -87,6 +96,8 @@ function renderLoggedOut(panel) {
 }
 
 async function renderLoggedIn(panel, user) {
+  if (hasMainController()) return;
+
   let profile = null;
   try {
     profile = await getProfile(user.uid);
@@ -94,19 +105,24 @@ async function renderLoggedIn(panel, user) {
     console.warn('[auth-fallback:profile]', error);
   }
 
+  if (hasMainController()) return;
+
   const btag = profile?.btag || user.email || '프로필을 설정하세요';
   const rating = getAverageRating(profile) || '신규';
 
   panel.innerHTML = `
     <div class="auth-fallback-box">
       <p class="auth-fallback-title">로그인됨</p>
-      <div class="profile-btag">${btag}</div>
-      <div class="profile-meta">매너 평점: ${rating}</div>
+      <div class="profile-btag"></div>
+      <div class="profile-meta"></div>
       <button class="btn btn-secondary btn-block" id="btn-logout" type="button">로그아웃</button>
     </div>
   `;
+  qs('.profile-btag', panel).textContent = btag;
+  qs('.profile-meta', panel).textContent = `매너 평점: ${rating}`;
 
   qs('#btn-logout')?.addEventListener('click', async function () {
+    if (hasMainController()) return;
     try {
       await logout();
       toast('로그아웃되었습니다.', 'success');
@@ -124,6 +140,7 @@ function initAuthFallback() {
   if (!panel) return;
 
   watchAuth(function (user) {
+    if (hasMainController()) return;
     if (user) {
       renderLoggedIn(panel, user);
     } else {
