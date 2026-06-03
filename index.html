@@ -145,7 +145,6 @@
           <strong id="search-title">매칭 검색</strong>
           <small id="search-desc">포지션과 티어를 여러 개 선택할 수 있습니다!</small>
         </div>
-
         <div class="filter-section">
           <p class="form-label">포지션</p>
           <div id="role-filter" class="filter-chip-group">
@@ -154,9 +153,7 @@
             <button class="filter-tag filter-tag-role" type="button" data-fallback-filter="role" data-filter-value="지원"><img src="img/sup.png" alt="" class="filter-icon">지원</button>
           </div>
         </div>
-
         <div class="filter-divider"></div>
-
         <div class="filter-section">
           <p class="form-label">티어</p>
           <div id="tier-filter" class="filter-chip-group">
@@ -171,7 +168,6 @@
             <button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="챔피언"><img src="img/c.png" alt="" class="filter-icon">챔피언</button>
           </div>
         </div>
-
         <button class="btn btn-secondary btn-block" id="btn-filter-reset" type="button">초기화 ↺</button>
       </section>
 
@@ -250,6 +246,9 @@
     </div>
   </footer>
 
+  <script src="js/sidebar-fallback.js"></script>
+  <script type="module" src="js/auth-fallback.js"></script>
+  <script type="module" src="js/party-compose-fallback.js"></script>
   <script type="module" src="js/index.js"></script>
   <script type="module" src="js/main-enhancements.js"></script>
 </body>
