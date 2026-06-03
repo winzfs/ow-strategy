@@ -30,9 +30,17 @@ export function normalizeProfileDraft(input) {
   };
 }
 
+export function normalizeProfileRecord(profile) {
+  if (!profile) return null;
+  return {
+    ...profile,
+    btag: normalizeBattleTag(profile.btag),
+  };
+}
+
 export async function getProfile(uid) {
   const snap = await getDoc(doc(db, COLLECTIONS.users, uid));
-  return snap.exists() ? { uid, ...snap.data() } : null;
+  return snap.exists() ? normalizeProfileRecord({ uid, ...snap.data() }) : null;
 }
 
 export async function saveProfile(uid, input) {
@@ -42,12 +50,13 @@ export async function saveProfile(uid, input) {
 }
 
 export function getDisplayBattleTag(profile, fallback = '프로필을 설정하세요') {
-  return profile?.btag || fallback;
+  return normalizeBattleTag(profile?.btag) || fallback;
 }
 
 export function getPublicBattleTagName(btag, fallback = '익명') {
-  if (!btag) return fallback;
-  return String(btag).split('#')[0] || fallback;
+  const safeBtag = normalizeBattleTag(btag);
+  if (!safeBtag) return fallback;
+  return safeBtag.split('#')[0] || fallback;
 }
 
 export function getAverageRating(profile) {
