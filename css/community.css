@@ -1,0 +1,125 @@
+/*
+ * Community page styles
+ */
+
+@import url('./variables.css');
+
+.community-write-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  padding: var(--space-5);
+}
+
+.community-list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.community-post {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+}
+
+.community-post-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.community-post-author {
+  color: var(--color-accent);
+  font-weight: 800;
+}
+
+.community-post-title {
+  color: var(--color-text);
+  font-size: 16px;
+  margin: 5px 0 10px;
+}
+
+.community-post-content {
+  color: var(--color-text-soft);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.community-post-actions {
+  display: flex;
+  gap: 18px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.community-action {
+  background: transparent;
+  border: 0;
+  color: var(--color-text-dim);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+
+.comment-panel {
+  background: #111111;
+  border-radius: var(--radius-md);
+  margin-top: 15px;
+  padding: var(--space-3);
+}
+
+.comment-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.comment-item {
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: #111111;
+  font-size: 13px;
+  padding: var(--space-2);
+}
+
+.comment-form {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: 10px;
+}
+
+.my-posts-list {
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+.my-post-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #222222;
+  cursor: pointer;
+  font-size: 12px;
+  margin-bottom: var(--space-2);
+  padding: 10px;
+}
+
+.my-post-title {
+  color: #eeeeee;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-post-stats {
+  color: var(--color-text-dim);
+  font-size: 10px;
+  margin-top: 4px;
+}
