@@ -1,0 +1,113 @@
+/*
+ * Party page styles
+ *
+ * Feature-specific styles for the party finding/matching screen.
+ */
+
+@import url('./variables.css');
+
+.party-form-grid {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.party-filter-panel {
+  border: 1px solid #30363d;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(145deg, #161b22, #0d1117);
+  box-shadow: var(--shadow-panel);
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+}
+
+.party-filter-title {
+  border-left: 4px solid var(--color-accent);
+  margin-bottom: 18px;
+  padding-left: var(--space-3);
+}
+
+.filter-tag {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #30363d;
+  border-radius: var(--radius-md);
+  background: #21262d;
+  color: #c9d1d9;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 4px 8px 0;
+  padding: 0 14px;
+  transition: transform var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
+}
+
+.filter-tag.is-active,
+.filter-tag.active {
+  border-color: #ffffff;
+  background: var(--color-accent);
+  color: #000000;
+  box-shadow: 0 0 15px var(--color-accent-glow);
+  transform: translateY(-2px);
+}
+
+.party-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.party-card {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-3);
+  padding: 15px;
+}
+
+.party-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.party-card-owner {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.party-card-desc {
+  min-height: 18px;
+  color: #bbbbbb;
+  font-size: 14px;
+  margin-bottom: 15px;
+  white-space: pre-wrap;
+}
+
+.party-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.request-card {
+  border-left: 5px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  background: #555555;
+  padding: 15px;
+}
+
+.match-success-card {
+  border-left: 5px solid var(--color-support);
+  border-radius: var(--radius-md);
+  padding: 15px;
+}
+
+.eval-card {
+  border: 1px solid var(--color-accent);
+  position: relative;
+}
