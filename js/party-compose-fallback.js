@@ -6,6 +6,10 @@ function qs(selector) {
   return document.querySelector(selector);
 }
 
+function hasMainController() {
+  return Boolean(window.OWHub?.main?.renderParties);
+}
+
 function ensureToastRoot() {
   let root = qs('#toast-root');
   if (root) return root;
@@ -32,6 +36,8 @@ function getValue(id) {
 }
 
 async function handleCreatePartyFallback(event) {
+  if (hasMainController()) return;
+
   event.preventDefault();
   event.stopImmediatePropagation();
 
