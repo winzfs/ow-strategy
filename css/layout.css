@@ -1,0 +1,154 @@
+/*
+ * OW Hub shared layout styles
+ *
+ * Navigation, sidebar, page containers and responsive layout rules live here.
+ */
+
+@import url('./variables.css');
+
+.app-nav {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  display: flex;
+  min-height: var(--nav-height);
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-deep);
+  padding: 10px 15px;
+}
+
+.nav-logo {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.nav-logo img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
+.nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.nav-tab {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nav-tab.is-active {
+  color: var(--color-accent);
+}
+
+.sidebar-toggle {
+  position: relative;
+  z-index: var(--z-nav-toggle);
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sidebar-overlay);
+  visibility: hidden;
+  background: rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transition: opacity var(--transition-panel), visibility var(--transition-panel);
+}
+
+.sidebar-overlay.is-active {
+  visibility: visible;
+  opacity: 1;
+}
+
+.sidebar-panel {
+  position: fixed;
+  top: calc(var(--nav-height) + 35px);
+  left: -280px;
+  z-index: var(--z-sidebar);
+  width: 240px;
+  max-height: 70vh;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-2);
+  box-shadow: var(--shadow-floating);
+  transition: left var(--transition-panel);
+}
+
+.sidebar-panel.is-active {
+  left: 20px;
+}
+
+.sidebar-menu {
+  padding: 10px 0;
+}
+
+.sidebar-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 12px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 20px;
+  text-decoration: none;
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+.sidebar-menu-item:hover,
+.sidebar-menu-item.is-active {
+  background: var(--color-accent);
+  color: #000000;
+}
+
+.page {
+  display: none;
+}
+
+.page.is-active {
+  display: block;
+}
+
+.live-status-bar {
+  display: flex;
+  height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(90deg, #000 0%, #1a1a1a 50%, #000 100%);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0 15px;
+}
+
+@media (max-width: 520px) {
+  .nav-tabs {
+    gap: var(--space-3);
+  }
+
+  .sidebar-panel {
+    width: min(260px, calc(100vw - 40px));
+  }
+}
