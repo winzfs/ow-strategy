@@ -5,6 +5,118 @@
 
 ---
 
+## 0. 현재 리팩토링 상태
+
+2026-06-03 기준으로 OW Hub는 기존 단일 HTML 중심 구조에서 **정적 HTML + 분리된 CSS/JS 모듈 구조**로 1차 전환되었습니다.
+
+### 0.1 자동배포 상태
+
+현재 Vercel Git 자동배포는 리팩토링 중 실서비스 반영을 막기 위해 꺼져 있습니다.
+
+```json
+{
+  "git": {
+    "deploymentEnabled": false
+  }
+}
+```
+
+파일:
+
+```txt
+vercel.json
+```
+
+자동배포를 다시 켜기 전에는 반드시 `docs/REFACTOR_TODO.md`의 배포 전 체크리스트를 완료해야 합니다.
+
+### 0.2 현재 페이지 구조
+
+```txt
+index.html       → 메인 파티찾기 화면 구조
+commu.html       → 커뮤니티 화면 구조
+tiermaker.html   → 티어메이커 화면 구조
+```
+
+각 HTML 파일은 가능하면 화면 구조만 담당하고, 실제 동작은 JS 모듈로 분리합니다.
+
+### 0.3 현재 CSS 구조
+
+```txt
+css/
+├─ variables.css        → 디자인 토큰
+├─ common.css           → 공통 UI 컴포넌트
+├─ layout.css           → 네비게이션, 사이드바, 레이아웃
+├─ party.css            → 파티찾기 화면 스타일
+├─ community.css        → 커뮤니티 스타일
+├─ tiermaker.css        → 티어메이커 스타일
+├─ enhancements.css     → 리팩토링 후 복원된 보강 UI
+├─ index.css            → 메인 페이지 CSS 진입점
+├─ commu.css            → 커뮤니티 CSS 진입점
+└─ tiermaker-entry.css  → 티어메이커 CSS 진입점
+```
+
+새 스타일은 아래 원칙을 따릅니다.
+
+- 공통 디자인 값은 `variables.css`에 추가합니다.
+- 여러 화면에서 쓰는 UI는 `common.css`에 추가합니다.
+- 페이지 전용 스타일은 해당 페이지 CSS에 추가합니다.
+- 복원/보강용 임시 스타일은 `enhancements.css`에 두되, 나중에 적절한 파일로 정리합니다.
+- 인라인 스타일은 점진적으로 제거합니다.
+
+### 0.4 현재 JavaScript 구조
+
+```txt
+js/
+├─ config.js             → 공개 설정, 티어/포지션/아이콘/제한값
+├─ firebase.js           → Firebase 초기화
+├─ sanitize.js           → XSS 방어, 입력값 정규화
+├─ ui.js                 → 공통 DOM/UI helper
+├─ auth.js               → 로그인, 회원가입, 로그아웃, 비밀번호 초기화
+├─ party.js              → 파티 생성, 신청, 수락, 종료
+├─ profile.js            → 프로필, 평점, 중복 평가 방지
+├─ notification.js       → 매칭 신청 알림
+├─ community.js          → 커뮤니티 데이터 처리
+├─ presence.js           → 접속 상태/활동 지수
+├─ tiermaker.js          → 티어메이커 동작
+├─ index.js              → 메인 페이지 컨트롤러
+├─ commu.js              → 커뮤니티 페이지 컨트롤러
+└─ main-enhancements.js  → 메인 페이지 보강 기능
+```
+
+새 기능 추가 시 `index.js`에 무조건 넣지 말고, 기능 성격에 맞는 모듈에 먼저 배치합니다.
+
+### 0.5 현재 복원된 주요 기능
+
+- 로그인/회원가입/비밀번호 찾기
+- 프로필 저장/조회
+- 파티 모집글 생성
+- 기존 활성 파티 자동 종료 후 새 모집글 생성
+- 파티 목록 실시간 표시
+- 포지션/티어 필터
+- 파티 신청
+- 신청 수락/거절
+- 매칭 성공 카드
+- 배틀태그 복사
+- 평점 평가 UI
+- `ratings/{fromUid_toUid_matchId}` 기반 중복 평가 방지 데이터 구조
+- 커뮤니티 게시글/댓글/추천
+- 티어메이커 탭/드래그/이미지 저장
+- 접속 상태 heartbeat
+- 실시간 활동 지수
+- 디스코드 CTA 자리
+- 파티 만료 안내
+
+### 0.6 현재 주의할 점
+
+- `js/index.js`는 아직 큽니다. 추후 `party-render.js`, `match-ui.js`, `profile-ui.js` 등으로 추가 분리해야 합니다.
+- `index.html`, `commu.html` 안에 아직 일부 인라인 스타일이 남아 있습니다.
+- `firebase/firestore.rules`는 문서 초안이며, 실제 Firebase 콘솔/CLI에 적용하기 전 검토가 필요합니다.
+- 디스코드 초대 링크는 `js/config.js`의 `APP_CONFIG.discordInviteUrl`에 아직 비어 있습니다.
+- 평점 UI는 `profile.js`에서 중복 방지 구조를 지원하지만, 화면에서 `matchId` 전달이 완전히 검증되어야 합니다.
+- 자동배포는 꺼진 상태입니다.
+
+---
+
 ## 1. 핵심 원칙
 
 ### 1.1 한 파일에 너무 많은 책임을 넣지 않는다
@@ -26,7 +138,7 @@ css/party.css     → 파티찾기 전용 스타일
 js/firebase.js    → Firebase 초기화
 js/auth.js        → 로그인/회원가입
 js/party.js       → 파티 모집/신청/수락
-js/profile.js     → 유저 프로필
+js/profile.js     → 유저 프로필/평점
 js/notification.js→ 알림
 js/sanitize.js    → 사용자 입력값 정리
 ```
@@ -38,27 +150,32 @@ js/sanitize.js    → 사용자 입력값 정리
 - JavaScript는 기능 단위로 분리한다.
 - 한 파일이 300~400줄을 넘기기 시작하면 분리를 검토한다.
 - 한 함수가 50줄을 넘기면 역할을 나누는 것을 검토한다.
+- 새 기능은 기존 거대 파일에 덧붙이지 말고, 먼저 전용 모듈을 고려한다.
 
 ---
 
 ## 2. 권장 폴더 구조
-
-현재 정적 HTML 기반을 유지하더라도 아래 구조를 우선 목표로 한다.
 
 ```txt
 /
 ├─ index.html
 ├─ commu.html
 ├─ tiermaker.html
+├─ vercel.json
 ├─ docs/
-│  └─ AI_CODING_GUIDE.md
+│  ├─ AI_CODING_GUIDE.md
+│  └─ REFACTOR_TODO.md
 ├─ css/
 │  ├─ variables.css
 │  ├─ common.css
 │  ├─ layout.css
 │  ├─ party.css
 │  ├─ community.css
-│  └─ tiermaker.css
+│  ├─ tiermaker.css
+│  ├─ enhancements.css
+│  ├─ index.css
+│  ├─ commu.css
+│  └─ tiermaker-entry.css
 ├─ js/
 │  ├─ firebase.js
 │  ├─ config.js
@@ -69,6 +186,9 @@ js/sanitize.js    → 사용자 입력값 정리
 │  ├─ community.js
 │  ├─ presence.js
 │  ├─ tiermaker.js
+│  ├─ index.js
+│  ├─ commu.js
+│  ├─ main-enhancements.js
 │  ├─ ui.js
 │  └─ sanitize.js
 ├─ img/
@@ -90,14 +210,19 @@ js/sanitize.js    → 사용자 입력값 정리
 | `css/layout.css` | 네비게이션, 사이드바, 컨테이너, 반응형 레이아웃 |
 | `css/party.css` | 파티찾기 화면 전용 스타일 |
 | `css/community.css` | 커뮤니티 화면 전용 스타일 |
+| `css/tiermaker.css` | 티어메이커 전용 스타일 |
+| `css/enhancements.css` | 리팩토링 후 복원된 보강 UI |
 | `js/firebase.js` | Firebase app, auth, db 초기화만 담당 |
 | `js/config.js` | 공개 가능한 설정값만 보관 |
 | `js/auth.js` | 로그인, 회원가입, 로그아웃, 이메일 인증 |
 | `js/party.js` | 파티 등록, 목록, 신청, 수락, 종료 |
-| `js/profile.js` | 배틀태그, 포지션별 티어, 평점 표시 |
+| `js/profile.js` | 배틀태그, 포지션별 티어, 평점, 중복 평가 방지 |
 | `js/notification.js` | 알림 목록, 신청 상태, 새 알림 배지 |
 | `js/community.js` | 게시글, 댓글, 추천, 삭제 |
 | `js/presence.js` | 접속자/활동 상태 표시 |
+| `js/tiermaker.js` | 티어메이커 동작 |
+| `js/index.js` | 메인 페이지 컨트롤러 |
+| `js/main-enhancements.js` | 메인 페이지 보강 기능 |
 | `js/ui.js` | 사이드바, 모달, 탭, 토스트 등 UI 동작 |
 | `js/sanitize.js` | 사용자 입력 escape, 검증 유틸 |
 
@@ -154,7 +279,7 @@ export function escapeHTML(value) {
 
 가능하면 기능별 모듈 안에 함수로 분리합니다.
 
-예외적으로 HTML `onclick`에서 필요해 전역에 노출해야 하는 경우:
+예외적으로 HTML `onclick` 호환이나 디버깅을 위해 전역 노출이 필요한 경우:
 
 ```js
 window.OWHub = window.OWHub || {};
@@ -209,6 +334,7 @@ try {
 ```
 
 사용자에게 `error.message`를 그대로 노출하지 않습니다.
+단, 검증 실패처럼 의도된 사용자 안내 문구는 예외적으로 허용합니다.
 
 ---
 
@@ -257,13 +383,15 @@ OW Hub는 오버워치 느낌의 어두운 배경과 오렌지 포인트를 유�
 | 위험 버튼 | `.btn-danger` |
 | 카드/박스 | `.card` |
 | 입력창 | `.form-input` |
+| 셀렉트 | `.form-select` |
+| 텍스트 영역 | `.form-textarea` |
 | 모달 배경 | `.modal-overlay` |
 | 모달 내용 | `.modal-panel` |
 | 뱃지 | `.badge` |
-| 포지션 뱃지 | `.badge-role` |
-| 티어 뱃지 | `.badge-tier` |
+| 포지션 뱃지 | `.badge-role-*` |
 | 빈 상태 | `.empty-state` |
 | 토스트 | `.toast` |
+| 상태 pill | `.status-pill` |
 
 ### 4.3 인라인 스타일 최소화
 
@@ -347,19 +475,13 @@ const matchId = `${fromUid}_${postId}`;
 
 ### 5.3 평점
 
-평점은 직접 `rateTotal`, `rateCount`를 클라이언트에서 마음대로 수정하지 않도록 합니다.
-
-권장 구조:
-
-```txt
-ratings/{fromUid_toUid_postId}
-```
+평점은 `ratings/{fromUid_toUid_matchId}` 문서로 중복 평가를 막습니다.
 
 ```js
 {
   fromUid: string,
   toUid: string,
-  postId: string,
+  matchId: string,
   score: number,
   createdAt: number
 }
@@ -367,10 +489,16 @@ ratings/{fromUid_toUid_postId}
 
 규칙:
 
-- 같은 파티에서 한 대상에게 한 번만 평가
-- 실제 파티 참여자만 평가 가능
+- 같은 평가자가 같은 대상/매칭에 한 번만 평가
+- 본인 평가는 불가
 - 점수는 1~5만 허용
-- 평균 평점은 트랜잭션 또는 서버 함수로 갱신
+- `ratingId`는 반드시 `fromUid_toUid_matchId` 형식
+- 평균 평점은 `users/{uid}.rateTotal`, `users/{uid}.rateCount`를 트랜잭션으로 갱신
+
+주의:
+
+- 화면에서 `matchId`가 정확히 전달되는지 추가 검증이 필요합니다.
+- 현재 `profile.js`는 `matchId`가 없으면 `global`을 사용해 더 엄격하게 중복 평가를 막습니다.
 
 ---
 
@@ -410,6 +538,32 @@ ratings/{fromUid_toUid_postId}
 
 ---
 
+### 5.5 신고
+
+신고 기능은 `reports/{reportId}` 구조를 사용합니다.
+
+권장 ID:
+
+```js
+const reportId = `${reporterUid}_${targetType}_${targetId}`;
+```
+
+문서 예시:
+
+```js
+{
+  uid: string,
+  targetType: 'party' | 'post' | 'comment' | 'user',
+  targetId: string,
+  reason: string,
+  status: 'open' | 'reviewed' | 'dismissed' | 'resolved',
+  createdAt: number,
+  updatedAt: number
+}
+```
+
+---
+
 ## 6. Firebase / Firestore 보안 원칙
 
 클라이언트 코드는 조작될 수 있다는 전제로 작성합니다.
@@ -424,6 +578,7 @@ ratings/{fromUid_toUid_postId}
 - 같은 대상 중복 평가 방지
 - 평점 점수 범위 제한
 - 이메일 인증 유저만 글쓰기
+- 신고 중복 방지
 
 ### 6.2 권장 Rules 방향
 
@@ -433,6 +588,7 @@ ratings/{fromUid_toUid_postId}
 - 생성 가능한 필드를 제한
 - 수정 가능한 필드를 제한
 - `createdAt`, `uid` 같은 핵심 필드 변조 방지
+- `ratings`는 문서 ID와 내부 필드가 일치해야 함
 
 ---
 
@@ -551,12 +707,11 @@ AI가 이 저장소에서 코드를 수정할 때는 아래 순서를 따릅니�
 8. 모바일 화면에서 깨질 가능성을 확인한다.
 9. 수정 후 어떤 파일을 왜 바꿨는지 요약한다.
 10. 임시 코드, 디버그 코드, 중복 코드를 남기지 않는다.
+11. 작업 종료 전 `docs/REFACTOR_TODO.md`를 갱신한다.
 
 ---
 
 ## 11. 커밋 전 체크리스트
-
-코드 변경 전후로 아래 항목을 확인합니다.
 
 ### 구조
 
@@ -570,6 +725,7 @@ AI가 이 저장소에서 코드를 수정할 때는 아래 순서를 따릅니�
 - [ ] 사용자 입력을 그대로 `innerHTML`에 넣지 않았는가?
 - [ ] 본인/관리자 권한 검증이 Firestore Rules에서도 가능한 구조인가?
 - [ ] 평점, 삭제, 수락 같은 중요 액션이 클라이언트 조작에 취약하지 않은가?
+- [ ] 중복 신청/중복 평가 방지 구조가 있는가?
 
 ### UX
 
@@ -589,23 +745,23 @@ AI가 이 저장소에서 코드를 수정할 때는 아래 순서를 따릅니�
 - [ ] 디버그 UI가 노출되지 않는가?
 - [ ] 테스트 계정/관리자 이메일이 불필요하게 노출되지 않는가?
 - [ ] SEO 문구가 실제 서비스 상태와 맞는가?
+- [ ] Vercel 자동배포 상태를 의도대로 설정했는가?
 
 ---
 
-## 12. 우선 리팩토링 순서
+## 12. 다음 리팩토링 우선순위
 
-현재 코드 기준으로는 아래 순서를 권장합니다.
+상세 TODO는 `docs/REFACTOR_TODO.md`를 기준으로 합니다.
 
-1. 운영 화면에서 디버그 콘솔 숨기기
-2. `sanitize.js` 추가 후 사용자 입력 렌더링 전부 escape 처리
-3. `css/variables.css`, `css/common.css` 분리
-4. `js/firebase.js`, `js/auth.js` 분리
-5. 파티 관련 로직을 `js/party.js`로 분리
-6. 커뮤니티 로직을 `js/community.js`로 분리
-7. `onSnapshot` 구독 해제 구조 추가
-8. 파티 수락/평점 로직 트랜잭션화
-9. 파티 자동 만료 `expiresAt` 추가
-10. Firestore Rules 문서화 및 적용
+높은 우선순위:
+
+1. 신고 기능 추가
+2. `index.js` 추가 분리
+3. `matchId` 기반 평점 UI 검증
+4. Firestore Rules 실제 적용 전 검토
+5. 인라인 스타일 제거
+6. 실제 디스코드 링크 연결
+7. 자동배포 재활성화 전 브라우저 테스트
 
 ---
 
