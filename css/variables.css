@@ -1,48 +1,47 @@
 /*
  * OW Hub shared design tokens
- *
- * Keep repeated colors, spacing, radius, shadows and z-index values here.
- * Page-specific CSS files should reference these variables instead of hardcoding values.
+ * Clean white portfolio theme.
  */
 
 :root {
   /* Brand */
-  --color-accent: #ff9c00;
-  --color-accent-soft: rgba(255, 156, 0, 0.16);
-  --color-accent-glow: rgba(255, 156, 0, 0.4);
+  --color-accent: #f28a00;
+  --color-accent-strong: #c65f00;
+  --color-accent-soft: rgba(242, 138, 0, 0.12);
+  --color-accent-glow: rgba(242, 138, 0, 0.22);
 
   /* Role colors */
-  --color-tank: #00a2ff;
-  --color-dps: #ff3c3c;
-  --color-support: #00ff7b;
+  --color-tank: #2563eb;
+  --color-dps: #dc2626;
+  --color-support: #16a34a;
 
   /* Surfaces */
-  --color-bg: #111111;
-  --color-bg-deep: #000000;
-  --color-surface: #1a1a1a;
-  --color-surface-2: #252525;
-  --color-surface-3: #323232;
-  --color-border: #333333;
-  --color-border-soft: #222222;
+  --color-bg: #f5f1ea;
+  --color-bg-deep: #fffaf3;
+  --color-surface: #ffffff;
+  --color-surface-2: #fffaf3;
+  --color-surface-3: #f0e8dc;
+  --color-border: #d8cbbd;
+  --color-border-soft: #eadfd3;
 
   /* Text */
-  --color-text: #ffffff;
-  --color-text-soft: #cccccc;
-  --color-text-muted: #888888;
-  --color-text-dim: #666666;
-  --color-danger: #ff3c3c;
-  --color-success: #00ff7b;
+  --color-text: #201812;
+  --color-text-soft: #3c3027;
+  --color-text-muted: #68594d;
+  --color-text-dim: #8b7d70;
+  --color-danger: #dc2626;
+  --color-success: #16a34a;
 
   /* Font */
   --font-main: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   --font-display: 'Black Han Sans', 'Noto Sans KR', system-ui, sans-serif;
 
   /* Radius */
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
   --radius-pill: 999px;
 
   /* Spacing */
@@ -56,8 +55,8 @@
 
   /* Layout */
   --container-sm: 640px;
-  --container-md: 800px;
-  --nav-height: 50px;
+  --container-md: 860px;
+  --nav-height: 54px;
   --safe-bottom-space: 50px;
 
   /* Z-index */
@@ -70,8 +69,8 @@
   --z-debug: 9000;
 
   /* Shadow */
-  --shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --shadow-floating: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-panel: 0 12px 34px rgba(72, 53, 35, 0.10);
+  --shadow-floating: 0 22px 70px rgba(72, 53, 35, 0.18);
 
   /* Motion */
   --transition-fast: 0.15s ease;
