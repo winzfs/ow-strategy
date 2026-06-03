@@ -8,7 +8,7 @@ import {
   runTransaction,
   setDoc,
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { COLLECTIONS, db } from './firebase.js';
+import { auth, COLLECTIONS, db } from './firebase.js';
 import { clampNumber, normalizeBattleTag } from './sanitize.js';
 
 export function normalizeProfileDraft(input) {
@@ -57,21 +57,57 @@ export function getAverageRating(profile) {
   return (total / count).toFixed(1);
 }
 
-export async function rateUser(targetUid, score) {
+export function getRatingId(fromUid, targetUid, matchId) {
+  if (!fromUid || !targetUid) throw new Error('평가자 또는 대상 정보가 없습니다.');
+  const contextId = matchId || 'global';
+  return `${fromUid}_${targetUid}_${contextId}`;
+}
+
+export async function hasRatedUser(targetUid, options = {}) {
+  const fromUid = options.fromUid || auth.currentUser?.uid;
+  if (!fromUid || !targetUid) return false;
+
+  const ratingId = getRatingId(fromUid, targetUid, options.matchId);
+  const snap = await getDoc(doc(db, COLLECTIONS.ratings, ratingId));
+  return snap.exists();
+}
+
+export async function rateUser(targetUid, score, options = {}) {
+  const fromUid = options.fromUid || auth.currentUser?.uid;
+  if (!fromUid) throw new Error('로그인이 필요합니다.');
   if (!targetUid) throw new Error('평가할 유저 정보가 없습니다.');
+  if (fromUid === targetUid) throw new Error('본인은 평가할 수 없습니다.');
+
   const normalizedScore = clampNumber(score, 1, 5, 5);
+  const matchId = options.matchId || 'global';
+  const ratingId = getRatingId(fromUid, targetUid, matchId);
+  const ratingRef = doc(db, COLLECTIONS.ratings, ratingId);
   const profileRef = doc(db, COLLECTIONS.users, targetUid);
 
   return runTransaction(db, async (transaction) => {
-    const snap = await transaction.get(profileRef);
-    const data = snap.exists() ? snap.data() : {};
-    const nextCount = Number(data.rateCount || 0) + 1;
-    const nextTotal = Number(data.rateTotal || 0) + normalizedScore;
+    const ratingSnap = await transaction.get(ratingRef);
+    if (ratingSnap.exists()) {
+      throw new Error('이미 평가한 유저입니다.');
+    }
+
+    const profileSnap = await transaction.get(profileRef);
+    const profileData = profileSnap.exists() ? profileSnap.data() : {};
+    const nextCount = Number(profileData.rateCount || 0) + 1;
+    const nextTotal = Number(profileData.rateTotal || 0) + normalizedScore;
+    const now = Date.now();
+
+    transaction.set(ratingRef, {
+      fromUid,
+      toUid: targetUid,
+      matchId,
+      score: normalizedScore,
+      createdAt: now,
+    });
 
     transaction.set(profileRef, {
       rateCount: nextCount,
       rateTotal: nextTotal,
-      updatedAt: Date.now(),
+      updatedAt: now,
     }, { merge: true });
 
     return {
