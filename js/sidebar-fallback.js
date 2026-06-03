@@ -28,14 +28,16 @@ function initSidebarFallback() {
   button.setAttribute('aria-expanded', 'false');
   button.addEventListener('click', function (event) {
     event.preventDefault();
+    event.stopImmediatePropagation();
     const isOpen = sidebar.classList.contains('is-active') || sidebar.classList.contains('active');
     setSidebarOpen(!isOpen);
-  });
+  }, true);
 
   if (overlay) {
-    overlay.addEventListener('click', function () {
+    overlay.addEventListener('click', function (event) {
+      event.stopImmediatePropagation();
       setSidebarOpen(false);
-    });
+    }, true);
   }
 
   sidebar.querySelectorAll('[data-page-target], a').forEach(function (item) {
