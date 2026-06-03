@@ -1,3 +1,7 @@
+function hasMainController() {
+  return Boolean(window.OWHub?.main?.toggleSidebar);
+}
+
 function setSidebarOpen(isOpen) {
   const sidebar = document.querySelector('#sidebar');
   const overlay = document.querySelector('#sidebar-overlay');
@@ -27,6 +31,8 @@ function initSidebarFallback() {
 
   button.setAttribute('aria-expanded', 'false');
   button.addEventListener('click', function (event) {
+    if (hasMainController()) return;
+
     event.preventDefault();
     event.stopImmediatePropagation();
     const isOpen = sidebar.classList.contains('is-active') || sidebar.classList.contains('active');
@@ -35,6 +41,8 @@ function initSidebarFallback() {
 
   if (overlay) {
     overlay.addEventListener('click', function (event) {
+      if (hasMainController()) return;
+
       event.stopImmediatePropagation();
       setSidebarOpen(false);
     }, true);
@@ -42,6 +50,7 @@ function initSidebarFallback() {
 
   sidebar.querySelectorAll('[data-page-target], a').forEach(function (item) {
     item.addEventListener('click', function () {
+      if (hasMainController()) return;
       setSidebarOpen(false);
     });
   });
