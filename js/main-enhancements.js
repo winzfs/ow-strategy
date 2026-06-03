@@ -51,6 +51,8 @@ function updateActivityUI() {
   setText('#activity-count', `${activityIndex}`);
   setText('#activity-party-count', `${state.activePartyCount}`);
   setText('#activity-copy', state.activePartyCount > 0 ? '지금 모집 중인 파티가 있어요.' : '첫 모집글을 올려보세요.');
+  setText('#live-user-count', `전투 대기 중인 요원: ${activityIndex}명`);
+  setText('#live-party-count', `ACTIVE MISSIONS: ${state.activePartyCount}`);
 }
 
 function setupPresence() {
@@ -109,9 +111,6 @@ function formatRemaining(expiresAt) {
 }
 
 function annotatePartyExpiry() {
-  const cards = Array.from(document.querySelectorAll('.party-card'));
-  if (!cards.length) return;
-
   const visiblePartyIds = Array.from(document.querySelectorAll('#party-list .party-card'));
   visiblePartyIds.forEach((card) => {
     if (card.querySelector('.expiry-hint')) return;
