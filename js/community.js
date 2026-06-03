@@ -9,8 +9,8 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDoc,
   getDocs,
+  increment,
   onSnapshot,
   orderBy,
   query,
@@ -85,11 +85,8 @@ export async function addComment(postId, content, user, profile) {
     createdAt: Date.now(),
   });
 
-  const postRef = doc(db, COLLECTIONS.community, postId);
-  const postSnap = await getDoc(postRef);
-  const currentCount = postSnap.exists() ? Number(postSnap.data().commentCount || 0) : 0;
-  await updateDoc(postRef, {
-    commentCount: currentCount + 1,
+  await updateDoc(doc(db, COLLECTIONS.community, postId), {
+    commentCount: increment(1),
     updatedAt: Date.now(),
   });
 }
