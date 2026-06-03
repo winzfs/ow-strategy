@@ -1,7 +1,6 @@
 /*
  * OW Hub shared layout styles
- *
- * Navigation, sidebar, page containers and responsive layout rules live here.
+ * White portfolio layout inspired by Maniac Garage.
  */
 
 @import url('./variables.css');
@@ -14,9 +13,11 @@
   min-height: var(--nav-height);
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg-deep);
-  padding: 10px 15px;
+  border-bottom: 1px solid rgba(228, 217, 204, 0.72);
+  background: rgba(255, 250, 242, 0.86);
+  box-shadow: 0 10px 30px rgba(64, 45, 25, 0.07);
+  backdrop-filter: blur(18px);
+  padding: 10px 16px;
 }
 
 .nav-logo {
@@ -28,9 +29,11 @@
 }
 
 .nav-logo img {
-  height: 32px;
   width: auto;
+  height: 34px;
   object-fit: contain;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 8px 20px rgba(64,45,25,0.12);
 }
 
 .nav-tabs {
@@ -42,7 +45,7 @@
 .nav-tab {
   color: var(--color-text-muted);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   text-decoration: none;
 }
 
@@ -54,13 +57,15 @@
   position: relative;
   z-index: var(--z-nav-toggle);
   display: inline-flex;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   align-items: center;
   justify-content: center;
-  border: 0;
-  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
   color: var(--color-text);
+  box-shadow: 0 10px 24px rgba(64,45,25,0.09);
 }
 
 .sidebar-overlay {
@@ -68,7 +73,8 @@
   inset: 0;
   z-index: var(--z-sidebar-overlay);
   visibility: hidden;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(29, 23, 18, 0.34);
+  backdrop-filter: blur(5px);
   opacity: 0;
   transition: opacity var(--transition-panel), visibility var(--transition-panel);
 }
@@ -80,45 +86,81 @@
 
 .sidebar-panel {
   position: fixed;
-  top: calc(var(--nav-height) + 35px);
-  left: -280px;
+  top: calc(var(--nav-height) + 20px);
+  left: -310px;
   z-index: var(--z-sidebar);
-  width: 240px;
-  max-height: 70vh;
-  overflow: hidden;
+  width: 270px;
+  max-height: calc(100vh - 92px);
+  overflow: auto;
+  border: 1px solid rgba(228, 217, 204, 0.9);
   border-radius: var(--radius-xl);
-  background: var(--color-surface-2);
+  background: rgba(255,255,255,0.94);
   box-shadow: var(--shadow-floating);
-  transition: left var(--transition-panel);
+  backdrop-filter: blur(18px);
+  transition: left var(--transition-panel), transform var(--transition-panel);
 }
 
 .sidebar-panel.is-active {
-  left: 20px;
+  left: 16px;
 }
 
 .sidebar-menu {
-  padding: 10px 0;
+  padding: 12px 0 6px;
 }
 
 .sidebar-menu-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 4px 12px;
-  border-radius: var(--radius-md);
+  margin: 5px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
   font-size: 15px;
-  font-weight: 700;
-  padding: 12px 20px;
+  font-weight: 900;
+  padding: 13px 16px;
   text-decoration: none;
-  transition: background var(--transition-base), color var(--transition-base);
+  transition: background var(--transition-base), color var(--transition-base), border var(--transition-base), transform var(--transition-base);
 }
 
 .sidebar-menu-item:hover,
 .sidebar-menu-item.is-active {
-  background: var(--color-accent);
-  color: #000000;
+  border-color: rgba(255, 138, 0, 0.24);
+  background: linear-gradient(135deg, var(--color-accent-soft), rgba(255,255,255,0.7));
+  color: var(--color-text);
+  transform: translateX(2px);
+}
+
+.sidebar-auth {
+  border-top: 1px solid var(--color-border-soft);
+  padding: 14px;
+}
+
+.auth-fallback-box {
+  display: grid;
+  gap: 9px;
+}
+
+.auth-fallback-title {
+  color: var(--color-text-soft);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.02em;
+  margin: 0 0 3px;
+}
+
+.profile-btag {
+  color: var(--color-accent-strong);
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.profile-meta {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin-bottom: 8px;
 }
 
 .page {
@@ -131,16 +173,50 @@
 
 .live-status-bar {
   display: flex;
-  height: 34px;
+  height: 38px;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--color-border);
-  background: linear-gradient(90deg, #000 0%, #1a1a1a 50%, #000 100%);
+  border-bottom: 1px solid rgba(228, 217, 204, 0.8);
+  background: rgba(255,255,255,0.66);
   color: var(--color-text-muted);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: 0.5px;
-  padding: 0 15px;
+  padding: 0 16px;
+  backdrop-filter: blur(14px);
+}
+
+.live-status-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 0 5px rgba(31, 157, 90, 0.12);
+}
+
+.live-status-mission {
+  color: var(--color-accent-strong);
+}
+
+.nav-new-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #fffaf2;
+  border-radius: 50%;
+  background: var(--color-danger);
+}
+
+.nav-spacer {
+  width: 40px;
 }
 
 @media (max-width: 520px) {
@@ -149,6 +225,6 @@
   }
 
   .sidebar-panel {
-    width: min(260px, calc(100vw - 40px));
+    width: min(280px, calc(100vw - 32px));
   }
 }
