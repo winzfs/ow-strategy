@@ -19,10 +19,9 @@ import {
   closeParty,
   watchParties,
 } from './party.js';
-import { getProfile, getAverageRating, getPublicBattleTagName, saveProfile } from './profile.js';
+import { getProfile, getAverageRating, getPublicBattleTagName, saveProfile, rateUser } from './profile.js';
 import {
   getSentRequestPostIds,
-  getUserRelatedMatches,
   hasPendingIncomingMatch,
   markMatchRejected,
   removeMatch,
@@ -106,6 +105,11 @@ function getFormValue(id) {
 function setText(id, text) {
   const el = qs(`#${id}`);
   if (el) el.textContent = text;
+}
+
+function getRelatedMatches() {
+  if (!state.user) return [];
+  return state.matches.filter((match) => match.fromUid === state.user.uid || match.toUid === state.user.uid);
 }
 
 function showPage(pageName) {
@@ -446,6 +450,75 @@ function renderFilters() {
   });
 }
 
+function createRatingRow(targetUid, label) {
+  const row = document.createElement('div');
+  row.className = 'rating-row';
+
+  const title = createTextElement('span', label || '상대 평가', 'status-pill');
+  row.append(title);
+
+  for (let score = 1; score <= 5; score += 1) {
+    const button = document.createElement('button');
+    button.className = 'rating-button';
+    button.type = 'button';
+    button.textContent = '★'.repeat(score);
+    button.title = `${score}점`;
+    button.addEventListener('click', async () => {
+      try {
+        await rateUser(targetUid, score);
+        showToast(`${score}점 평가를 남겼습니다.`, 'success');
+        row.replaceChildren(createTextElement('span', '평가 완료', 'status-pill'));
+      } catch (error) {
+        console.error('[rating:submit]', error);
+        showToast('평가 저장에 실패했습니다.', 'error');
+      }
+    });
+    row.append(button);
+  }
+
+  return row;
+}
+
+function createAcceptedMatchCard(match) {
+  const card = document.createElement('div');
+  card.className = 'match-success-card';
+
+  const isLeader = match.toUid === state.user.uid;
+  const otherUid = isLeader ? match.fromUid : match.toUid;
+  const otherBtag = isLeader ? match.fromBtag : match.toBtag;
+
+  const title = createTextElement('strong', '✅ 매칭 성공', 'match-success-title');
+  const body = createTextElement('p', `${otherBtag || '상대'} 님과 매칭되었습니다. 배틀태그를 복사해서 게임에서 초대해보세요.`, 'request-meta');
+
+  const actions = document.createElement('div');
+  actions.style.display = 'flex';
+  actions.style.gap = '8px';
+  actions.style.flexWrap = 'wrap';
+
+  const copyButton = document.createElement('button');
+  copyButton.className = 'btn btn-primary';
+  copyButton.type = 'button';
+  copyButton.textContent = '배틀태그 복사';
+  copyButton.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(otherBtag || '');
+      showToast('배틀태그를 복사했습니다.', 'success');
+    } catch (error) {
+      showToast('복사에 실패했습니다. 직접 확인해주세요.', 'error');
+    }
+  });
+
+  const removeButton = document.createElement('button');
+  removeButton.className = 'btn btn-secondary';
+  removeButton.type = 'button';
+  removeButton.textContent = '확인';
+  removeButton.addEventListener('click', () => removeMatch(match.id));
+
+  actions.append(copyButton, removeButton);
+  card.append(title, body, actions, createRatingRow(otherUid, `${getPublicBattleTagName(otherBtag)} 평가`));
+  return card;
+}
+
 function renderNotifications() {
   const list = qs('#notification-list');
   if (!list) return;
@@ -454,24 +527,34 @@ function renderNotifications() {
     renderEmptyState(list, '로그인 후 알림을 확인할 수 있습니다.');
     setText('nav-new-badge', '');
     hideElement(qs('#nav-new-badge'));
+    hideElement(qs('#side-new-badge'));
     return;
   }
 
-  const related = getUserRelatedMatches({ docs: state.matches.map((match) => ({ id: match.id, data: () => match })) }, state.user.uid);
+  const related = getRelatedMatches();
   const incoming = related.filter((match) => match.toUid === state.user.uid);
-  const hasNew = hasPendingIncomingMatch(related, state.user.uid);
-  const badge = qs('#nav-new-badge');
-  if (badge) {
+  const accepted = related.filter((match) => match.status === 'accepted');
+  const pendingIncoming = incoming.filter((match) => match.status === 'pending');
+  const hasNew = hasPendingIncomingMatch(related.map((match) => ({ data: () => match })), state.user.uid) || accepted.length > 0;
+
+  const navBadge = qs('#nav-new-badge');
+  const sideBadge = qs('#side-new-badge');
+  [navBadge, sideBadge].forEach((badge) => {
+    if (!badge) return;
     if (hasNew) showElement(badge);
     else hideElement(badge);
-  }
+  });
 
-  if (!incoming.length) {
+  const cards = [...accepted, ...incoming.filter((match) => match.status !== 'accepted')];
+
+  if (!cards.length) {
     renderEmptyState(list, '새 알림이 없습니다.');
     return;
   }
 
-  replaceChildrenFromArray(list, incoming, (match) => {
+  replaceChildrenFromArray(list, cards, (match) => {
+    if (match.status === 'accepted') return createAcceptedMatchCard(match);
+
     const card = document.createElement('div');
     card.className = 'request-card';
 
@@ -481,6 +564,7 @@ function renderNotifications() {
     const actions = document.createElement('div');
     actions.style.display = 'flex';
     actions.style.gap = '8px';
+    actions.style.flexWrap = 'wrap';
 
     if (match.status === 'pending') {
       const acceptButton = document.createElement('button');
@@ -565,6 +649,7 @@ function exposeLegacyHooks() {
 
 function init() {
   hideElement(qs('#nav-new-badge'));
+  hideElement(qs('#side-new-badge'));
   renderFilters();
   bindEvents();
   exposeLegacyHooks();
