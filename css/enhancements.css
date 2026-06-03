@@ -1,0 +1,99 @@
+/*
+ * Restored feature UI styles
+ *
+ * Small styles for features restored after the first structural refactor.
+ */
+
+.menu-new {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-danger);
+  color: var(--color-text);
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 6px;
+  animation: owhub-blink 1.2s infinite;
+}
+
+@keyframes owhub-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.pos-group {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #1e1e1e;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+}
+
+.pos-group strong {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--color-accent);
+}
+
+.match-success-card {
+  border-left: 5px solid var(--color-success);
+  border-radius: var(--radius-md);
+  background: rgba(0, 255, 123, 0.08);
+  padding: var(--space-4);
+}
+
+.match-success-title {
+  color: var(--color-success);
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.rating-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.rating-button {
+  min-width: 38px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-accent);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 8px;
+}
+
+.rating-button:hover {
+  background: var(--color-accent);
+  color: #000000;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 9px;
+}
+
+.profile-btag {
+  word-break: break-all;
+}
+
+.profile-meta {
+  margin-bottom: var(--space-3);
+}
+
+.request-meta {
+  color: var(--color-text-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
