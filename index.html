@@ -1,35 +1,256 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오버워치 허브 - 파티찾기 / 그룹찾기</title>
-    <meta name="google-site-verification" content="7OvWXc4oEGF5-Aub2pEWiCaBatEsSzA4Im454PrJ0kM">
-    <meta name="theme-color" content="#ff9c00">
-    <meta name="keywords" content="오버워치 파티찾기, 오버워치2 그룹찾기, 오버워치 커뮤니티, 오버워치 듀오, 오버워치 티어별 매칭, 티어메이커, owhub">
-    <meta name="description" content="오버워치2 팀원을 빠르게 찾는 파티 매칭 서비스입니다. 포지션과 티어별로 그룹을 찾고 커뮤니티를 이용해보세요.">
-    <meta name="robots" content="index, follow">
-    <meta property="og:title" content="Overwatch Hub - 파티 매칭 서비스">
-    <meta property="og:description" content="지금 바로 실력에 맞는 팀원을 찾아보세요.">
-    <meta property="og:url" content="https://owhub.vercel.app">
-    <meta property="og:image" content="https://owhub.vercel.app/og.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="1200">
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Overwatch Hub","operatingSystem":"WEB","applicationCategory":"GameApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}</script>
-    <link rel="stylesheet" href="css/index.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>오버워치 허브 - 파티찾기 / 그룹찾기</title>
+  <meta name="google-site-verification" content="7OvWXc4oEGF5-Aub2pEWiCaBatEsSzA4Im454PrJ0kM">
+  <meta name="theme-color" content="#ff9c00">
+  <meta name="keywords" content="오버워치 파티찾기, 오버워치2 그룹찾기, 오버워치 커뮤니티, 오버워치 듀오, 오버워치 티어별 매칭, 티어메이커, owhub">
+  <meta name="description" content="오버워치2 팀원을 빠르게 찾는 파티 매칭 서비스입니다. 포지션과 티어별로 그룹을 찾고 커뮤니티를 이용해보세요.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Overwatch Hub - 파티 매칭 서비스">
+  <meta property="og:description" content="지금 바로 실력에 맞는 팀원을 찾아보세요.">
+  <meta property="og:url" content="https://owhub.vercel.app">
+  <meta property="og:image" content="https://owhub.vercel.app/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="1200">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Overwatch Hub",
+    "operatingSystem": "WEB",
+    "applicationCategory": "GameApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "KRW"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
-    <h1 class="sr-only">오버워치 허브 - 실시간 그룹찾기 / 파티 매칭</h1>
-    <nav class="app-nav"><button id="hamburger-btn" class="sidebar-toggle" type="button" aria-label="메뉴 열기">☰<span id="nav-new-badge" class="nav-new-badge" hidden></span></button><a class="nav-logo" href="index.html" aria-label="OW Hub 홈"><img src="img/logo.jpg" alt="OW HUB"></a><div class="nav-spacer" aria-hidden="true"></div></nav>
-    <div class="live-status-bar"><div class="live-status-left"><span class="live-dot" aria-hidden="true"></span><span id="live-user-count">전투 대기 중인 요원: --명</span></div><div id="live-party-count" class="live-status-mission">ACTIVE MISSIONS: 0</div></div>
-    <div id="sidebar-overlay" class="sidebar-overlay"></div>
-    <aside id="sidebar" class="sidebar-panel" aria-label="사이드 메뉴"><div class="sidebar-menu"><button class="sidebar-menu-item is-active active" type="button" data-page-target="list" data-page="list">파티찾기</button><button class="sidebar-menu-item" type="button" data-page-target="profile" data-page="profile">내 정보</button><button class="sidebar-menu-item" type="button" data-page-target="notifications" data-page="notifications"><span>알림</span><span class="menu-new" id="side-new-badge" hidden>NEW</span></button><a class="sidebar-menu-item" href="commu.html">커뮤니티</a><a class="sidebar-menu-item" href="tiermaker.html">티어메이커</a></div><div class="sidebar-auth" id="auth-panel"><div class="auth-fallback-box"><p class="auth-fallback-title">OW HUB 로그인</p><input class="form-input" id="login-email" type="email" autocomplete="email" placeholder="이메일"><input class="form-input" id="login-password" type="password" autocomplete="current-password" placeholder="비밀번호"><button class="btn btn-primary btn-block" id="btn-login" type="button">로그인</button><button class="btn btn-secondary btn-block" id="btn-register" type="button">회원가입</button><button class="btn btn-secondary btn-block" id="btn-reset-password" type="button">비밀번호 찾기</button></div></div></aside>
-    <main class="container"><section class="page is-active active" data-page="list" id="page-list"><section class="activity-panel" aria-label="활동 상태"><div><p class="activity-label">실시간 활동 지수</p><strong class="activity-number" id="activity-count">0</strong><p class="activity-copy" id="activity-copy">활동 상태를 불러오는 중입니다.</p></div><div class="activity-side"><span class="status-pill">모집 중 <b id="activity-party-count">0</b></span></div></section><section class="discord-cta-card"><div><strong>디스코드에서 더 빠르게 파티 찾기</strong><p id="discord-cta-status">디스코드 초대 링크를 준비 중입니다.</p></div><a id="discord-cta-link" class="btn btn-primary" href="#">디스코드 참여</a></section><section class="card card-highlight party-compose-card"><h2>🚀 파티 모집 시작</h2><p class="card-subcopy">배틀태그, 포지션, 티어, 모집 인원을 입력하고 팀원을 찾아보세요.</p><div id="party-form" class="party-form-grid"><input class="form-input" id="party-btag" placeholder="배틀태그#1234"><div class="party-inline-row"><select class="form-select" id="party-role"><option value="탱커">🛡️ 탱커</option><option value="딜러" selected>⚔️ 딜러</option><option value="지원">💉 지원</option></select><select class="form-select" id="party-tier"><option value="배치">배치</option><option value="브론즈">브론즈</option><option value="실버">실버</option><option value="골드">골드</option><option value="플래티넘" selected>플래티넘</option><option value="다이아몬드">다이아몬드</option><option value="마스터">마스터</option><option value="그랜드마스터">그랜드마스터</option><option value="챔피언">챔피언</option></select><select class="form-select" id="party-tier-num"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option></select></div><select class="form-select" id="party-maxp"><option value="2">2인 파티</option><option value="3">3인 파티</option><option value="4">4인 파티</option><option value="5" selected>5인 파티</option></select><textarea class="form-textarea" id="party-desc" placeholder="모집 내용 (마이크 유무, 경쟁/빠대, 분위기 등)" maxlength="300" rows="2"></textarea><button class="btn btn-primary btn-block" id="btn-create-party" type="button">모집 시작</button><p class="form-help">로그인 후 모집글을 등록할 수 있습니다. 목록과 필터는 바로 확인할 수 있어요.</p></div></section><section class="party-filter-panel"><div id="search-title-area" class="party-filter-title"><strong id="search-title">매칭 검색</strong><small id="search-desc">포지션과 티어를 여러 개 선택할 수 있습니다!</small></div><div class="filter-section"><p class="form-label">포지션</p><div id="role-filter" class="filter-chip-group"><button class="filter-tag filter-tag-role" type="button" data-fallback-filter="role" data-filter-value="탱커"><img src="img/tank.png" alt="" class="filter-icon">탱커</button><button class="filter-tag filter-tag-role" type="button" data-fallback-filter="role" data-filter-value="딜러"><img src="img/dps.png" alt="" class="filter-icon">딜러</button><button class="filter-tag filter-tag-role" type="button" data-fallback-filter="role" data-filter-value="지원"><img src="img/sup.png" alt="" class="filter-icon">지원</button></div></div><div class="filter-divider"></div><div class="filter-section"><p class="form-label">티어</p><div id="tier-filter" class="filter-chip-group"><button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="배치"><img src="img/u.png" alt="" class="filter-icon">배치</button><button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="브론즈"><img src="img/b.webp" alt="" class="filter-icon">브론즈</button><button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="실버"><img src="img/s.webp" alt="" class="filter-icon">실버</button><button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="골드"><img src="img/g.webp" alt="" class="filter-icon">골드</button><button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="플래티넘"><img src="img/p.webp" alt="" class="filter-icon">플래티넘</button><button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="다이아몬드"><img src="img/d.png" alt="" class="filter-icon">다이아</button><button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="마스터"><img src="img/m.webp" alt="" class="filter-icon">마스터</button><button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="그랜드마스터"><img src="img/gm.webp" alt="" class="filter-icon">그마</button><button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="챔피언"><img src="img/c.png" alt="" class="filter-icon">챔피언</button></div></div><button class="btn btn-secondary btn-block" id="btn-filter-reset" type="button">초기화 ↺</button></section><section class="party-list-section"><h2>실시간 파티 목록</h2><div id="party-list" class="party-list" aria-live="polite"></div></section></section><section class="page" data-page="profile" id="page-profile"><section class="card"><h2>내 프로필</h2><div id="profile-form"></div></section></section><section class="page" data-page="notifications" id="page-notifications"><section class="card"><h2>📫 알림 센터</h2><div id="notification-list"></div></section></section></main>
-    <div class="modal-overlay" id="request-modal" aria-hidden="true"><div class="modal-panel request-modal-panel" role="dialog" aria-modal="true" aria-labelledby="request-modal-title"><h3 id="request-modal-title">파티 신청</h3><p class="request-modal-target" id="request-modal-target">선택한 파티에 신청합니다.</p><label class="form-label" for="request-pos">포지션</label><select class="form-select" id="request-pos"><option value="탱커">🛡️ 탱커</option><option value="딜러">⚔️ 딜러</option><option value="지원">💉 지원</option></select><label class="form-label" for="request-tier">세부 티어</label><div class="request-tier-row"><select class="form-select" id="request-tier"><option value="배치">배치</option><option value="브론즈">브론즈</option><option value="실버">실버</option><option value="골드">골드</option><option value="플래티넘">플래티넘</option><option value="다이아몬드">다이아몬드</option><option value="마스터">마스터</option><option value="그랜드마스터">그랜드마스터</option><option value="챔피언">챔피언</option></select><select class="form-select" id="request-tier-num"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div><label class="form-label" for="request-btag">내 배틀태그</label><input class="form-input" type="text" id="request-btag" placeholder="내 배틀태그#1234"><label class="form-label" for="request-msg">상대에게 보낼 메시지</label><textarea class="form-textarea" id="request-msg" placeholder="예: 마이크 가능해요. 같이 해요!" rows="3" maxlength="300"></textarea><div class="modal-actions"><button class="btn btn-primary btn-block" id="btn-confirm-send" type="button">신청하기</button><button class="btn btn-secondary btn-block" id="btn-cancel-request" type="button">취소</button></div></div></div>
-    <footer class="site-footer"><div class="footer-inner"><div class="footer-links"><a href="terms.html">이용약관</a><a href="privacy.html">개인정보 처리방침</a><a href="mailto:jazzhjm@gmail.com">문의</a></div><p>Overwatch Hub는 Blizzard Entertainment와 무관한 팬 커뮤니티 서비스입니다.</p><p>© OW Hub. All rights reserved.</p></div></footer>
-    <script src="js/sidebar-fallback.js"></script>
-    <script type="module" src="js/auth-fallback.js"></script>
-    <script type="module" src="js/index.js"></script>
-    <script type="module" src="js/main-enhancements.js"></script>
+  <h1 class="sr-only">오버워치 허브 - 실시간 그룹찾기 / 파티 매칭</h1>
+
+  <nav class="app-nav">
+    <button id="hamburger-btn" class="sidebar-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false">
+      ☰
+      <span id="nav-new-badge" class="nav-new-badge" hidden></span>
+    </button>
+    <a class="nav-logo" href="index.html" aria-label="OW Hub 홈">
+      <img src="img/logo.jpg" alt="OW HUB">
+    </a>
+    <div class="nav-spacer" aria-hidden="true"></div>
+  </nav>
+
+  <div class="live-status-bar">
+    <div class="live-status-left">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span id="live-user-count">전투 대기 중인 요원: --명</span>
+    </div>
+    <div id="live-party-count" class="live-status-mission">ACTIVE MISSIONS: 0</div>
+  </div>
+
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <aside id="sidebar" class="sidebar-panel" aria-label="사이드 메뉴">
+    <div class="sidebar-menu">
+      <button class="sidebar-menu-item is-active active" type="button" data-page-target="list" data-page="list">파티찾기</button>
+      <button class="sidebar-menu-item" type="button" data-page-target="profile" data-page="profile">내 정보</button>
+      <button class="sidebar-menu-item" type="button" data-page-target="notifications" data-page="notifications">
+        <span>알림</span>
+        <span class="menu-new" id="side-new-badge" hidden>NEW</span>
+      </button>
+      <a class="sidebar-menu-item" href="commu.html">커뮤니티</a>
+      <a class="sidebar-menu-item" href="tiermaker.html">티어메이커</a>
+    </div>
+    <div class="sidebar-auth" id="auth-panel">
+      <div class="auth-fallback-box">
+        <p class="auth-fallback-title">OW HUB 로그인</p>
+        <input class="form-input" id="login-email" type="email" autocomplete="email" placeholder="이메일">
+        <input class="form-input" id="login-password" type="password" autocomplete="current-password" placeholder="비밀번호">
+        <button class="btn btn-primary btn-block" id="btn-login" type="button">로그인</button>
+        <button class="btn btn-secondary btn-block" id="btn-register" type="button">회원가입</button>
+        <button class="btn btn-secondary btn-block" id="btn-reset-password" type="button">비밀번호 찾기</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="container">
+    <section class="page is-active active" data-page="list" id="page-list">
+      <section class="activity-panel" aria-label="활동 상태">
+        <div>
+          <p class="activity-label">실시간 활동 지수</p>
+          <strong class="activity-number" id="activity-count">0</strong>
+          <p class="activity-copy" id="activity-copy">활동 상태를 불러오는 중입니다.</p>
+        </div>
+        <div class="activity-side">
+          <span class="status-pill">모집 중 <b id="activity-party-count">0</b></span>
+        </div>
+      </section>
+
+      <section class="discord-cta-card">
+        <div>
+          <strong>디스코드에서 더 빠르게 파티 찾기</strong>
+          <p id="discord-cta-status">디스코드 초대 링크를 준비 중입니다.</p>
+        </div>
+        <a id="discord-cta-link" class="btn btn-primary" href="#">디스코드 참여</a>
+      </section>
+
+      <section class="card card-highlight party-compose-card">
+        <h2>🚀 파티 모집 시작</h2>
+        <p class="card-subcopy">배틀태그, 포지션, 티어, 모집 인원을 입력하고 팀원을 찾아보세요.</p>
+        <div id="party-form" class="party-form-grid">
+          <input class="form-input" id="party-btag" placeholder="배틀태그#1234">
+          <div class="party-inline-row">
+            <select class="form-select" id="party-role">
+              <option value="탱커">🛡️ 탱커</option>
+              <option value="딜러" selected>⚔️ 딜러</option>
+              <option value="지원">💉 지원</option>
+            </select>
+            <select class="form-select" id="party-tier">
+              <option value="배치">배치</option>
+              <option value="브론즈">브론즈</option>
+              <option value="실버">실버</option>
+              <option value="골드">골드</option>
+              <option value="플래티넘" selected>플래티넘</option>
+              <option value="다이아몬드">다이아몬드</option>
+              <option value="마스터">마스터</option>
+              <option value="그랜드마스터">그랜드마스터</option>
+              <option value="챔피언">챔피언</option>
+            </select>
+            <select class="form-select" id="party-tier-num">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5" selected>5</option>
+            </select>
+          </div>
+          <select class="form-select" id="party-maxp">
+            <option value="2">2인 파티</option>
+            <option value="3">3인 파티</option>
+            <option value="4">4인 파티</option>
+            <option value="5" selected>5인 파티</option>
+          </select>
+          <textarea class="form-textarea" id="party-desc" placeholder="모집 내용 (마이크 유무, 경쟁/빠대, 분위기 등)" maxlength="300" rows="2"></textarea>
+          <button class="btn btn-primary btn-block" id="btn-create-party" type="button">모집 시작</button>
+          <p class="form-help">로그인 후 모집글을 등록할 수 있습니다. 목록과 필터는 바로 확인할 수 있어요.</p>
+        </div>
+      </section>
+
+      <section class="party-filter-panel">
+        <div id="search-title-area" class="party-filter-title">
+          <strong id="search-title">매칭 검색</strong>
+          <small id="search-desc">포지션과 티어를 여러 개 선택할 수 있습니다!</small>
+        </div>
+
+        <div class="filter-section">
+          <p class="form-label">포지션</p>
+          <div id="role-filter" class="filter-chip-group">
+            <button class="filter-tag filter-tag-role" type="button" data-fallback-filter="role" data-filter-value="탱커"><img src="img/tank.png" alt="" class="filter-icon">탱커</button>
+            <button class="filter-tag filter-tag-role" type="button" data-fallback-filter="role" data-filter-value="딜러"><img src="img/dps.png" alt="" class="filter-icon">딜러</button>
+            <button class="filter-tag filter-tag-role" type="button" data-fallback-filter="role" data-filter-value="지원"><img src="img/sup.png" alt="" class="filter-icon">지원</button>
+          </div>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-section">
+          <p class="form-label">티어</p>
+          <div id="tier-filter" class="filter-chip-group">
+            <button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="배치"><img src="img/u.png" alt="" class="filter-icon">배치</button>
+            <button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="브론즈"><img src="img/b.webp" alt="" class="filter-icon">브론즈</button>
+            <button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="실버"><img src="img/s.webp" alt="" class="filter-icon">실버</button>
+            <button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="골드"><img src="img/g.webp" alt="" class="filter-icon">골드</button>
+            <button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="플래티넘"><img src="img/p.webp" alt="" class="filter-icon">플래티넘</button>
+            <button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="다이아몬드"><img src="img/d.png" alt="" class="filter-icon">다이아</button>
+            <button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="마스터"><img src="img/m.webp" alt="" class="filter-icon">마스터</button>
+            <button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="그랜드마스터"><img src="img/gm.webp" alt="" class="filter-icon">그마</button>
+            <button class="filter-tag filter-tag-tier" type="button" data-fallback-filter="tier" data-filter-value="챔피언"><img src="img/c.png" alt="" class="filter-icon">챔피언</button>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary btn-block" id="btn-filter-reset" type="button">초기화 ↺</button>
+      </section>
+
+      <section class="party-list-section">
+        <h2>실시간 파티 목록</h2>
+        <div id="party-list" class="party-list" aria-live="polite"></div>
+      </section>
+    </section>
+
+    <section class="page" data-page="profile" id="page-profile">
+      <section class="card">
+        <h2>내 프로필</h2>
+        <div id="profile-form"></div>
+      </section>
+    </section>
+
+    <section class="page" data-page="notifications" id="page-notifications">
+      <section class="card">
+        <h2>📫 알림 센터</h2>
+        <div id="notification-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal-overlay" id="request-modal" aria-hidden="true">
+    <div class="modal-panel request-modal-panel" role="dialog" aria-modal="true" aria-labelledby="request-modal-title">
+      <h3 id="request-modal-title">파티 신청</h3>
+      <p class="request-modal-target" id="request-modal-target">선택한 파티에 신청합니다.</p>
+      <label class="form-label" for="request-pos">포지션</label>
+      <select class="form-select" id="request-pos">
+        <option value="탱커">🛡️ 탱커</option>
+        <option value="딜러">⚔️ 딜러</option>
+        <option value="지원">💉 지원</option>
+      </select>
+      <label class="form-label" for="request-tier">세부 티어</label>
+      <div class="request-tier-row">
+        <select class="form-select" id="request-tier">
+          <option value="배치">배치</option>
+          <option value="브론즈">브론즈</option>
+          <option value="실버">실버</option>
+          <option value="골드">골드</option>
+          <option value="플래티넘">플래티넘</option>
+          <option value="다이아몬드">다이아몬드</option>
+          <option value="마스터">마스터</option>
+          <option value="그랜드마스터">그랜드마스터</option>
+          <option value="챔피언">챔피언</option>
+        </select>
+        <select class="form-select" id="request-tier-num">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+      <label class="form-label" for="request-btag">내 배틀태그</label>
+      <input class="form-input" type="text" id="request-btag" placeholder="내 배틀태그#1234">
+      <label class="form-label" for="request-msg">상대에게 보낼 메시지</label>
+      <textarea class="form-textarea" id="request-msg" placeholder="예: 마이크 가능해요. 같이 해요!" rows="3" maxlength="300"></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-primary btn-block" id="btn-confirm-send" type="button">신청하기</button>
+        <button class="btn btn-secondary btn-block" id="btn-cancel-request" type="button">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a href="terms.html">이용약관</a>
+        <a href="privacy.html">개인정보 처리방침</a>
+        <a href="mailto:jazzhjm@gmail.com">문의</a>
+      </div>
+      <p>Overwatch Hub는 Blizzard Entertainment와 무관한 팬 커뮤니티 서비스입니다.</p>
+      <p>© OW Hub. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/index.js"></script>
+  <script type="module" src="js/main-enhancements.js"></script>
 </body>
 </html>
