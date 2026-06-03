@@ -14,7 +14,6 @@ import {
   orderBy,
   query,
   runTransaction,
-  setDoc,
   updateDoc,
   where,
   writeBatch,
@@ -83,28 +82,56 @@ export async function createParty(input, user, options = {}) {
 
 export async function createMatchRequest(input, user) {
   if (!user) throw new Error('로그인이 필요한 서비스입니다.');
+  if (!input?.postId) throw new Error('신청할 파티 정보가 없습니다.');
 
   const now = Date.now();
   const matchId = `${user.uid}_${input.postId}`;
   const matchRef = doc(db, COLLECTIONS.matches, matchId);
+  const partyRef = doc(db, COLLECTIONS.parties, input.postId);
 
-  await setDoc(matchRef, {
-    fromUid: user.uid,
-    fromBtag: normalizeBattleTag(input.fromBtag),
-    reqPos: input.reqPos,
-    reqTier: input.reqTier,
-    reqTierNum: String(input.reqTierNum || ''),
-    toUid: input.toUid,
-    toBtag: normalizeBattleTag(input.toBtag),
-    leaderPos: input.leaderPos || '정보없음',
-    leaderTier: input.leaderTier || '',
-    leaderTierNum: String(input.leaderTierNum || ''),
-    postId: input.postId,
-    message: normalizeText(input.message, { maxLength: PARTY_LIMITS.requestMessageMaxLength }),
-    status: 'pending',
-    createdAt: now,
-    updatedAt: now,
-  }, { merge: false });
+  await runTransaction(db, async (transaction) => {
+    const [matchSnap, partySnap] = await Promise.all([
+      transaction.get(matchRef),
+      transaction.get(partyRef),
+    ]);
+
+    if (!partySnap.exists()) throw new Error('파티를 찾을 수 없습니다.');
+
+    const party = partySnap.data();
+    const members = Array.isArray(party.members) ? party.members : [];
+    const currentCount = members.length + 1;
+    const maxCount = party.maxp || PARTY_LIMITS.maxMembers;
+
+    if (party.deleted) throw new Error('종료된 파티입니다.');
+    if (party.expiresAt && party.expiresAt < now) throw new Error('만료된 파티입니다.');
+    if (party.uid === user.uid) throw new Error('자신의 파티에는 신청할 수 없습니다.');
+    if (currentCount >= maxCount) throw new Error('이미 마감된 파티입니다.');
+    if (members.some((member) => member.uid === user.uid)) throw new Error('이미 참여 중인 파티입니다.');
+
+    if (matchSnap.exists()) {
+      const existing = matchSnap.data();
+      if (existing.status === 'pending') throw new Error('이미 신청한 파티입니다.');
+      if (existing.status === 'accepted') throw new Error('이미 수락된 파티입니다.');
+    }
+
+    transaction.set(matchRef, {
+      fromUid: user.uid,
+      fromBtag: normalizeBattleTag(input.fromBtag),
+      reqPos: input.reqPos || party.pos,
+      reqTier: input.reqTier || party.tier,
+      reqTierNum: String(input.reqTierNum || party.tierNum || ''),
+      toUid: party.uid,
+      toBtag: normalizeBattleTag(party.btag || input.toBtag),
+      leaderPos: party.pos || input.leaderPos || '정보없음',
+      leaderTier: party.tier || input.leaderTier || '',
+      leaderTierNum: String(party.tierNum || input.leaderTierNum || ''),
+      postId: input.postId,
+      message: normalizeText(input.message, { maxLength: PARTY_LIMITS.requestMessageMaxLength }),
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    }, { merge: false });
+  });
 
   return matchRef;
 }
