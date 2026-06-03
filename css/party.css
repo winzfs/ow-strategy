@@ -73,6 +73,7 @@
   min-height: 34px;
   align-items: center;
   justify-content: center;
+  gap: 5px;
   border: 2px solid transparent;
   border-radius: var(--radius-md);
   background: #21262d;
@@ -80,10 +81,25 @@
   cursor: pointer;
   font-size: 13px;
   font-weight: 800;
-  padding: 0 14px;
+  padding: 4px 12px;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition: transform var(--transition-base), box-shadow var(--transition-base), background var(--transition-base), filter var(--transition-base);
+}
+
+.filter-icon,
+.filter-tag img {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.filter-tag-tier .filter-icon,
+.filter-tag-tier img {
+  width: 20px;
+  height: 20px;
 }
 
 @media (hover: hover) {
