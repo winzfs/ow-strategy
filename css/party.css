@@ -1,7 +1,6 @@
 /*
  * Party page styles
- *
- * Feature-specific styles for the party finding/matching screen.
+ * White premium portfolio theme for the OW party flow.
  */
 
 @import url('./variables.css');
@@ -10,41 +9,118 @@
 .party-list-section h2,
 #page-profile h2,
 #page-notifications h2 {
-  color: var(--color-accent);
-  margin-top: 0;
+  color: var(--color-text);
+  font-size: 22px;
+  letter-spacing: -0.04em;
+  margin: 0 0 8px;
+}
+
+.party-compose-card h2::after,
+.party-list-section h2::after,
+#page-profile h2::after,
+#page-notifications h2::after {
+  content: '';
+  display: block;
+  width: 42px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-accent), rgba(255, 138, 0, 0.05));
+  margin-top: 10px;
 }
 
 .card-subcopy,
 .form-help {
   color: var(--color-text-muted);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 6px 0 14px;
 }
 
 .party-form-grid {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .party-inline-row,
 .request-tier-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 80px;
+  grid-template-columns: 1fr 1fr 84px;
   gap: var(--space-2);
 }
 
-.party-filter-panel {
-  border: 1px solid #30363d;
+.activity-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  border: 1px solid rgba(255, 138, 0, 0.22);
   border-radius: var(--radius-xl);
-  background: linear-gradient(145deg, #161b22, #0d1117);
+  background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,248,238,0.92));
+  box-shadow: var(--shadow-panel);
+  padding: 18px 20px;
+  margin-bottom: var(--space-5);
+}
+
+.activity-label {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 950;
+  margin: 0 0 5px;
+}
+
+.activity-number {
+  color: var(--color-accent-strong);
+  font-size: 36px;
+  line-height: 1;
+}
+
+.activity-copy {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin: 6px 0 0;
+}
+
+.activity-side {
+  flex: 0 0 auto;
+}
+
+.discord-cta-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-xl);
+  background: rgba(255,255,255,0.78);
+  box-shadow: var(--shadow-panel);
+  padding: 18px;
+  margin-bottom: var(--space-5);
+}
+
+.discord-cta-card strong {
+  color: var(--color-text);
+  font-size: 15px;
+}
+
+.discord-cta-card p {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 5px 0 0;
+}
+
+.party-filter-panel {
+  border: 1px solid rgba(228, 217, 204, 0.95);
+  border-radius: var(--radius-xl);
+  background: rgba(255,255,255,0.82);
   box-shadow: var(--shadow-panel);
   margin-bottom: var(--space-5);
   padding: var(--space-5);
+  backdrop-filter: blur(16px);
 }
 
 .party-filter-title {
-  border-left: 4px solid var(--color-accent);
+  border-left: 5px solid var(--color-accent);
   margin-bottom: 18px;
   padding-left: var(--space-3);
 }
@@ -53,6 +129,7 @@
   display: block;
   color: var(--color-text);
   font-size: 16px;
+  font-weight: 950;
 }
 
 .party-filter-title small {
@@ -60,6 +137,16 @@
   color: var(--color-text-muted);
   font-size: 11px;
   margin-top: 4px;
+}
+
+.filter-section + .filter-section {
+  margin-top: var(--space-4);
+}
+
+.filter-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-soft), transparent);
+  margin: var(--space-4) 0;
 }
 
 .filter-chip-group {
@@ -70,21 +157,22 @@
 
 .filter-tag {
   display: inline-flex;
-  min-height: 34px;
+  min-height: 38px;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  border: 2px solid transparent;
-  border-radius: var(--radius-md);
-  background: #21262d;
-  color: #c9d1d9;
+  gap: 6px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-pill);
+  background: rgba(255,255,255,0.9);
+  color: var(--color-text-soft);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 800;
-  padding: 4px 12px;
+  font-weight: 900;
+  padding: 6px 13px;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: transform var(--transition-base), box-shadow var(--transition-base), background var(--transition-base), filter var(--transition-base);
+  box-shadow: 0 8px 18px rgba(64,45,25,0.05);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), background var(--transition-base), filter var(--transition-base), border var(--transition-base);
 }
 
 .filter-icon,
@@ -104,36 +192,48 @@
 
 @media (hover: hover) {
   .filter-tag:hover:not(.active) {
-    filter: brightness(1.12);
+    border-color: rgba(255, 138, 0, 0.28);
+    box-shadow: 0 12px 24px rgba(64,45,25,0.09);
     transform: translateY(-2px);
   }
 }
 
 .filter-tag:active {
-  filter: brightness(0.92);
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 .filter-tag.is-active,
 .filter-tag.active {
-  border-color: #ffffff;
-  background: var(--color-accent);
-  color: #000000;
-  box-shadow: 0 0 15px var(--color-accent-glow);
-  filter: brightness(1.15);
+  border-color: rgba(255, 138, 0, 0.48);
+  background: linear-gradient(135deg, var(--color-accent), #ffb13d);
+  color: #211207;
+  box-shadow: 0 12px 28px rgba(255, 138, 0, 0.22);
   transform: none !important;
 }
 
 .party-list {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .party-card {
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-3);
-  padding: 15px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(228, 217, 204, 0.95);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,250,242,0.84));
+  box-shadow: var(--shadow-panel);
+  padding: 18px;
+}
+
+.party-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 7px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--color-accent), rgba(255, 138, 0, 0.12));
 }
 
 .party-card-header {
@@ -142,6 +242,7 @@
   justify-content: space-between;
   gap: var(--space-3);
   margin-bottom: var(--space-3);
+  padding-left: 4px;
 }
 
 .party-card-owner {
@@ -151,11 +252,19 @@
   gap: var(--space-2);
 }
 
+.party-owner {
+  color: var(--color-text);
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+
 .party-card-desc {
-  min-height: 18px;
-  color: #bbbbbb;
+  min-height: 20px;
+  color: var(--color-text-soft);
   font-size: 14px;
-  margin-bottom: 15px;
+  line-height: 1.55;
+  margin: 0 0 16px;
+  padding-left: 4px;
   white-space: pre-wrap;
 }
 
@@ -164,7 +273,7 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .party-tier-badge img {
@@ -182,16 +291,39 @@
 }
 
 .request-card {
-  border-left: 5px solid var(--color-accent);
-  border-radius: var(--radius-lg);
-  background: #252525;
-  padding: 15px;
+  border: 1px solid rgba(255, 138, 0, 0.25);
+  border-left: 6px solid var(--color-accent);
+  border-radius: var(--radius-xl);
+  background: rgba(255,255,255,0.86);
+  box-shadow: var(--shadow-panel);
+  padding: 16px;
 }
 
 .match-success-card {
-  border-left: 5px solid var(--color-support);
-  border-radius: var(--radius-md);
-  padding: 15px;
+  border: 1px solid rgba(31, 157, 90, 0.22);
+  border-left: 6px solid var(--color-success);
+  border-radius: var(--radius-xl);
+  background: rgba(255,255,255,0.9);
+  box-shadow: var(--shadow-panel);
+  padding: 16px;
+}
+
+.rating-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.rating-button {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-pill);
+  background: #fffaf2;
+  color: var(--color-accent-strong);
+  font-size: 12px;
+  font-weight: 900;
+  padding: 6px 10px;
 }
 
 .eval-card {
@@ -200,7 +332,9 @@
 }
 
 .request-modal-panel h3 {
-  color: var(--color-accent);
+  color: var(--color-text);
+  font-size: 22px;
+  letter-spacing: -0.04em;
   margin-top: 0;
 }
 
@@ -211,12 +345,13 @@
 }
 
 .site-footer {
-  border-top: 1px solid #222222;
-  color: #666666;
+  border-top: 1px solid var(--color-border-soft);
+  color: var(--color-text-muted);
   font-size: 11px;
   line-height: 1.8;
   margin-top: 50px;
-  padding: 20px 15px;
+  padding: 22px 16px;
+  background: rgba(255,255,255,0.58);
 }
 
 .footer-inner {
@@ -232,30 +367,30 @@
 }
 
 .footer-links a {
-  color: #888888;
+  color: var(--color-text-muted);
+  font-weight: 800;
   text-decoration: none;
 }
 
 .footer-links a:hover {
-  color: var(--color-accent);
+  color: var(--color-accent-strong);
 }
 
-.nav-new-badge {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 10px;
-  height: 10px;
-  border: 2px solid #000000;
-  border-radius: 50%;
-  background: var(--color-danger);
-}
-
-.nav-spacer {
-  width: 36px;
+.expiry-hint {
+  border-top: 1px dashed var(--color-border-soft);
+  color: var(--color-text-dim);
+  font-size: 11px;
+  margin-top: 14px;
+  padding-top: 10px;
 }
 
 @media (max-width: 520px) {
+  .activity-panel,
+  .discord-cta-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .party-inline-row,
   .request-tier-row {
     grid-template-columns: 1fr;
