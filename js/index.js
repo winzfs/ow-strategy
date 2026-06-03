@@ -166,44 +166,83 @@ function createIconBadge(label, iconUrl, className = 'badge-muted') {
   return badge;
 }
 
+function createButton(id, text, className, onClick) {
+  const button = document.createElement('button');
+  button.id = id;
+  button.type = 'button';
+  button.className = className;
+  button.textContent = text;
+  if (onClick) button.addEventListener('click', onClick);
+  return button;
+}
+
+function createInput(id, options = {}) {
+  const input = document.createElement('input');
+  input.id = id;
+  input.className = options.className || 'form-input';
+  input.type = options.type || 'text';
+  input.placeholder = options.placeholder || '';
+  if (options.autocomplete) input.autocomplete = options.autocomplete;
+  if (options.value) input.value = options.value;
+  return input;
+}
+
+function createSelect(id, values, selected = '', labelMapper = (value) => value) {
+  const select = document.createElement('select');
+  select.id = id;
+  select.className = 'form-select';
+  values.forEach((value) => {
+    const option = document.createElement('option');
+    option.value = String(value);
+    option.textContent = labelMapper(value);
+    option.selected = String(value) === String(selected);
+    select.append(option);
+  });
+  return select;
+}
+
+function createProfileRoleControls(label, tierId, tierNumId, roleData) {
+  const row = document.createElement('div');
+  row.className = 'pos-group';
+  row.append(createTextElement('strong', label));
+  row.append(createSelect(tierId, TIERS, roleData.tier));
+  row.append(createSelect(tierNumId, TIER_NUMBERS, roleData.num));
+  return row;
+}
+
 function renderAuthPanel() {
   const panel = qs('#auth-panel');
   if (!panel) return;
 
+  const box = document.createElement('div');
+  box.className = 'auth-fallback-box';
+
   if (!state.user) {
-    panel.innerHTML = `
-      <div class="auth-fallback-box">
-        <p class="auth-fallback-title">OW HUB 로그인</p>
-        <input class="form-input" id="login-email" type="email" autocomplete="email" placeholder="이메일">
-        <input class="form-input" id="login-password" type="password" autocomplete="current-password" placeholder="비밀번호">
-        <button class="btn btn-primary btn-block" id="btn-login" type="button">로그인</button>
-        <button class="btn btn-secondary btn-block" id="btn-register" type="button">회원가입</button>
-        <button class="btn btn-secondary btn-block" id="btn-reset-password" type="button">비밀번호 찾기</button>
-      </div>
-    `;
+    box.append(createTextElement('p', 'OW HUB 로그인', 'auth-fallback-title'));
+    box.append(createInput('login-email', { type: 'email', autocomplete: 'email', placeholder: '이메일' }));
+    box.append(createInput('login-password', { type: 'password', autocomplete: 'current-password', placeholder: '비밀번호' }));
+    box.append(createButton('btn-login', '로그인', 'btn btn-primary btn-block'));
+    box.append(createButton('btn-register', '회원가입', 'btn btn-secondary btn-block'));
+    box.append(createButton('btn-reset-password', '비밀번호 찾기', 'btn btn-secondary btn-block'));
+    panel.replaceChildren(box);
     bindAuthButtons();
     return;
   }
 
   const btag = state.profile?.btag || state.user.email || '프로필을 설정하세요';
   const rating = getAverageRating(state.profile) || '신규';
-  panel.innerHTML = `
-    <div class="auth-fallback-box">
-      <p class="auth-fallback-title">로그인됨</p>
-      <div class="profile-btag">${btag}</div>
-      <div class="profile-meta">매너 평점: ${rating}</div>
-      <button class="btn btn-secondary btn-block" id="btn-logout" type="button">로그아웃</button>
-    </div>
-  `;
-
-  qs('#btn-logout')?.addEventListener('click', async () => {
+  box.append(createTextElement('p', '로그인됨', 'auth-fallback-title'));
+  box.append(createTextElement('div', btag, 'profile-btag'));
+  box.append(createTextElement('div', `매너 평점: ${rating}`, 'profile-meta'));
+  box.append(createButton('btn-logout', '로그아웃', 'btn btn-secondary btn-block', async () => {
     try {
       await logout();
       showToast('로그아웃되었습니다.', 'success');
     } catch (error) {
       showToast('로그아웃에 실패했습니다.', 'error');
     }
-  });
+  }));
+  panel.replaceChildren(box);
 }
 
 function bindAuthButtons() {
@@ -239,20 +278,29 @@ function renderPartyForm() {
   const form = qs('#party-form');
   if (!form) return;
 
-  form.innerHTML = `
-    <input class="form-input" id="party-btag" placeholder="배틀태그#1234" value="${state.profile?.btag || ''}">
-    <div class="party-inline-row">
-      <select class="form-select" id="party-role">${ROLE_LIST.map((role) => `<option value="${role}" ${role === '딜러' ? 'selected' : ''}>${roleIcon(role)} ${role}</option>`).join('')}</select>
-      <select class="form-select" id="party-tier">${optionList(TIERS, '플래티넘')}</select>
-      <select class="form-select" id="party-tier-num">${tierNumberOptions('5')}</select>
-    </div>
-    <select class="form-select" id="party-maxp">${[2, 3, 4, 5].map((n) => `<option value="${n}" ${n === 5 ? 'selected' : ''}>${n}인 파티</option>`).join('')}</select>
-    <textarea class="form-textarea" id="party-desc" placeholder="모집 내용 (마이크 유무, 경쟁/빠대, 분위기 등)" maxlength="300" rows="2"></textarea>
-    <button class="btn btn-primary btn-block" id="btn-create-party" type="button">모집 시작</button>
-    ${state.user ? '' : '<p class="form-help">로그인 후 모집글을 등록할 수 있습니다. 목록과 필터는 바로 확인할 수 있어요.</p>'}
-  `;
+  const btagInput = createInput('party-btag', {
+    placeholder: '배틀태그#1234',
+    value: state.profile?.btag || '',
+  });
 
-  qs('#btn-create-party')?.addEventListener('click', handleCreateParty);
+  const inlineRow = document.createElement('div');
+  inlineRow.className = 'party-inline-row';
+  inlineRow.append(createSelect('party-role', ROLE_LIST, '딜러', (role) => `${roleIcon(role)} ${role}`));
+  inlineRow.append(createSelect('party-tier', TIERS, '플래티넘'));
+  inlineRow.append(createSelect('party-tier-num', TIER_NUMBERS, '5'));
+
+  const maxSelect = createSelect('party-maxp', [2, 3, 4, 5], 5, (n) => `${n}인 파티`);
+  const desc = document.createElement('textarea');
+  desc.id = 'party-desc';
+  desc.className = 'form-textarea';
+  desc.placeholder = '모집 내용 (마이크 유무, 경쟁/빠대, 분위기 등)';
+  desc.maxLength = 300;
+  desc.rows = 2;
+
+  const createButtonEl = createButton('btn-create-party', '모집 시작', 'btn btn-primary btn-block', handleCreateParty);
+  const children = [btagInput, inlineRow, maxSelect, desc, createButtonEl];
+  if (!state.user) children.push(createTextElement('p', '로그인 후 모집글을 등록할 수 있습니다. 목록과 필터는 바로 확인할 수 있어요.', 'form-help'));
+  form.replaceChildren(...children);
 }
 
 async function handleCreateParty() {
@@ -579,15 +627,25 @@ function renderProfileForm() {
   const tank = getProfileRole(state.profile, '탱커');
   const dps = getProfileRole(state.profile, '딜러');
   const support = getProfileRole(state.profile, '지원');
-  form.innerHTML = `
-    <label class="form-label" for="profile-btag">배틀태그</label>
-    <input class="form-input" id="profile-btag" placeholder="예: Player#1234" value="${state.profile?.btag || ''}">
-    <div class="pos-group"><strong>🛡️ 탱커</strong><select class="form-select" id="profile-tank-tier">${optionList(TIERS, tank.tier)}</select><select class="form-select" id="profile-tank-num">${tierNumberOptions(tank.num)}</select></div>
-    <div class="pos-group"><strong>⚔️ 딜러</strong><select class="form-select" id="profile-dps-tier">${optionList(TIERS, dps.tier)}</select><select class="form-select" id="profile-dps-num">${tierNumberOptions(dps.num)}</select></div>
-    <div class="pos-group"><strong>💉 지원</strong><select class="form-select" id="profile-support-tier">${optionList(TIERS, support.tier)}</select><select class="form-select" id="profile-support-num">${tierNumberOptions(support.num)}</select></div>
-    <button class="btn btn-primary btn-block" id="btn-save-profile" type="button">정보 저장</button>
-  `;
-  qs('#btn-save-profile')?.addEventListener('click', handleSaveProfile);
+
+  const label = document.createElement('label');
+  label.className = 'form-label';
+  label.htmlFor = 'profile-btag';
+  label.textContent = '배틀태그';
+
+  const btagInput = createInput('profile-btag', {
+    placeholder: '예: Player#1234',
+    value: state.profile?.btag || '',
+  });
+
+  form.replaceChildren(
+    label,
+    btagInput,
+    createProfileRoleControls('🛡️ 탱커', 'profile-tank-tier', 'profile-tank-num', tank),
+    createProfileRoleControls('⚔️ 딜러', 'profile-dps-tier', 'profile-dps-num', dps),
+    createProfileRoleControls('💉 지원', 'profile-support-tier', 'profile-support-num', support),
+    createButton('btn-save-profile', '정보 저장', 'btn btn-primary btn-block', handleSaveProfile)
+  );
 }
 
 async function handleSaveProfile() {
