@@ -161,10 +161,10 @@ export async function acceptMatch(matchId) {
 
     const nextMember = {
       uid: match.fromUid,
-      btag: match.fromBtag,
+      btag: normalizeBattleTag(match.fromBtag),
       pos: match.reqPos,
       tier: match.reqTier,
-      tierNum: match.reqTierNum,
+      tierNum: String(match.reqTierNum || ''),
     };
 
     transaction.update(matchRef, {
