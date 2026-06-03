@@ -55,6 +55,7 @@ const state = {
     roles: new Set(),
     tiers: new Set(),
   },
+  pendingRequestParty: null,
   unsubParties: null,
   unsubMatches: null,
 };
@@ -74,6 +75,13 @@ function roleClass(role) {
   return 'badge-muted';
 }
 
+function roleIcon(role) {
+  if (role === '탱커') return '🛡️';
+  if (role === '딜러') return '⚔️';
+  if (role === '지원') return '💉';
+  return '🎮';
+}
+
 function getTierIcon(tier) {
   return ICON_URLS[tier] || '';
 }
@@ -87,14 +95,14 @@ function createBadge(text, className = 'badge-muted') {
 
 function createTierBadge(tier, tierNum) {
   const badge = document.createElement('span');
-  badge.className = 'badge badge-muted';
+  badge.className = 'badge badge-muted party-tier-badge';
   const icon = getTierIcon(tier);
   if (icon) {
     const img = document.createElement('img');
     img.src = icon;
     img.alt = tier;
-    img.style.width = '16px';
-    img.style.height = '16px';
+    img.width = 16;
+    img.height = 16;
     badge.append(img);
   }
   badge.append(document.createTextNode(`${tier || '티어'} ${tierNum || ''}`.trim()));
@@ -244,22 +252,10 @@ function renderProfileForm() {
     <label class="form-label" for="profile-btag">배틀태그</label>
     <input class="form-input" id="profile-btag" placeholder="예: Player#1234" value="${state.profile?.btag || ''}">
 
-    <div class="pos-group">
-      <strong>탱커</strong>
-      <select class="form-select" id="profile-tank-tier">${optionList(TIERS, tank.tier)}</select>
-      <select class="form-select" id="profile-tank-num">${tierNumberOptions(tank.num)}</select>
-    </div>
-    <div class="pos-group">
-      <strong>딜러</strong>
-      <select class="form-select" id="profile-dps-tier">${optionList(TIERS, dps.tier)}</select>
-      <select class="form-select" id="profile-dps-num">${tierNumberOptions(dps.num)}</select>
-    </div>
-    <div class="pos-group">
-      <strong>지원</strong>
-      <select class="form-select" id="profile-support-tier">${optionList(TIERS, support.tier)}</select>
-      <select class="form-select" id="profile-support-num">${tierNumberOptions(support.num)}</select>
-    </div>
-    <button class="btn btn-primary btn-block" id="btn-save-profile" type="button">프로필 저장</button>
+    <div class="pos-group"><strong>🛡️ 탱커</strong><select class="form-select" id="profile-tank-tier">${optionList(TIERS, tank.tier)}</select><select class="form-select" id="profile-tank-num">${tierNumberOptions(tank.num)}</select></div>
+    <div class="pos-group"><strong>⚔️ 딜러</strong><select class="form-select" id="profile-dps-tier">${optionList(TIERS, dps.tier)}</select><select class="form-select" id="profile-dps-num">${tierNumberOptions(dps.num)}</select></div>
+    <div class="pos-group"><strong>💉 지원</strong><select class="form-select" id="profile-support-tier">${optionList(TIERS, support.tier)}</select><select class="form-select" id="profile-support-num">${tierNumberOptions(support.num)}</select></div>
+    <button class="btn btn-primary btn-block" id="btn-save-profile" type="button">정보 저장</button>
   `;
 
   qs('#btn-save-profile')?.addEventListener('click', handleSaveProfile);
@@ -295,16 +291,13 @@ function renderPartyForm() {
 
   const btag = state.profile?.btag || '';
   form.innerHTML = `
-    <label class="form-label" for="party-btag">배틀태그</label>
     <input class="form-input" id="party-btag" placeholder="배틀태그#1234" value="${btag}">
-    <label class="form-label" for="party-role">포지션</label>
-    <select class="form-select" id="party-role">${optionList(ROLE_LIST, '딜러')}</select>
-    <label class="form-label" for="party-tier">티어</label>
-    <select class="form-select" id="party-tier">${optionList(TIERS, '플래티넘')}</select>
-    <select class="form-select" id="party-tier-num">${tierNumberOptions('5')}</select>
-    <label class="form-label" for="party-maxp">모집 인원</label>
+    <div class="party-inline-row">
+      <select class="form-select" id="party-role">${ROLE_LIST.map((role) => `<option value="${role}" ${role === '딜러' ? 'selected' : ''}>${roleIcon(role)} ${role}</option>`).join('')}</select>
+      <select class="form-select" id="party-tier">${optionList(TIERS, '플래티넘')}</select>
+      <select class="form-select" id="party-tier-num">${tierNumberOptions('5')}</select>
+    </div>
     <select class="form-select" id="party-maxp">${[2, 3, 4, 5].map((n) => `<option value="${n}" ${n === 5 ? 'selected' : ''}>${n}인 파티</option>`).join('')}</select>
-    <label class="form-label" for="party-desc">모집 내용</label>
     <textarea class="form-textarea" id="party-desc" placeholder="모집 내용 (마이크 유무, 경쟁/빠대, 분위기 등)" maxlength="300" rows="2"></textarea>
     <button class="btn btn-primary btn-block" id="btn-create-party" type="button">모집 시작</button>
     ${state.user ? '' : '<p class="form-help">로그인 후 모집글을 등록할 수 있습니다. 목록과 필터는 바로 확인할 수 있어요.</p>'}
@@ -357,7 +350,7 @@ function createPartyCard(party) {
 
   const badges = document.createElement('div');
   badges.className = 'party-card-badges';
-  badges.append(createBadge(party.pos || '포지션', roleClass(party.pos)));
+  badges.append(createBadge(`${roleIcon(party.pos)} ${party.pos || '포지션'}`, roleClass(party.pos)));
   badges.append(createTierBadge(party.tier, party.tierNum));
   badges.append(createBadge(`${(party.members?.length || 0) + 1}/${party.maxp || 5}`, 'badge-muted'));
   badges.append(createBadge(`평점 ${party.ownerRate || '신규'}`, 'badge-muted'));
@@ -384,7 +377,7 @@ function createPartyCard(party) {
     const sentPostIds = getSentRequestPostIds(state.matches, state.user?.uid);
     requestButton.textContent = sentPostIds.has(party.id) ? '신청됨' : '파티 신청';
     requestButton.disabled = !state.user || sentPostIds.has(party.id);
-    requestButton.addEventListener('click', () => handleRequestParty(party));
+    requestButton.addEventListener('click', () => openRequestModal(party));
     actions.append(requestButton);
   }
 
@@ -392,7 +385,62 @@ function createPartyCard(party) {
   return card;
 }
 
-async function handleRequestParty(party) {
+function openRequestModal(party) {
+  if (!state.user) {
+    showToast('로그인이 필요합니다.', 'error');
+    return;
+  }
+
+  state.pendingRequestParty = party;
+  const modal = qs('#request-modal');
+  const role = getProfileRole(state.profile, party.pos || '딜러');
+
+  setText('request-modal-target', `${party.btag || '상대'}님의 ${party.pos || '파티'} 모집에 신청합니다.`);
+  const posSelect = qs('#request-pos');
+  const tierSelect = qs('#request-tier');
+  const tierNumSelect = qs('#request-tier-num');
+  const btagInput = qs('#request-btag');
+  const msgInput = qs('#request-msg');
+
+  if (posSelect) posSelect.value = party.pos || '딜러';
+  if (tierSelect) tierSelect.value = role.tier || party.tier || '배치';
+  if (tierNumSelect) tierNumSelect.value = role.num || party.tierNum || '1';
+  if (btagInput) btagInput.value = state.profile?.btag || auth.currentUser?.email || '';
+  if (msgInput) msgInput.value = '파티 신청합니다.';
+
+  modal?.classList.add('is-active');
+  modal?.setAttribute('aria-hidden', 'false');
+}
+
+function closeRequestModal() {
+  state.pendingRequestParty = null;
+  const modal = qs('#request-modal');
+  modal?.classList.remove('is-active');
+  modal?.setAttribute('aria-hidden', 'true');
+}
+
+async function handleConfirmRequest() {
+  const party = state.pendingRequestParty;
+  if (!party) {
+    closeRequestModal();
+    return;
+  }
+
+  try {
+    await handleRequestParty(party, {
+      fromBtag: getFormValue('request-btag'),
+      reqPos: getFormValue('request-pos'),
+      reqTier: getFormValue('request-tier'),
+      reqTierNum: getFormValue('request-tier-num'),
+      message: getFormValue('request-msg'),
+    });
+    closeRequestModal();
+  } catch (error) {
+    console.error('[party:modal-request]', error);
+  }
+}
+
+async function handleRequestParty(party, override = {}) {
   if (!state.user) {
     showToast('로그인이 필요합니다.', 'error');
     return;
@@ -404,19 +452,20 @@ async function handleRequestParty(party) {
       postId: party.id,
       toUid: party.uid,
       toBtag: party.btag,
-      fromBtag: state.profile?.btag || auth.currentUser?.email || '익명',
-      reqPos: party.pos,
-      reqTier: role.tier || party.tier,
-      reqTierNum: role.num || party.tierNum,
+      fromBtag: override.fromBtag || state.profile?.btag || auth.currentUser?.email || '익명',
+      reqPos: override.reqPos || party.pos,
+      reqTier: override.reqTier || role.tier || party.tier,
+      reqTierNum: override.reqTierNum || role.num || party.tierNum,
       leaderPos: party.pos,
       leaderTier: party.tier,
       leaderTierNum: party.tierNum,
-      message: '파티 신청합니다.',
+      message: override.message || '파티 신청합니다.',
     }, state.user);
     showToast('파티 신청을 보냈습니다.', 'success');
   } catch (error) {
     console.error('[party:request]', error);
     showToast(error.message || '파티 신청에 실패했습니다.', 'error');
+    throw error;
   }
 }
 
@@ -435,7 +484,7 @@ function createFilterButton(value, type) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'filter-tag';
-  button.textContent = value;
+  button.textContent = type === 'role' ? `${roleIcon(value)} ${value}` : value;
   button.addEventListener('click', () => {
     const targetSet = type === 'role' ? state.filters.roles : state.filters.tiers;
     if (targetSet.has(value)) targetSet.delete(value);
@@ -451,7 +500,7 @@ function renderFilters() {
   const roleFilter = qs('#role-filter');
   const tierFilter = qs('#tier-filter');
   if (roleFilter) replaceChildrenFromArray(roleFilter, ROLE_LIST, (role) => createFilterButton(role, 'role'));
-  if (tierFilter) replaceChildrenFromArray(tierFilter, TIERS.filter((tier) => tier !== '배치'), (tier) => createFilterButton(tier, 'tier'));
+  if (tierFilter) replaceChildrenFromArray(tierFilter, TIERS, (tier) => createFilterButton(tier, 'tier'));
 
   qs('#btn-filter-reset')?.addEventListener('click', () => {
     state.filters.roles.clear();
@@ -657,6 +706,11 @@ async function handleAuth(user) {
 function bindEvents() {
   qs('#hamburger-btn')?.addEventListener('click', toggleSidebar);
   qs('#sidebar-overlay')?.addEventListener('click', closeSidebar);
+  qs('#btn-cancel-request')?.addEventListener('click', closeRequestModal);
+  qs('#btn-confirm-send')?.addEventListener('click', handleConfirmRequest);
+  qs('#request-modal')?.addEventListener('click', (event) => {
+    if (event.target.id === 'request-modal') closeRequestModal();
+  });
 
   qsa('[data-page-target]').forEach((button) => {
     button.addEventListener('click', () => showPage(button.dataset.pageTarget));
@@ -672,6 +726,8 @@ function exposeLegacyHooks() {
     toggleSidebar,
     renderParties,
     renderNotifications,
+    openRequestModal,
+    closeRequestModal,
   };
 }
 
