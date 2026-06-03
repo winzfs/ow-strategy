@@ -5,10 +5,11 @@
 import {
   doc,
   getDoc,
+  runTransaction,
   setDoc,
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { COLLECTIONS, db } from './firebase.js';
-import { normalizeBattleTag } from './sanitize.js';
+import { clampNumber, normalizeBattleTag } from './sanitize.js';
 
 export function normalizeProfileDraft(input) {
   return {
@@ -54,4 +55,29 @@ export function getAverageRating(profile) {
   const total = Number(profile?.rateTotal || 0);
   if (!count) return null;
   return (total / count).toFixed(1);
+}
+
+export async function rateUser(targetUid, score) {
+  if (!targetUid) throw new Error('평가할 유저 정보가 없습니다.');
+  const normalizedScore = clampNumber(score, 1, 5, 5);
+  const profileRef = doc(db, COLLECTIONS.users, targetUid);
+
+  return runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(profileRef);
+    const data = snap.exists() ? snap.data() : {};
+    const nextCount = Number(data.rateCount || 0) + 1;
+    const nextTotal = Number(data.rateTotal || 0) + normalizedScore;
+
+    transaction.set(profileRef, {
+      rateCount: nextCount,
+      rateTotal: nextTotal,
+      updatedAt: Date.now(),
+    }, { merge: true });
+
+    return {
+      rateCount: nextCount,
+      rateTotal: nextTotal,
+      average: (nextTotal / nextCount).toFixed(1),
+    };
+  });
 }
