@@ -266,6 +266,11 @@ function renderProfileForm() {
 }
 
 async function handleSaveProfile() {
+  if (!state.user) {
+    showToast('로그인이 필요합니다.', 'error');
+    return;
+  }
+
   try {
     state.profile = await saveProfile(state.user.uid, {
       btag: getFormValue('profile-btag'),
@@ -288,31 +293,32 @@ function renderPartyForm() {
   const form = qs('#party-form');
   if (!form) return;
 
-  if (!state.user) {
-    renderEmptyState(form, '로그인 후 파티를 모집할 수 있습니다.');
-    return;
-  }
-
   const btag = state.profile?.btag || '';
   form.innerHTML = `
     <label class="form-label" for="party-btag">배틀태그</label>
-    <input class="form-input" id="party-btag" placeholder="프로필 배틀태그" value="${btag}">
+    <input class="form-input" id="party-btag" placeholder="배틀태그#1234" value="${btag}">
     <label class="form-label" for="party-role">포지션</label>
     <select class="form-select" id="party-role">${optionList(ROLE_LIST, '딜러')}</select>
     <label class="form-label" for="party-tier">티어</label>
     <select class="form-select" id="party-tier">${optionList(TIERS, '플래티넘')}</select>
-    <select class="form-select" id="party-tier-num">${tierNumberOptions('1')}</select>
+    <select class="form-select" id="party-tier-num">${tierNumberOptions('5')}</select>
     <label class="form-label" for="party-maxp">모집 인원</label>
-    <select class="form-select" id="party-maxp">${[2, 3, 4, 5].map((n) => `<option value="${n}">${n}명</option>`).join('')}</select>
-    <label class="form-label" for="party-desc">설명</label>
-    <textarea class="form-textarea" id="party-desc" placeholder="예: 빠대/경쟁/마이크 여부 등을 적어주세요." maxlength="300"></textarea>
-    <button class="btn btn-primary btn-block" id="btn-create-party" type="button">파티 모집하기</button>
+    <select class="form-select" id="party-maxp">${[2, 3, 4, 5].map((n) => `<option value="${n}" ${n === 5 ? 'selected' : ''}>${n}인 파티</option>`).join('')}</select>
+    <label class="form-label" for="party-desc">모집 내용</label>
+    <textarea class="form-textarea" id="party-desc" placeholder="모집 내용 (마이크 유무, 경쟁/빠대, 분위기 등)" maxlength="300" rows="2"></textarea>
+    <button class="btn btn-primary btn-block" id="btn-create-party" type="button">모집 시작</button>
+    ${state.user ? '' : '<p class="form-help">로그인 후 모집글을 등록할 수 있습니다. 목록과 필터는 바로 확인할 수 있어요.</p>'}
   `;
 
   qs('#btn-create-party')?.addEventListener('click', handleCreateParty);
 }
 
 async function handleCreateParty() {
+  if (!state.user) {
+    showToast('로그인 후 파티를 모집할 수 있습니다.', 'error');
+    return;
+  }
+
   try {
     await createParty({
       btag: getFormValue('party-btag'),
@@ -673,6 +679,7 @@ function init() {
   hideElement(qs('#nav-new-badge'));
   hideElement(qs('#side-new-badge'));
   renderFilters();
+  renderPartyForm();
   bindEvents();
   exposeLegacyHooks();
   startListeners();
