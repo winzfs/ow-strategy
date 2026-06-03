@@ -12,6 +12,10 @@ function qs(selector) {
   return document.querySelector(selector);
 }
 
+function hasMainController() {
+  return Boolean(window.OWHub?.main?.renderParties);
+}
+
 function ensureToastRoot() {
   let root = qs('#toast-root');
   if (root) return root;
@@ -149,6 +153,8 @@ function createPartyCard(party) {
 }
 
 function renderParties(parties) {
+  if (hasMainController()) return;
+
   const list = qs('#party-list');
   if (!list) return;
 
@@ -170,12 +176,18 @@ function initPartyListFallback() {
   if (!list) return;
 
   const partiesQuery = query(collection(db, COLLECTIONS.parties), orderBy('createdAt', 'desc'));
-  onSnapshot(partiesQuery, function (snapshot) {
+  const unsubscribe = onSnapshot(partiesQuery, function (snapshot) {
+    if (hasMainController()) {
+      unsubscribe();
+      return;
+    }
+
     const parties = snapshot.docs.map(function (item) {
       return { id: item.id, ...item.data() };
     });
     renderParties(parties);
   }, function (error) {
+    if (hasMainController()) return;
     console.error('[party-list-fallback:watch]', error);
     list.innerHTML = '<div class="empty-state">파티 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>';
   });
