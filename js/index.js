@@ -1,7 +1,8 @@
 /*
  * OW Hub main page controller
  *
- * Owns auth, profile, party listing, party creation and match requests for index.html.
+ * Stable controller for index.html. UI must remain visible before login and
+ * Firebase/listener failures must not break the whole page.
  */
 
 import { auth } from './firebase.js';
@@ -13,36 +14,35 @@ import {
   watchAuth,
 } from './auth.js';
 import {
-  createMatchRequest,
-  createParty,
   acceptMatch,
   closeParty,
+  createMatchRequest,
+  createParty,
   watchParties,
 } from './party.js';
 import {
-  getProfile,
   getAverageRating,
+  getProfile,
   getPublicBattleTagName,
-  saveProfile,
-  rateUser,
   hasRatedUser,
+  rateUser,
+  saveProfile,
 } from './profile.js';
 import {
   getSentRequestPostIds,
-  hasPendingIncomingMatch,
   markMatchRejected,
   removeMatch,
   watchMatches,
 } from './notification.js';
-import { ROLE_LIST, TIERS, TIER_NUMBERS, ICON_URLS } from './config.js';
+import { ICON_URLS, ROLE_LIST, TIERS, TIER_NUMBERS } from './config.js';
 import {
   createTextElement,
-  renderEmptyState,
-  replaceChildrenFromArray,
+  hideElement,
   qs,
   qsa,
+  renderEmptyState,
+  replaceChildrenFromArray,
   showElement,
-  hideElement,
   showToast,
 } from './ui.js';
 
@@ -51,28 +51,39 @@ const state = {
   profile: null,
   parties: [],
   matches: [],
+  pendingRequestParty: null,
   filters: {
     roles: new Set(),
     tiers: new Set(),
   },
-  pendingRequestParty: null,
   unsubParties: null,
   unsubMatches: null,
 };
 
-function optionList(values, selectedValue = '') {
-  return values.map((value) => `<option value="${value}" ${value === selectedValue ? 'selected' : ''}>${value}</option>`).join('');
+function safeRun(label, fn) {
+  try {
+    return fn();
+  } catch (error) {
+    console.error(`[index:${label}]`, error);
+    return undefined;
+  }
 }
 
-function tierNumberOptions(selectedValue = '1') {
-  return TIER_NUMBERS.map((value) => `<option value="${value}" ${value === String(selectedValue) ? 'selected' : ''}>${value}</option>`).join('');
+function getValue(id) {
+  return qs(`#${id}`)?.value || '';
 }
 
-function roleClass(role) {
-  if (role === '탱커') return 'badge-role-tank';
-  if (role === '딜러') return 'badge-role-dps';
-  if (role === '지원') return 'badge-role-support';
-  return 'badge-muted';
+function setText(id, text) {
+  const el = qs(`#${id}`);
+  if (el) el.textContent = text;
+}
+
+function optionList(values, selected = '') {
+  return values.map((value) => `<option value="${value}" ${value === selected ? 'selected' : ''}>${value}</option>`).join('');
+}
+
+function tierNumberOptions(selected = '1') {
+  return TIER_NUMBERS.map((value) => `<option value="${value}" ${value === String(selected) ? 'selected' : ''}>${value}</option>`).join('');
 }
 
 function roleIcon(role) {
@@ -82,49 +93,39 @@ function roleIcon(role) {
   return '🎮';
 }
 
-function getTierIcon(tier) {
-  return ICON_URLS[tier] || '';
-}
-
-function createBadge(text, className = 'badge-muted') {
-  const badge = document.createElement('span');
-  badge.className = `badge ${className}`;
-  badge.textContent = text;
-  return badge;
-}
-
-function createTierBadge(tier, tierNum) {
-  const badge = document.createElement('span');
-  badge.className = 'badge badge-muted party-tier-badge';
-  const icon = getTierIcon(tier);
-  if (icon) {
-    const img = document.createElement('img');
-    img.src = icon;
-    img.alt = tier;
-    img.width = 16;
-    img.height = 16;
-    badge.append(img);
-  }
-  badge.append(document.createTextNode(`${tier || '티어'} ${tierNum || ''}`.trim()));
-  return badge;
+function roleClass(role) {
+  if (role === '탱커') return 'badge-role-tank';
+  if (role === '딜러') return 'badge-role-dps';
+  if (role === '지원') return 'badge-role-support';
+  return 'badge-muted';
 }
 
 function getProfileRole(profile, role) {
   return profile?.[role] || { tier: '배치', num: '1' };
 }
 
-function getFormValue(id) {
-  return qs(`#${id}`)?.value || '';
-}
-
-function setText(id, text) {
-  const el = qs(`#${id}`);
-  if (el) el.textContent = text;
-}
-
 function getRelatedMatches() {
   if (!state.user) return [];
   return state.matches.filter((match) => match.fromUid === state.user.uid || match.toUid === state.user.uid);
+}
+
+function openSidebar() {
+  qs('#sidebar')?.classList.add('is-active', 'active');
+  qs('#sidebar-overlay')?.classList.add('is-active', 'active');
+  qs('#hamburger-btn')?.setAttribute('aria-expanded', 'true');
+}
+
+function closeSidebar() {
+  qs('#sidebar')?.classList.remove('is-active', 'active');
+  qs('#sidebar-overlay')?.classList.remove('is-active', 'active');
+  qs('#hamburger-btn')?.setAttribute('aria-expanded', 'false');
+}
+
+function toggleSidebar() {
+  const sidebar = qs('#sidebar');
+  const isOpen = sidebar?.classList.contains('is-active') || sidebar?.classList.contains('active');
+  if (isOpen) closeSidebar();
+  else openSidebar();
 }
 
 function showPage(pageName) {
@@ -143,155 +144,103 @@ function showPage(pageName) {
   closeSidebar();
 }
 
-function openSidebar() {
-  qs('#sidebar')?.classList.add('is-active', 'active');
-  qs('#sidebar-overlay')?.classList.add('is-active', 'active');
+function createBadge(text, className = 'badge-muted') {
+  const badge = document.createElement('span');
+  badge.className = `badge ${className}`;
+  badge.textContent = text;
+  return badge;
 }
 
-function closeSidebar() {
-  qs('#sidebar')?.classList.remove('is-active', 'active');
-  qs('#sidebar-overlay')?.classList.remove('is-active', 'active');
-}
-
-function toggleSidebar() {
-  const sidebar = qs('#sidebar');
-  if (sidebar?.classList.contains('is-active') || sidebar?.classList.contains('active')) closeSidebar();
-  else openSidebar();
+function createIconBadge(label, iconUrl, className = 'badge-muted') {
+  const badge = document.createElement('span');
+  badge.className = `badge ${className}`;
+  if (iconUrl) {
+    const img = document.createElement('img');
+    img.src = iconUrl;
+    img.alt = '';
+    img.width = 16;
+    img.height = 16;
+    badge.append(img);
+  }
+  badge.append(document.createTextNode(label));
+  return badge;
 }
 
 function renderAuthPanel() {
   const panel = qs('#auth-panel');
-  const profileSummary = qs('#profile-summary');
   if (!panel) return;
 
-  if (state.user) {
-    const btag = state.profile?.btag || '프로필을 설정하세요';
-    const rating = getAverageRating(state.profile) || '신규';
-    panel.innerHTML = '';
-
-    const title = createTextElement('div', btag, 'profile-btag');
-    title.style.fontWeight = '900';
-    title.style.color = 'var(--color-accent)';
-
-    const meta = createTextElement('div', `매너 평점: ${rating}`, 'profile-meta');
-    meta.style.color = 'var(--color-text-muted)';
-    meta.style.fontSize = '12px';
-    meta.style.marginTop = '4px';
-
-    const logoutButton = document.createElement('button');
-    logoutButton.className = 'btn btn-secondary btn-block';
-    logoutButton.textContent = '로그아웃';
-    logoutButton.addEventListener('click', async () => {
-      await logout();
-      location.reload();
-    });
-
-    panel.append(title, meta, logoutButton);
-    if (profileSummary) profileSummary.textContent = btag;
+  if (!state.user) {
+    panel.innerHTML = `
+      <div class="auth-fallback-box">
+        <p class="auth-fallback-title">OW HUB 로그인</p>
+        <input class="form-input" id="login-email" type="email" autocomplete="email" placeholder="이메일">
+        <input class="form-input" id="login-password" type="password" autocomplete="current-password" placeholder="비밀번호">
+        <button class="btn btn-primary btn-block" id="btn-login" type="button">로그인</button>
+        <button class="btn btn-secondary btn-block" id="btn-register" type="button">회원가입</button>
+        <button class="btn btn-secondary btn-block" id="btn-reset-password" type="button">비밀번호 찾기</button>
+      </div>
+    `;
+    bindAuthButtons();
     return;
   }
 
+  const btag = state.profile?.btag || state.user.email || '프로필을 설정하세요';
+  const rating = getAverageRating(state.profile) || '신규';
   panel.innerHTML = `
-    <input class="form-input" id="login-email" type="email" placeholder="이메일">
-    <input class="form-input" id="login-password" type="password" placeholder="비밀번호">
-    <button class="btn btn-primary btn-block" id="btn-login" type="button">로그인</button>
-    <button class="btn btn-secondary btn-block" id="btn-register" type="button">회원가입</button>
-    <button class="btn btn-secondary btn-block" id="btn-reset-password" type="button">비밀번호 찾기</button>
-  `;
-  if (profileSummary) profileSummary.textContent = '로그인 필요';
-
-  qs('#btn-login')?.addEventListener('click', handleLogin);
-  qs('#btn-register')?.addEventListener('click', handleRegister);
-  qs('#btn-reset-password')?.addEventListener('click', handleResetPassword);
-}
-
-async function handleLogin() {
-  try {
-    await loginWithEmail(getFormValue('login-email'), getFormValue('login-password'));
-    showToast('로그인되었습니다.', 'success');
-  } catch (error) {
-    console.error('[auth:login]', error);
-    showToast('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.', 'error');
-  }
-}
-
-async function handleRegister() {
-  try {
-    await registerWithEmail(getFormValue('login-email'), getFormValue('login-password'));
-    showToast('회원가입이 완료되었습니다. 인증 메일을 확인해주세요.', 'success');
-  } catch (error) {
-    console.error('[auth:register]', error);
-    showToast('회원가입에 실패했습니다.', 'error');
-  }
-}
-
-async function handleResetPassword() {
-  try {
-    await resetPassword(getFormValue('login-email'));
-    showToast('비밀번호 재설정 메일을 보냈습니다.', 'success');
-  } catch (error) {
-    console.error('[auth:reset]', error);
-    showToast('비밀번호 재설정 메일 발송에 실패했습니다.', 'error');
-  }
-}
-
-function renderProfileForm() {
-  const form = qs('#profile-form');
-  if (!form) return;
-
-  if (!state.user) {
-    renderEmptyState(form, '로그인 후 프로필을 설정할 수 있습니다.');
-    return;
-  }
-
-  const tank = getProfileRole(state.profile, '탱커');
-  const dps = getProfileRole(state.profile, '딜러');
-  const support = getProfileRole(state.profile, '지원');
-
-  form.innerHTML = `
-    <label class="form-label" for="profile-btag">배틀태그</label>
-    <input class="form-input" id="profile-btag" placeholder="예: Player#1234" value="${state.profile?.btag || ''}">
-
-    <div class="pos-group"><strong>🛡️ 탱커</strong><select class="form-select" id="profile-tank-tier">${optionList(TIERS, tank.tier)}</select><select class="form-select" id="profile-tank-num">${tierNumberOptions(tank.num)}</select></div>
-    <div class="pos-group"><strong>⚔️ 딜러</strong><select class="form-select" id="profile-dps-tier">${optionList(TIERS, dps.tier)}</select><select class="form-select" id="profile-dps-num">${tierNumberOptions(dps.num)}</select></div>
-    <div class="pos-group"><strong>💉 지원</strong><select class="form-select" id="profile-support-tier">${optionList(TIERS, support.tier)}</select><select class="form-select" id="profile-support-num">${tierNumberOptions(support.num)}</select></div>
-    <button class="btn btn-primary btn-block" id="btn-save-profile" type="button">정보 저장</button>
+    <div class="auth-fallback-box">
+      <p class="auth-fallback-title">로그인됨</p>
+      <div class="profile-btag">${btag}</div>
+      <div class="profile-meta">매너 평점: ${rating}</div>
+      <button class="btn btn-secondary btn-block" id="btn-logout" type="button">로그아웃</button>
+    </div>
   `;
 
-  qs('#btn-save-profile')?.addEventListener('click', handleSaveProfile);
+  qs('#btn-logout')?.addEventListener('click', async () => {
+    try {
+      await logout();
+      showToast('로그아웃되었습니다.', 'success');
+    } catch (error) {
+      showToast('로그아웃에 실패했습니다.', 'error');
+    }
+  });
 }
 
-async function handleSaveProfile() {
-  if (!state.user) {
-    showToast('로그인이 필요합니다.', 'error');
-    return;
-  }
+function bindAuthButtons() {
+  qs('#btn-login')?.addEventListener('click', async () => {
+    try {
+      await loginWithEmail(getValue('login-email'), getValue('login-password'));
+      showToast('로그인되었습니다.', 'success');
+    } catch (error) {
+      showToast(error.message || '로그인에 실패했습니다.', 'error');
+    }
+  });
 
-  try {
-    state.profile = await saveProfile(state.user.uid, {
-      btag: getFormValue('profile-btag'),
-      tankTier: getFormValue('profile-tank-tier'),
-      tankNum: getFormValue('profile-tank-num'),
-      dpsTier: getFormValue('profile-dps-tier'),
-      dpsNum: getFormValue('profile-dps-num'),
-      supportTier: getFormValue('profile-support-tier'),
-      supportNum: getFormValue('profile-support-num'),
-    });
-    renderAuthPanel();
-    showToast('프로필을 저장했습니다.', 'success');
-  } catch (error) {
-    console.error('[profile:save]', error);
-    showToast('프로필 저장에 실패했습니다.', 'error');
-  }
+  qs('#btn-register')?.addEventListener('click', async () => {
+    try {
+      await registerWithEmail(getValue('login-email'), getValue('login-password'));
+      showToast('회원가입이 완료되었습니다. 인증 메일을 확인해주세요.', 'success');
+    } catch (error) {
+      showToast(error.message || '회원가입에 실패했습니다.', 'error');
+    }
+  });
+
+  qs('#btn-reset-password')?.addEventListener('click', async () => {
+    try {
+      await resetPassword(getValue('login-email'));
+      showToast('비밀번호 재설정 메일을 보냈습니다.', 'success');
+    } catch (error) {
+      showToast(error.message || '비밀번호 찾기에 실패했습니다.', 'error');
+    }
+  });
 }
 
 function renderPartyForm() {
   const form = qs('#party-form');
   if (!form) return;
 
-  const btag = state.profile?.btag || '';
   form.innerHTML = `
-    <input class="form-input" id="party-btag" placeholder="배틀태그#1234" value="${btag}">
+    <input class="form-input" id="party-btag" placeholder="배틀태그#1234" value="${state.profile?.btag || ''}">
     <div class="party-inline-row">
       <select class="form-select" id="party-role">${ROLE_LIST.map((role) => `<option value="${role}" ${role === '딜러' ? 'selected' : ''}>${roleIcon(role)} ${role}</option>`).join('')}</select>
       <select class="form-select" id="party-tier">${optionList(TIERS, '플래티넘')}</select>
@@ -309,24 +258,66 @@ function renderPartyForm() {
 async function handleCreateParty() {
   if (!state.user) {
     showToast('로그인 후 파티를 모집할 수 있습니다.', 'error');
+    openSidebar();
     return;
   }
 
   try {
     await createParty({
-      btag: getFormValue('party-btag'),
-      pos: getFormValue('party-role'),
-      tier: getFormValue('party-tier'),
-      tierNum: getFormValue('party-tier-num'),
-      maxp: getFormValue('party-maxp'),
-      desc: getFormValue('party-desc'),
+      btag: getValue('party-btag'),
+      pos: getValue('party-role'),
+      tier: getValue('party-tier'),
+      tierNum: getValue('party-tier-num'),
+      maxp: getValue('party-maxp'),
+      desc: getValue('party-desc'),
       ownerRate: getAverageRating(state.profile) || '신규',
     }, state.user, { closeExisting: true });
     showToast('파티 모집글을 등록했습니다.', 'success');
   } catch (error) {
-    console.error('[party:create]', error);
     showToast(error.message || '파티 등록에 실패했습니다.', 'error');
   }
+}
+
+function createFilterButton(value, type) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `filter-tag ${type === 'tier' ? 'filter-tag-tier' : 'filter-tag-role'}`;
+  button.dataset.filterValue = value;
+  button.dataset.filterType = type;
+
+  const icon = ICON_URLS[value];
+  if (icon) {
+    const img = document.createElement('img');
+    img.src = icon;
+    img.alt = '';
+    img.className = 'filter-icon';
+    button.append(img);
+  }
+  button.append(document.createTextNode(type === 'role' ? value : value.replace('다이아몬드', '다이아').replace('그랜드마스터', '그마')));
+
+  button.addEventListener('click', () => {
+    const set = type === 'role' ? state.filters.roles : state.filters.tiers;
+    if (set.has(value)) set.delete(value);
+    else set.add(value);
+    button.classList.toggle('active', set.has(value));
+    button.classList.toggle('is-active', set.has(value));
+    renderParties();
+  });
+  return button;
+}
+
+function renderFilters() {
+  const roleFilter = qs('#role-filter');
+  const tierFilter = qs('#tier-filter');
+  if (roleFilter) replaceChildrenFromArray(roleFilter, ROLE_LIST, (role) => createFilterButton(role, 'role'));
+  if (tierFilter) replaceChildrenFromArray(tierFilter, TIERS, (tier) => createFilterButton(tier, 'tier'));
+
+  qs('#btn-filter-reset')?.addEventListener('click', () => {
+    state.filters.roles.clear();
+    state.filters.tiers.clear();
+    qsa('.filter-tag').forEach((button) => button.classList.remove('active', 'is-active'));
+    renderParties();
+  });
 }
 
 function isPartyVisible(party) {
@@ -351,12 +342,11 @@ function createPartyCard(party) {
   const badges = document.createElement('div');
   badges.className = 'party-card-badges';
   badges.append(createBadge(`${roleIcon(party.pos)} ${party.pos || '포지션'}`, roleClass(party.pos)));
-  badges.append(createTierBadge(party.tier, party.tierNum));
+  badges.append(createIconBadge(`${party.tier || '티어'} ${party.tierNum || ''}`.trim(), ICON_URLS[party.tier], 'badge-muted party-tier-badge'));
   badges.append(createBadge(`${(party.members?.length || 0) + 1}/${party.maxp || 5}`, 'badge-muted'));
   badges.append(createBadge(`평점 ${party.ownerRate || '신규'}`, 'badge-muted'));
 
   header.append(owner, badges);
-
   const desc = createTextElement('p', party.desc || '내용 없음', 'party-card-desc');
 
   const actions = document.createElement('div');
@@ -367,196 +357,116 @@ function createPartyCard(party) {
     closeButton.className = 'btn btn-danger';
     closeButton.textContent = '모집 종료';
     closeButton.addEventListener('click', async () => {
-      await closeParty(party.id);
-      showToast('모집을 종료했습니다.', 'success');
+      try {
+        await closeParty(party.id);
+        showToast('모집을 종료했습니다.', 'success');
+      } catch (error) {
+        showToast('모집 종료에 실패했습니다.', 'error');
+      }
     });
     actions.append(closeButton);
   } else {
-    const requestButton = document.createElement('button');
-    requestButton.className = 'btn btn-primary';
     const sentPostIds = getSentRequestPostIds(state.matches, state.user?.uid);
-    requestButton.textContent = sentPostIds.has(party.id) ? '신청됨' : '파티 신청';
-    requestButton.disabled = !state.user || sentPostIds.has(party.id);
-    requestButton.addEventListener('click', () => openRequestModal(party));
-    actions.append(requestButton);
+    const button = document.createElement('button');
+    button.className = 'btn btn-primary';
+    button.type = 'button';
+    button.textContent = sentPostIds.has(party.id) ? '신청됨' : '파티 신청';
+    button.disabled = Boolean(state.user && sentPostIds.has(party.id));
+    button.addEventListener('click', () => openRequestModal(party));
+    actions.append(button);
   }
 
   card.append(header, desc, actions);
   return card;
 }
 
+function renderParties() {
+  const list = qs('#party-list');
+  if (!list) return;
+  const parties = state.parties.filter(isPartyVisible);
+  if (!parties.length) {
+    renderEmptyState(list, '조건에 맞는 파티가 없습니다.');
+    return;
+  }
+  replaceChildrenFromArray(list, parties, createPartyCard);
+}
+
 function openRequestModal(party) {
   if (!state.user) {
     showToast('로그인이 필요합니다.', 'error');
+    openSidebar();
     return;
   }
 
   state.pendingRequestParty = party;
-  const modal = qs('#request-modal');
   const role = getProfileRole(state.profile, party.pos || '딜러');
-
   setText('request-modal-target', `${party.btag || '상대'}님의 ${party.pos || '파티'} 모집에 신청합니다.`);
-  const posSelect = qs('#request-pos');
-  const tierSelect = qs('#request-tier');
-  const tierNumSelect = qs('#request-tier-num');
-  const btagInput = qs('#request-btag');
-  const msgInput = qs('#request-msg');
+  if (qs('#request-pos')) qs('#request-pos').value = party.pos || '딜러';
+  if (qs('#request-tier')) qs('#request-tier').value = role.tier || party.tier || '배치';
+  if (qs('#request-tier-num')) qs('#request-tier-num').value = role.num || party.tierNum || '1';
+  if (qs('#request-btag')) qs('#request-btag').value = state.profile?.btag || state.user.email || '';
+  if (qs('#request-msg')) qs('#request-msg').value = '파티 신청합니다.';
 
-  if (posSelect) posSelect.value = party.pos || '딜러';
-  if (tierSelect) tierSelect.value = role.tier || party.tier || '배치';
-  if (tierNumSelect) tierNumSelect.value = role.num || party.tierNum || '1';
-  if (btagInput) btagInput.value = state.profile?.btag || auth.currentUser?.email || '';
-  if (msgInput) msgInput.value = '파티 신청합니다.';
-
-  modal?.classList.add('is-active');
-  modal?.setAttribute('aria-hidden', 'false');
+  qs('#request-modal')?.classList.add('is-active');
+  qs('#request-modal')?.setAttribute('aria-hidden', 'false');
 }
 
 function closeRequestModal() {
   state.pendingRequestParty = null;
-  const modal = qs('#request-modal');
-  modal?.classList.remove('is-active');
-  modal?.setAttribute('aria-hidden', 'true');
+  qs('#request-modal')?.classList.remove('is-active');
+  qs('#request-modal')?.setAttribute('aria-hidden', 'true');
 }
 
 async function handleConfirmRequest() {
   const party = state.pendingRequestParty;
-  if (!party) {
-    closeRequestModal();
-    return;
-  }
-
-  try {
-    await handleRequestParty(party, {
-      fromBtag: getFormValue('request-btag'),
-      reqPos: getFormValue('request-pos'),
-      reqTier: getFormValue('request-tier'),
-      reqTierNum: getFormValue('request-tier-num'),
-      message: getFormValue('request-msg'),
-    });
-    closeRequestModal();
-  } catch (error) {
-    console.error('[party:modal-request]', error);
-  }
-}
-
-async function handleRequestParty(party, override = {}) {
-  if (!state.user) {
-    showToast('로그인이 필요합니다.', 'error');
-    return;
-  }
+  if (!party) return closeRequestModal();
 
   try {
     const role = getProfileRole(state.profile, party.pos || '딜러');
     await createMatchRequest({
       postId: party.id,
-      toUid: party.uid,
-      toBtag: party.btag,
-      fromBtag: override.fromBtag || state.profile?.btag || auth.currentUser?.email || '익명',
-      reqPos: override.reqPos || party.pos,
-      reqTier: override.reqTier || role.tier || party.tier,
-      reqTierNum: override.reqTierNum || role.num || party.tierNum,
-      leaderPos: party.pos,
-      leaderTier: party.tier,
-      leaderTierNum: party.tierNum,
-      message: override.message || '파티 신청합니다.',
+      fromBtag: getValue('request-btag') || state.profile?.btag || state.user?.email || '익명',
+      reqPos: getValue('request-pos') || party.pos,
+      reqTier: getValue('request-tier') || role.tier || party.tier,
+      reqTierNum: getValue('request-tier-num') || role.num || party.tierNum,
+      message: getValue('request-msg') || '파티 신청합니다.',
     }, state.user);
     showToast('파티 신청을 보냈습니다.', 'success');
+    closeRequestModal();
   } catch (error) {
-    console.error('[party:request]', error);
     showToast(error.message || '파티 신청에 실패했습니다.', 'error');
-    throw error;
-  }
-}
-
-function renderParties() {
-  const list = qs('#party-list');
-  if (!list) return;
-  const visibleParties = state.parties.filter(isPartyVisible);
-  if (!visibleParties.length) {
-    renderEmptyState(list, '조건에 맞는 파티가 없습니다.');
-    return;
-  }
-  replaceChildrenFromArray(list, visibleParties, createPartyCard);
-}
-
-function createFilterButton(value, type) {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'filter-tag';
-  button.textContent = type === 'role' ? `${roleIcon(value)} ${value}` : value;
-  button.addEventListener('click', () => {
-    const targetSet = type === 'role' ? state.filters.roles : state.filters.tiers;
-    if (targetSet.has(value)) targetSet.delete(value);
-    else targetSet.add(value);
-    button.classList.toggle('active', targetSet.has(value));
-    button.classList.toggle('is-active', targetSet.has(value));
-    renderParties();
-  });
-  return button;
-}
-
-function renderFilters() {
-  const roleFilter = qs('#role-filter');
-  const tierFilter = qs('#tier-filter');
-  if (roleFilter) replaceChildrenFromArray(roleFilter, ROLE_LIST, (role) => createFilterButton(role, 'role'));
-  if (tierFilter) replaceChildrenFromArray(tierFilter, TIERS, (tier) => createFilterButton(tier, 'tier'));
-
-  qs('#btn-filter-reset')?.addEventListener('click', () => {
-    state.filters.roles.clear();
-    state.filters.tiers.clear();
-    qsa('.filter-tag').forEach((button) => button.classList.remove('active', 'is-active'));
-    renderParties();
-  });
-}
-
-function renderRatingButtons(row, targetUid, matchId) {
-  row.replaceChildren();
-
-  for (let score = 1; score <= 5; score += 1) {
-    const button = document.createElement('button');
-    button.className = 'rating-button';
-    button.type = 'button';
-    button.textContent = '★'.repeat(score);
-    button.title = `${score}점`;
-    button.addEventListener('click', async () => {
-      try {
-        await rateUser(targetUid, score, { matchId });
-        showToast(`${score}점 평가를 남겼습니다.`, 'success');
-        row.replaceChildren(createTextElement('span', '평가 완료', 'status-pill'));
-      } catch (error) {
-        console.error('[rating:submit]', error);
-        showToast(error.message || '평가 저장에 실패했습니다.', 'error');
-      }
-    });
-    row.append(button);
   }
 }
 
 function createRatingRow(targetUid, label, matchId) {
   const row = document.createElement('div');
   row.className = 'rating-row';
-  const ratingContextId = matchId || 'global';
-
   row.append(createTextElement('span', label || '상대 평가', 'status-pill'));
-  const status = createTextElement('span', '평가 여부 확인 중...', 'request-meta');
-  row.append(status);
 
-  hasRatedUser(targetUid, { matchId: ratingContextId })
-    .then((alreadyRated) => {
-      if (alreadyRated) {
-        row.replaceChildren(createTextElement('span', '평가 완료', 'status-pill'));
-        return;
-      }
+  const contextId = matchId || 'global';
+  hasRatedUser(targetUid, { matchId: contextId }).then((alreadyRated) => {
+    if (alreadyRated) {
+      row.replaceChildren(createTextElement('span', '평가 완료', 'status-pill'));
+      return;
+    }
 
-      row.replaceChildren(createTextElement('span', label || '상대 평가', 'status-pill'));
-      renderRatingButtons(row, targetUid, ratingContextId);
-    })
-    .catch((error) => {
-      console.error('[rating:check]', error);
-      row.replaceChildren(createTextElement('span', label || '상대 평가', 'status-pill'));
-      renderRatingButtons(row, targetUid, ratingContextId);
-    });
+    for (let score = 1; score <= 5; score += 1) {
+      const button = document.createElement('button');
+      button.className = 'rating-button';
+      button.type = 'button';
+      button.textContent = '★'.repeat(score);
+      button.addEventListener('click', async () => {
+        try {
+          await rateUser(targetUid, score, { matchId: contextId });
+          row.replaceChildren(createTextElement('span', '평가 완료', 'status-pill'));
+          showToast('평가를 남겼습니다.', 'success');
+        } catch (error) {
+          showToast(error.message || '평가 저장에 실패했습니다.', 'error');
+        }
+      });
+      row.append(button);
+    }
+  }).catch(() => {});
 
   return row;
 }
@@ -564,38 +474,32 @@ function createRatingRow(targetUid, label, matchId) {
 function createAcceptedMatchCard(match) {
   const card = document.createElement('div');
   card.className = 'match-success-card';
-
   const isLeader = match.toUid === state.user.uid;
   const otherUid = isLeader ? match.fromUid : match.toUid;
   const otherBtag = isLeader ? match.fromBtag : match.toBtag;
 
-  const title = createTextElement('strong', '✅ 매칭 성공', 'match-success-title');
-  const body = createTextElement('p', `${otherBtag || '상대'} 님과 매칭되었습니다. 배틀태그를 복사해서 게임에서 초대해보세요.`, 'request-meta');
+  card.append(createTextElement('strong', '✅ 매칭 성공', 'match-success-title'));
+  card.append(createTextElement('p', `${otherBtag || '상대'} 님과 매칭되었습니다. 배틀태그를 복사해서 게임에서 초대해보세요.`, 'request-meta'));
 
   const actions = document.createElement('div');
   actions.className = 'match-card-actions';
-
   const copyButton = document.createElement('button');
   copyButton.className = 'btn btn-primary';
-  copyButton.type = 'button';
   copyButton.textContent = '배틀태그 복사';
   copyButton.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(otherBtag || '');
       showToast('배틀태그를 복사했습니다.', 'success');
     } catch (error) {
-      showToast('복사에 실패했습니다. 직접 확인해주세요.', 'error');
+      showToast('복사에 실패했습니다.', 'error');
     }
   });
-
-  const removeButton = document.createElement('button');
-  removeButton.className = 'btn btn-secondary';
-  removeButton.type = 'button';
-  removeButton.textContent = '확인';
-  removeButton.addEventListener('click', () => removeMatch(match.id));
-
-  actions.append(copyButton, removeButton);
-  card.append(title, body, actions, createRatingRow(otherUid, `${getPublicBattleTagName(otherBtag)} 평가`, match.id));
+  const doneButton = document.createElement('button');
+  doneButton.className = 'btn btn-secondary';
+  doneButton.textContent = '확인';
+  doneButton.addEventListener('click', () => removeMatch(match.id));
+  actions.append(copyButton, doneButton);
+  card.append(actions, createRatingRow(otherUid, `${getPublicBattleTagName(otherBtag)} 평가`, match.id));
   return card;
 }
 
@@ -605,27 +509,18 @@ function renderNotifications() {
 
   if (!state.user) {
     renderEmptyState(list, '로그인 후 알림을 확인할 수 있습니다.');
-    setText('nav-new-badge', '');
     hideElement(qs('#nav-new-badge'));
     hideElement(qs('#side-new-badge'));
     return;
   }
 
   const related = getRelatedMatches();
-  const incoming = related.filter((match) => match.toUid === state.user.uid);
+  const incoming = related.filter((match) => match.toUid === state.user.uid && match.status !== 'accepted');
   const accepted = related.filter((match) => match.status === 'accepted');
-  const hasNew = hasPendingIncomingMatch(related.map((match) => ({ data: () => match })), state.user.uid) || accepted.length > 0;
+  const hasNew = incoming.some((match) => match.status === 'pending') || accepted.length > 0;
+  [qs('#nav-new-badge'), qs('#side-new-badge')].forEach((badge) => hasNew ? showElement(badge) : hideElement(badge));
 
-  const navBadge = qs('#nav-new-badge');
-  const sideBadge = qs('#side-new-badge');
-  [navBadge, sideBadge].forEach((badge) => {
-    if (!badge) return;
-    if (hasNew) showElement(badge);
-    else hideElement(badge);
-  });
-
-  const cards = [...accepted, ...incoming.filter((match) => match.status !== 'accepted')];
-
+  const cards = [...accepted, ...incoming];
   if (!cards.length) {
     renderEmptyState(list, '새 알림이 없습니다.');
     return;
@@ -636,13 +531,11 @@ function renderNotifications() {
 
     const card = document.createElement('div');
     card.className = 'request-card';
-
-    const title = createTextElement('strong', `${match.fromBtag || '익명'} 님의 파티 신청`, 'request-title');
-    const meta = createTextElement('p', `${match.reqPos || ''} / ${match.reqTier || ''} ${match.reqTierNum || ''} / 상태: ${match.status}`, 'request-meta');
+    card.append(createTextElement('strong', `${match.fromBtag || '익명'} 님의 파티 신청`, 'request-title'));
+    card.append(createTextElement('p', `${match.reqPos || ''} / ${match.reqTier || ''} ${match.reqTierNum || ''} / 상태: ${match.status}`, 'request-meta'));
 
     const actions = document.createElement('div');
     actions.className = 'request-card-actions';
-
     if (match.status === 'pending') {
       const acceptButton = document.createElement('button');
       acceptButton.className = 'btn btn-primary';
@@ -655,7 +548,6 @@ function renderNotifications() {
           showToast(error.message || '수락에 실패했습니다.', 'error');
         }
       });
-
       const rejectButton = document.createElement('button');
       rejectButton.className = 'btn btn-secondary';
       rejectButton.textContent = '거절';
@@ -671,39 +563,54 @@ function renderNotifications() {
       removeButton.addEventListener('click', () => removeMatch(match.id));
       actions.append(removeButton);
     }
-
-    card.append(title, meta, actions);
+    card.append(actions);
     return card;
   });
 }
 
-function startListeners() {
-  if (state.unsubParties) state.unsubParties();
-  if (state.unsubMatches) state.unsubMatches();
+function renderProfileForm() {
+  const form = qs('#profile-form');
+  if (!form) return;
+  if (!state.user) {
+    renderEmptyState(form, '로그인 후 프로필을 설정할 수 있습니다.');
+    return;
+  }
 
-  state.unsubParties = watchParties((snap) => {
-    state.parties = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
-    renderParties();
-  });
-
-  state.unsubMatches = watchMatches((snap) => {
-    state.matches = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
-    renderParties();
-    renderNotifications();
-  });
+  const tank = getProfileRole(state.profile, '탱커');
+  const dps = getProfileRole(state.profile, '딜러');
+  const support = getProfileRole(state.profile, '지원');
+  form.innerHTML = `
+    <label class="form-label" for="profile-btag">배틀태그</label>
+    <input class="form-input" id="profile-btag" placeholder="예: Player#1234" value="${state.profile?.btag || ''}">
+    <div class="pos-group"><strong>🛡️ 탱커</strong><select class="form-select" id="profile-tank-tier">${optionList(TIERS, tank.tier)}</select><select class="form-select" id="profile-tank-num">${tierNumberOptions(tank.num)}</select></div>
+    <div class="pos-group"><strong>⚔️ 딜러</strong><select class="form-select" id="profile-dps-tier">${optionList(TIERS, dps.tier)}</select><select class="form-select" id="profile-dps-num">${tierNumberOptions(dps.num)}</select></div>
+    <div class="pos-group"><strong>💉 지원</strong><select class="form-select" id="profile-support-tier">${optionList(TIERS, support.tier)}</select><select class="form-select" id="profile-support-num">${tierNumberOptions(support.num)}</select></div>
+    <button class="btn btn-primary btn-block" id="btn-save-profile" type="button">정보 저장</button>
+  `;
+  qs('#btn-save-profile')?.addEventListener('click', handleSaveProfile);
 }
 
-async function handleAuth(user) {
-  state.user = user;
-  state.profile = user ? await getProfile(user.uid) : null;
-  renderAuthPanel();
-  renderProfileForm();
-  renderPartyForm();
-  renderParties();
-  renderNotifications();
+async function handleSaveProfile() {
+  if (!state.user) return showToast('로그인이 필요합니다.', 'error');
+  try {
+    state.profile = await saveProfile(state.user.uid, {
+      btag: getValue('profile-btag'),
+      tankTier: getValue('profile-tank-tier'),
+      tankNum: getValue('profile-tank-num'),
+      dpsTier: getValue('profile-dps-tier'),
+      dpsNum: getValue('profile-dps-num'),
+      supportTier: getValue('profile-support-tier'),
+      supportNum: getValue('profile-support-num'),
+    });
+    renderAuthPanel();
+    renderPartyForm();
+    showToast('프로필을 저장했습니다.', 'success');
+  } catch (error) {
+    showToast(error.message || '프로필 저장에 실패했습니다.', 'error');
+  }
 }
 
-function bindEvents() {
+function bindStaticEvents() {
   qs('#hamburger-btn')?.addEventListener('click', toggleSidebar);
   qs('#sidebar-overlay')?.addEventListener('click', closeSidebar);
   qs('#btn-cancel-request')?.addEventListener('click', closeRequestModal);
@@ -711,37 +618,62 @@ function bindEvents() {
   qs('#request-modal')?.addEventListener('click', (event) => {
     if (event.target.id === 'request-modal') closeRequestModal();
   });
-
-  qsa('[data-page-target]').forEach((button) => {
-    button.addEventListener('click', () => showPage(button.dataset.pageTarget));
-  });
+  qsa('[data-page-target]').forEach((button) => button.addEventListener('click', () => showPage(button.dataset.pageTarget)));
 }
 
-function exposeLegacyHooks() {
+function startListeners() {
+  try {
+    state.unsubParties?.();
+    state.unsubParties = watchParties((snap) => {
+      state.parties = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
+      renderParties();
+    });
+  } catch (error) {
+    console.error('[index:watchParties]', error);
+  }
+
+  try {
+    state.unsubMatches?.();
+    state.unsubMatches = watchMatches((snap) => {
+      state.matches = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
+      renderParties();
+      renderNotifications();
+    });
+  } catch (error) {
+    console.error('[index:watchMatches]', error);
+  }
+}
+
+async function handleAuth(user) {
+  state.user = user;
+  state.profile = user ? await getProfile(user.uid).catch(() => null) : null;
+  safeRun('renderAuthPanel', renderAuthPanel);
+  safeRun('renderPartyForm', renderPartyForm);
+  safeRun('renderProfileForm', renderProfileForm);
+  safeRun('renderParties', renderParties);
+  safeRun('renderNotifications', renderNotifications);
+}
+
+function exposeHooks() {
+  window.OWHub = window.OWHub || {};
+  window.OWHub.main = { showPage, toggleSidebar, renderParties, renderNotifications, openRequestModal, closeRequestModal };
   window.toggleSidebar = toggleSidebar;
   window.showPageAndClose = showPage;
-  window.OWHub = window.OWHub || {};
-  window.OWHub.main = {
-    showPage,
-    toggleSidebar,
-    renderParties,
-    renderNotifications,
-    openRequestModal,
-    closeRequestModal,
-  };
 }
 
 function init() {
-  hideElement(qs('#nav-new-badge'));
-  hideElement(qs('#side-new-badge'));
-  renderFilters();
-  renderPartyForm();
-  bindEvents();
-  exposeLegacyHooks();
-  startListeners();
+  safeRun('renderAuthPanel', renderAuthPanel);
+  safeRun('renderPartyForm', renderPartyForm);
+  safeRun('renderFilters', renderFilters);
+  safeRun('renderProfileForm', renderProfileForm);
+  safeRun('renderNotifications', renderNotifications);
+  safeRun('bindStaticEvents', bindStaticEvents);
+  safeRun('exposeHooks', exposeHooks);
+  safeRun('startListeners', startListeners);
+
   watchAuth((user) => {
     handleAuth(user).catch((error) => {
-      console.error('[auth:state]', error);
+      console.error('[index:auth]', error);
       showToast('로그인 상태를 불러오는 중 문제가 발생했습니다.', 'error');
     });
   });
