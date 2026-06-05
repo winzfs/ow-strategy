@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-04 14:35",
+  "lastUpdated": "2026-06-05 02:13",
   "pro": [
     {
       "id": "MSeGu9-ab0E",
@@ -19,8 +19,8 @@
   ],
   "streamer": [
     {
-      "id": "qQZSVQ9kopU",
-      "title": "틀딱 유저들은 모르는 MZ식 윈스턴 운영법",
+      "id": "qi2meVG3Kho",
+      "title": "듣다가 고막 터지는 오버워치 프로게이머들의 역대급 디스전ㅋㅋㅋ | CR 크레이지라쿤 복기 방송#2",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,16 @@
     }
   ],
   "official": [
+    {
+      "id": "dV4ALEfBCkw",
+      "title": "NEW HERO COMING IN OVERWATCH SEASON 3",
+      "player": "Official"
+    },
+    {
+      "id": "fHHX4cAI_aI",
+      "title": "NEW HERO Teaser! - Season 3 Hashimoto Cyborg New Details - Overwatch News",
+      "player": "Official"
+    },
     {
       "id": "M0fC5SLWhp0",
       "title": "오버워치 배치 보기 [26.04.17 #2]",
@@ -49,19 +59,14 @@
       "id": "T_mEUwJkTDo",
       "title": "오버워치 둘째 도전 [26.04.09 #2]",
       "player": "Official"
-    },
-    {
-      "id": "yrBnNAh1G9g",
-      "title": "가장 쉬운 딜러 추천 뉴비라면 꼭 봐야할 영웅 설명 - 딜러편 (1) | 옵치토크쇼",
-      "player": "Official"
-    },
-    {
-      "id": "1RvvZvl8w44",
-      "title": "예선에 나타난 규격 외 강팀 대한민국 [오버워치 월드컵 한일전] | 옵치토크쇼",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "poPoJOIiO74",
+      "title": "상대 탱커를 정신과 시간의 방에 가둬버리는 메이 [오버워치]",
+      "player": "Trending"
+    },
     {
       "id": "-QFot8kGTFw",
       "title": "안란 부활: 안란으로 캐리하는 꿈 #오버워치",
@@ -85,11 +90,6 @@
     {
       "id": "sfTl6NZmm1E",
       "title": "20260603 오버워치2 캐서디 하이라이트 (왕의길)",
-      "player": "Trending"
-    },
-    {
-      "id": "5-H64ZmzlBI",
-      "title": "오버워치2 메이 하이라이트 by기아없이는못살아",
       "player": "Trending"
     }
   ]
