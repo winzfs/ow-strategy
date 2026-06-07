@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-06 13:06",
+  "lastUpdated": "2026-06-07 02:31",
   "pro": [
     {
       "id": "MSeGu9-ab0E",
@@ -24,8 +24,8 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "800PKkubcpU",
-      "title": "새로운 중국섭탱계보 SUNZO",
+      "id": "C35cI0_brtU",
+      "title": "반박불가 최고인 제타 석양 그 장면",
       "player": "아이치 (Ichi)"
     }
   ],
@@ -33,6 +33,11 @@
     {
       "id": "i6KB8DCdQEo",
       "title": "탱장연!? 이자슥 눈돌아갔다 ㅋㅋ 나만 보면 어깨빵 달려든다!!",
+      "player": "Official"
+    },
+    {
+      "id": "IXayVW6kl0g",
+      "title": "뉴비들의 안식처, 포탑? 뉴비라면 꼭 봐야할 영웅 설명 - 딜러편 (2) | 옵치토크쇼",
       "player": "Official"
     },
     {
@@ -54,42 +59,37 @@
       "id": "fHHX4cAI_aI",
       "title": "NEW HERO Teaser! - Season 3 Hashimoto Cyborg New Details - Overwatch News",
       "player": "Official"
-    },
-    {
-      "id": "M0fC5SLWhp0",
-      "title": "오버워치 배치 보기 [26.04.17 #2]",
-      "player": "Official"
     }
   ],
   "trending": [
     {
+      "id": "XjOmyqj9e6E",
+      "title": "지는 매칭에 걸리자 일단 돌진을 시작하는 즐겜 마우가 [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "JiZwvFLtXfA",
+      "title": "he want that nano visor so bad 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "eVTNq-K-LGo",
+      "title": "[지식인에그시] 오버워치2 부캐 리퍼 하이라이트 영상",
+      "player": "Trending"
+    },
+    {
+      "id": "vYruUD24mPA",
+      "title": "오버워치2 오리사 잠시만 후퇴",
+      "player": "Trending"
+    },
+    {
+      "id": "W9q1UtewpIU",
+      "title": "뉴비 석양 팟지 5인궁",
+      "player": "Trending"
+    },
+    {
       "id": "nhwBtksF-CQ",
       "title": "겐지 하이라이트 1",
-      "player": "Trending"
-    },
-    {
-      "id": "YEttk3f3ZqU",
-      "title": "26.01.21 오버워치2 라마트라 하이라이트 팟지",
-      "player": "Trending"
-    },
-    {
-      "id": "lbbn5-X0wkw",
-      "title": "25.12.25 오버워치2 라마트라 하이라이트 팟지",
-      "player": "Trending"
-    },
-    {
-      "id": "BMCoxtbjtFI",
-      "title": "25.12.18 오버워치2 바스티온 하이라이트 팟지",
-      "player": "Trending"
-    },
-    {
-      "id": "YDQdB12-TGg",
-      "title": "25.09.19 오버워치2 디바 하이라이트 팟지",
-      "player": "Trending"
-    },
-    {
-      "id": "4njmiv9qXyc",
-      "title": "25.09.17 오버워치2 시그마 하이라이트 팟지",
       "player": "Trending"
     }
   ]
