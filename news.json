@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-08 15:25",
+  "lastUpdated": "2026-06-09 02:00",
   "pro": [
     {
       "id": "MSeGu9-ab0E",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "F9U0kdf3YwI",
-      "title": "힐러의 본분을 잊고 앞에서 나대는 힐러들에게 경고합니다",
+      "id": "vFS0mrnQH_o",
+      "title": "평생을 메이만 해오신 분을 지켜주세요",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,8 +19,8 @@
   ],
   "streamer": [
     {
-      "id": "bkZ52UHkb5o",
-      "title": "우리 팀이 돼서 천만다행인 선수...그 시절 팔콘 프로퍼&스토커가 어땠냐구요? | 오버워치 OWCS",
+      "id": "z31EEKive88",
+      "title": "커스텀 키보드부터 데스크테리어까지🔥 책상 살림 장만 했습니다 | 테무깡 | 게이밍 장비 추천",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,11 @@
     }
   ],
   "official": [
+    {
+      "id": "PB3ZaNeemSk",
+      "title": "[26.06.08] 프로 챔피언도 예외는 없다: 에임 보정 메커니즘 정밀 분석. #fps#오버워치#overwatch#에임#aim#보정#AimAssist#어시스트#경쟁전",
+      "player": "Official"
+    },
     {
       "id": "7AL3r-DDRpo",
       "title": "오버워치 공식 오픈북 설정집 #shorts",
@@ -54,14 +59,14 @@
       "id": "pHk9YnfaCts",
       "title": "벤처의 모험: 심해의 기만 스토리 타임 | 오버워치",
       "player": "Official"
-    },
-    {
-      "id": "dV4ALEfBCkw",
-      "title": "NEW HERO COMING IN OVERWATCH SEASON 3",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "F8gl2RHE94s",
+      "title": "who the enemy kills ain&#39;t my business #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
     {
       "id": "Q2Bg6iPadgU",
       "title": "짜릿한 도파민 수면 마취 🔥🔥  #shorts",
@@ -85,11 +90,6 @@
     {
       "id": "EsTI3J6vARg",
       "title": "소브스 선정 해저드전 하이라이트 #오버워치 #오버워치2 #overwatch2 #내전 #shortsclip",
-      "player": "Trending"
-    },
-    {
-      "id": "2Lezw5MTefc",
-      "title": "For widowmaker haters #overwatch2 #gaming #overwatchclips #overwatch #ow2",
       "player": "Trending"
     }
   ]
