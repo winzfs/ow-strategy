@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-09 14:21",
+  "lastUpdated": "2026-06-10 02:13",
   "pro": [
     {
       "id": "OBYLx-2LEdw",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "vFS0mrnQH_o",
-      "title": "평생을 메이만 해오신 분을 지켜주세요",
+      "id": "7vV9Cf8xlVk",
+      "title": "티어 인플레 현상의 의외의 원인",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,8 +19,8 @@
   ],
   "streamer": [
     {
-      "id": "sks9QGYt6_4",
-      "title": "1시 신캐 트레일러 대기방",
+      "id": "NAz1jh6Q3VM",
+      "title": "초절정 미녀 딜러 신캐 '시온' 출시🔥🔥 | 오버워치",
       "player": "일루전 (Illusion)"
     },
     {
@@ -31,37 +31,52 @@
   ],
   "official": [
     {
-      "id": "SO2iREmPhwY",
-      "title": "공식이 말아주는",
+      "id": "7vV9Cf8xlVk",
+      "title": "티어 인플레 현상의 의외의 원인",
       "player": "Official"
     },
     {
-      "id": "PB3ZaNeemSk",
-      "title": "[26.06.08] 프로 챔피언도 예외는 없다: 에임 보정 메커니즘 정밀 분석. #fps#오버워치#overwatch#에임#aim#보정#AimAssist#어시스트#경쟁전",
+      "id": "hC_Nq_V9xSs",
+      "title": "New Hero Shion! - Reveal Trailer Breakdown &amp; Ability Speculation - Overwatch",
+      "player": "Official"
+    },
+    {
+      "id": "pY3P5UBX-K0",
+      "title": "공식)싸펑느낌 뿜뿜! 오버워치 52번째 신규영웅 &#39;시온&#39; 공개!#overwatch #오버워치 #オーバーウォッチ",
+      "player": "Official"
+    },
+    {
+      "id": "b_7MBFb2MtU",
+      "title": "종착역 | 시온 영웅 트레일러 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "SO2iREmPhwY",
+      "title": "공식이 말아주는",
       "player": "Official"
     },
     {
       "id": "TTjFq8p0Uzw",
       "title": "옵치에서 다들 한 번쯤은 겪는 판 | 장문철tv 726화",
       "player": "Official"
-    },
-    {
-      "id": "7AL3r-DDRpo",
-      "title": "오버워치 공식 오픈북 설정집 #shorts",
-      "player": "Official"
-    },
-    {
-      "id": "i6KB8DCdQEo",
-      "title": "탱장연!? 이자슥 눈돌아갔다 ㅋㅋ 나만 보면 어깨빵 달려든다!!",
-      "player": "Official"
-    },
-    {
-      "id": "IXayVW6kl0g",
-      "title": "뉴비들의 안식처, 포탑? 뉴비라면 꼭 봐야할 영웅 설명 - 딜러편 (2) | 옵치토크쇼",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "Rz48fsDVe7Q",
+      "title": "점점 어지러워지는 세기말 오버워치 ㅋㅋ [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "IglHh6blxo8",
+      "title": "two omnic heroes in one year? sign me up #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "v_RRJ-aSajM",
+      "title": "시온 하이라이트",
+      "player": "Trending"
+    },
     {
       "id": "dYi8jlwp12o",
       "title": "딜러 하이라이트 1",
@@ -75,21 +90,6 @@
     {
       "id": "7HDujtNM3eY",
       "title": "한정 유료 무기 스킨 경화광을 전리품 상자에서 공짜로 먹었습니다 [오버워치]",
-      "player": "Trending"
-    },
-    {
-      "id": "F8gl2RHE94s",
-      "title": "who the enemy kills ain&#39;t my business #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "Q2Bg6iPadgU",
-      "title": "짜릿한 도파민 수면 마취 🔥🔥  #shorts",
-      "player": "Trending"
-    },
-    {
-      "id": "SiLNt7_f9ZM",
-      "title": "이 맛에 옵치하지 #오버워치2 #오버워치하이라이트 #overwatch2 #overwatchclips",
       "player": "Trending"
     }
   ]
