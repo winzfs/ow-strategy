@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-10 14:50",
+  "lastUpdated": "2026-06-11 02:35",
   "pro": [
     {
       "id": "OBYLx-2LEdw",
@@ -7,20 +7,20 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "7vV9Cf8xlVk",
-      "title": "티어 인플레 현상의 의외의 원인",
+      "id": "RkguCn-pScs",
+      "title": "류제홍 논란",
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "4W_cn84HvEk",
-      "title": "달리러 왔수다.",
+      "id": "6XHhJp2a6xc",
+      "title": "트레일러로 유추하는 신캐 \"시온\"의 스킬.. 진짜 오토바이를 던질까?",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "Ohe0lqRM3D8",
-      "title": "1시에 트레일러 또 온다고?(불확실)",
+      "id": "HBkXH1omirA",
+      "title": "솔직히 이제는 콜라보 해야 함 ㅇㅈ? | 오버워치 x 사이버펑크",
       "player": "일루전 (Illusion)"
     },
     {
@@ -31,8 +31,23 @@
   ],
   "official": [
     {
+      "id": "A1IyVcVV97g",
+      "title": "1시 뭐 나오냐? 경쟁전 ㅣ야구장 룰렛",
+      "player": "Official"
+    },
+    {
+      "id": "c6ZIeCECwL8",
+      "title": "프로급 에임만 할 수 있는 조합 [T1 vs SB] | 비공식 중계",
+      "player": "Official"
+    },
+    {
       "id": "7vV9Cf8xlVk",
       "title": "티어 인플레 현상의 의외의 원인",
+      "player": "Official"
+    },
+    {
+      "id": "38gvlS6CXdA",
+      "title": "오버워치 신캐 &#39;시온&#39; 등장...바이크 타는 쌍권총 초미녀 여캐 딜러라고?? 블리자드 감다살ㅋㅋㅋ",
       "player": "Official"
     },
     {
@@ -44,24 +59,19 @@
       "id": "pY3P5UBX-K0",
       "title": "공식)싸펑느낌 뿜뿜! 오버워치 52번째 신규영웅 &#39;시온&#39; 공개!#overwatch #오버워치 #オーバーウォッチ",
       "player": "Official"
-    },
-    {
-      "id": "b_7MBFb2MtU",
-      "title": "종착역 | 시온 영웅 트레일러 | 오버워치",
-      "player": "Official"
-    },
-    {
-      "id": "RXQm_fz_mYI",
-      "title": "뉴비 딜러? 이거하세요 뉴비라면 꼭 봐야할 영웅 설명 - 딜러편 (3) | 옵치토크쇼",
-      "player": "Official"
-    },
-    {
-      "id": "SO2iREmPhwY",
-      "title": "공식이 말아주는",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "T0XqbUJzu0Y",
+      "title": "궁극기 각을 보고 있는 파라 앞으로 키네틱을 쓰며 지나가는 시그마? [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "iRQpzzRnRmA",
+      "title": "파라 할 때 가장 중요한건? #오버워치 #파라",
+      "player": "Trending"
+    },
     {
       "id": "hDw_czDTap8",
       "title": "힐러 하이라이트 1",
@@ -80,16 +90,6 @@
     {
       "id": "bc_nkXtQwxk",
       "title": "[오버워치] 미즈키로 둠피 괴롭히기ㅋㅋ #오버워치 #오버워치2 #shorts",
-      "player": "Trending"
-    },
-    {
-      "id": "cEedirdVQdU",
-      "title": "1티어 메인딜러 #오버워치 #일리아리",
-      "player": "Trending"
-    },
-    {
-      "id": "bSioP1cxB6Y",
-      "title": "2026년 오버워치 월드컵 한국 vs 홍콩 -3- #오버워치2 #오버워치",
       "player": "Trending"
     }
   ]
