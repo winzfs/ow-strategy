@@ -1,14 +1,14 @@
 {
-  "lastUpdated": "2026-06-11 15:32",
+  "lastUpdated": "2026-06-12 02:30",
   "pro": [
     {
-      "id": "Ot22Q00aR60",
-      "title": "재활운동 4일차 챔2가나 ..?",
+      "id": "OBYLx-2LEdw",
+      "title": "일본 생활 청산",
       "player": "안스 (Ans)"
     },
     {
-      "id": "RkguCn-pScs",
-      "title": "류제홍 논란",
+      "id": "YRJ_e9JzVbU",
+      "title": "궁이 발동됐다가 사라지는 치명적인 에코 버그",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,49 +19,59 @@
   ],
   "streamer": [
     {
-      "id": "EzGIICaar78",
-      "title": "우리팀이 우승할 수 있었던 이유...? | 오버워치 크레이지라쿤(CR)문 감독님 Q&A",
+      "id": "Zg-E8kXO7Gg",
+      "title": "역대급 반응 터져나온 오버워치 신캐 '시온' 스킬셋 떴습니다...오토바이를 타는데 던지기까지 한다고??",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "spxAFBuJIn0",
-      "title": "제트팩캣 줄 끊김 버그",
+      "id": "LwCOKryhhCQ",
+      "title": "신규영웅 시온 무조건 사기캐입니다.ㅣ스킬셋 분석",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
     {
+      "id": "ktBeEhZsLFY",
+      "title": "New Hero Shion - All Abilities Breakdown! - Overwatch Season 3 Hero Gameplay",
+      "player": "Official"
+    },
+    {
+      "id": "kBhzwEXtr84",
+      "title": "공식으로 존재 할수 없는 티어. 누가 잘하는 건데? #오버워치#overwatch#fps#game#게임#아나#트레이서#tracer#경쟁전#일반전#영웅#hero",
+      "player": "Official"
+    },
+    {
+      "id": "yRkqhZIqSPk",
+      "title": "오버워치 신규영웅 시온 게임플레이 떴다!! 오토바이 서브딜러 므칭ㅋㅋㅋㅋㅋㅋ",
+      "player": "Official"
+    },
+    {
+      "id": "F_UjKVpdXFM",
+      "title": "공식)섹시도발, 쌍권총! 오버워치 신규영웅 시온 &#39;인게임 트레일러&#39;#overwatch #오버워치 #オーバーウォッチ",
+      "player": "Official"
+    },
+    {
+      "id": "fEkFkFZyx5w",
+      "title": "Shion | New Hero Gameplay Trailer | Overwatch",
+      "player": "Official"
+    },
+    {
       "id": "FcxfHLJaROY",
       "title": "호그 하나에 땡기지 못하는 팀원들 | 장문철tv 727화",
-      "player": "Official"
-    },
-    {
-      "id": "WLt-YHicJzU",
-      "title": "컨텐더스 제왕이 돌아왔습니다! [26 오투 하드털이 EP.1]",
-      "player": "Official"
-    },
-    {
-      "id": "A1IyVcVV97g",
-      "title": "1시 뭐 나오냐? 경쟁전 ㅣ야구장 룰렛",
-      "player": "Official"
-    },
-    {
-      "id": "c6ZIeCECwL8",
-      "title": "프로급 에임만 할 수 있는 조합 [T1 vs SB] | 비공식 중계",
-      "player": "Official"
-    },
-    {
-      "id": "7vV9Cf8xlVk",
-      "title": "티어 인플레 현상의 의외의 원인",
-      "player": "Official"
-    },
-    {
-      "id": "38gvlS6CXdA",
-      "title": "오버워치 신캐 &#39;시온&#39; 등장...바이크 타는 쌍권총 초미녀 여캐 딜러라고?? 블리자드 감다살ㅋㅋㅋ",
       "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "zRIi2o6FbUM",
+      "title": "지형지물을 항상 조심할 것_오버워치2 #금미르 #게임 #웃긴영상 #하이라이트 #옵치쇼츠 #옵치2 #인성질 #고라니",
+      "player": "Trending"
+    },
+    {
+      "id": "gbRTknnH1oQ",
+      "title": "게임 시작했는데 아직 캐릭터도 고르지 않은 우리 팀 탱커.. [오버워치]",
+      "player": "Trending"
+    },
     {
       "id": "fns8bnxBYG4",
       "title": "Michelangelo of spawncamping #overwatch2 #gaming #overwatchclips #overwatch #ow2",
@@ -80,16 +90,6 @@
     {
       "id": "GkuluzbWKQQ",
       "title": "Winston is so peaceful 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "T0XqbUJzu0Y",
-      "title": "궁극기 각을 보고 있는 파라 앞으로 키네틱을 쓰며 지나가는 시그마? [오버워치]",
-      "player": "Trending"
-    },
-    {
-      "id": "iRQpzzRnRmA",
-      "title": "챔피언2 파라의 파라 사용법 #오버워치 #파라",
       "player": "Trending"
     }
   ]
