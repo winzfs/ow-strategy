@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-20 13:25",
+  "lastUpdated": "2026-06-21 02:38",
   "pro": [
     {
       "id": "_rAVDuqd_wU",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "t9Zd80Lt9ik",
-      "title": "오리사와 절대로 싸우지 마세요",
+      "id": "WejBMpvMPQ0",
+      "title": "사실상 무급이었던 과거 선수들의 월급",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,20 +19,30 @@
   ],
   "streamer": [
     {
-      "id": "JzmV3HEjbdo",
-      "title": "일리아리 신스킨 이펙트 미쳤습니다 ㄷㄷ",
+      "id": "gz4fBfTfy50",
+      "title": "※역대최초※ 세계 1등이라는 대한민국 오버워치 옵저버와 매운 인터뷰ㅋㅋㅋ  개꿀잼입니다",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "PCcXa--W8OM",
-      "title": "26년 S2 옵치 메타 요약",
+      "id": "bJ6r7v2C-0A",
+      "title": "마우가 워크샵 등장 ㅋㅋㅋ",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
     {
       "id": "BgGvspYjoE0",
-      "title": "호기심 많은 린과 지켜보는 나나 [나나,린]  #스텔라이브 #버튜버 #키리누키",
+      "title": "린의 수상한 행동을 지켜보는 나나 [나나,린]  #스텔라이브 #버튜버 #키리누키",
+      "player": "Official"
+    },
+    {
+      "id": "8MKXuoFdmaA",
+      "title": "This Mei Build got a MASSIVE Update | Stadium Overwatch",
+      "player": "Official"
+    },
+    {
+      "id": "nP84-afC5qM",
+      "title": "[Shion] 뽕 받은 시온의 비명소리 한국어, 영어, 일본어 버전 (KR.EN.JP) with 나노 #shorts #overwatch",
       "player": "Official"
     },
     {
@@ -49,19 +59,24 @@
       "id": "Gk4UJRMY6i8",
       "title": "모이라의 시대가 도래했다 시즌3 패치노트 총 정리 | 옵치토크쇼",
       "player": "Official"
-    },
-    {
-      "id": "bG6A83kBENA",
-      "title": "오버워치 영웅들의 황당한 대화 Part 132",
-      "player": "Official"
-    },
-    {
-      "id": "8IEqTiW6hUU",
-      "title": "오버워치가 작정하고 만든 영웅 &quot;시온&quot;",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "CTVlkBxFC5o",
+      "title": "플딱이 하이라이트 #overwatch #overwatch2 #overwatchclips #tracer #오버워치 #오버워치2 #트레이서",
+      "player": "Trending"
+    },
+    {
+      "id": "VAoknvrFGVs",
+      "title": "he thought he had that 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "el6c40FJwqw",
+      "title": "혼자서 전원처치 하는 장크랫 #shorts #하이라이트",
+      "player": "Trending"
+    },
     {
       "id": "J4cT6X7s0Q8",
       "title": "적이었지만 팟지는 양보할게^^ #오버워치 #ow2 #젠야타 #디바 #디바궁 #overwatch",
@@ -75,21 +90,6 @@
     {
       "id": "qTNJkaa_7bI",
       "title": "[Overwatch 2] 래킹볼 하이라이트",
-      "player": "Trending"
-    },
-    {
-      "id": "aME07F_rDFk",
-      "title": "오버워치 하이라이트 플레이 모음 388 (Overwatch Potg Play Collection 388) #shorts 버전2",
-      "player": "Trending"
-    },
-    {
-      "id": "zpSn8_2xoKs",
-      "title": "신캐가 나왔지만 신캐를 할 수 없는 이유.. [오버워치]",
-      "player": "Trending"
-    },
-    {
-      "id": "iDksprzP3tI",
-      "title": "플딱이 하이라이트 #overwatch #overwatch2 #overwatchclips #tracer #오버워치 #오버워치2 #트레이서",
       "player": "Trending"
     }
   ]
