@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-01 14:05",
+  "lastUpdated": "2026-07-02 02:08",
   "pro": [
     {
       "id": "GRPLAomnolg",
@@ -12,8 +12,8 @@
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "V7qCZdZFwIc",
-      "title": "경쟁 핫타임 달리기",
+      "id": "7RL2XRrNwTY",
+      "title": "우리 그마 친구 실력 한번 볼까? ^0^",
       "player": "쪼낙 (Jjonak)"
     }
   ],
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "-6yVI3ew5y4",
-      "title": "그림 안그리는 FPS 고인물 #메챠카멜레온",
+      "id": "9jESYjD2sAs",
+      "title": "정진해야한다. 볼시라퀸 그마4시작",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "F3nZrk37740",
+      "title": "실시간 피드백 받고 경쟁전에서 날뛰는 수강생, 다이아 소전",
+      "player": "Official"
+    },
     {
       "id": "gUQgoM8A01A",
       "title": "【OW2】디어 우리 시청자 공식 명칭에 &#39;공벌레&#39; 가 추가됐어요 ㅋㅋ【오버워치2】#OW2 #오버워치2 #Vtuber",
@@ -41,27 +46,42 @@
       "player": "Official"
     },
     {
-      "id": "47BhUuBGhRw",
-      "title": "-NEW- Juno, Anran, Mizuki Skins Revealed! - Overwatch Yoasobi Collab",
-      "player": "Official"
-    },
-    {
       "id": "ocyFZf2AsvE",
       "title": "OVERWATCH x YOASOBI | 게임플레이 트레일러",
-      "player": "Official"
-    },
-    {
-      "id": "v6sTgtbLfOc",
-      "title": "오버워치 연습해보기 [26.04.30 #2]",
       "player": "Official"
     },
     {
       "id": "_tUjsvY-yok",
       "title": "이런 팀원과 오버워치를 한다면",
       "player": "Official"
+    },
+    {
+      "id": "yvpIPUIBves",
+      "title": "블리자드 이렇게 할 줄 알았으면서 여태 왜",
+      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "PGd1OZvmsiE",
+      "title": "거대한 건담이 지키고 있는 신맵 네온 교차로 [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "xNbP9ez5m4E",
+      "title": "I NEED THE JUNO SKIN 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "AyGa3fdJvzA",
+      "title": "this skins are better then the ultra 🗿 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "DR0Wuww37NU",
+      "title": "불 붙으면 끝",
+      "player": "Trending"
+    },
     {
       "id": "ZxnnP5HN89U",
       "title": "오버워치 소전 하이라이트 플레이 모음11 (Overwatch Sojourn Potg Play Collection11) #shorts 버전2",
@@ -70,26 +90,6 @@
     {
       "id": "Ozssmqybcss",
       "title": "프로퍼의 챔구간 솔저 플레이 ㄷㄷ#오버워치2 #오버워치",
-      "player": "Trending"
-    },
-    {
-      "id": "6frxSX7iArk",
-      "title": "[Juno] 주노의 &#39;요아소비&#39; 콜라보 스킨 착용 모든 하이라이트 #shorts #overwatch",
-      "player": "Trending"
-    },
-    {
-      "id": "PFReghRcdjs",
-      "title": "프레야 오리사 대박 연계#shorts #ow2  #프레야 #궁연계 #대박궁 #하이라이트",
-      "player": "Trending"
-    },
-    {
-      "id": "ov-jvbXNr3s",
-      "title": "안란, 요아소비 콜라보 스킨 착용 하이라이트 &amp; 감정 표현 슬쩍 보기 #shorts #overwatch",
-      "player": "Trending"
-    },
-    {
-      "id": "gPLecIhepMk",
-      "title": "[프렌즈] 치킨은 내꺼야! ㅣ치킨내전 하이라이트1",
       "player": "Trending"
     }
   ]
