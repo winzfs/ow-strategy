@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-10 01:51",
+  "lastUpdated": "2026-07-10 13:55",
   "pro": [
     {
       "id": "1vhRFQ_XNmw",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "EVmBlQzoBVw",
-      "title": "요즘 난리 난 오버워치 넥슨 연동에 대해 소신 발언하겠습니다.",
+      "id": "oIYKvPjSptE",
+      "title": "오버워치 넥슨 연동에 대한 소신발언",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,25 +19,30 @@
   ],
   "streamer": [
     {
-      "id": "rnqx6yrtfK0",
-      "title": "메챠카멜레온 역대급 죠랄사ㅋㅋㅋ",
+      "id": "Qhawy76NGhc",
+      "title": "스킨 리뷰하다가 뇌정지 온 이유",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "hZsznzM6Hag",
-      "title": "옵치 유튜버들 최대 문제점과 인생최대후원금",
+      "id": "bN-HCAqWPnk",
+      "title": "신캐 스킨들도 바로 챙겨주는 블리자드 근황",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
     {
-      "id": "CevLDvpbvsE",
-      "title": "선택지 하나 바꿨을 뿐인데 달라지는 티어 📈 (다이아 ➡️ 마스터)",
+      "id": "4DYh2AizYaM",
+      "title": "[얼개 오버워치] 지상전의 왕자 ☆라인☆과 공중전의 공주 ♡주노♡",
       "player": "Official"
     },
     {
-      "id": "EVmBlQzoBVw",
-      "title": "요즘 난리 난 오버워치 넥슨 연동에 대해 소신 발언하겠습니다.",
+      "id": "3ffVnxCTLy4",
+      "title": "계승자들 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "CevLDvpbvsE",
+      "title": "선택지 하나 바꿨을 뿐인데 달라지는 티어 📈 (다이아 ➡️ 마스터)",
       "player": "Official"
     },
     {
@@ -54,42 +59,37 @@
       "id": "uFSzlU6g9sg",
       "title": "Overwatch 2 x Transformers - Official Trailer",
       "player": "Official"
-    },
-    {
-      "id": "WijUsqM83V8",
-      "title": "🌟오버워치 일냈다 : YOASOBI (요아소비) 「Orion」 オリオン [가사/해석/lyrics]",
-      "player": "Official"
     }
   ],
   "trending": [
     {
+      "id": "UnEmkxz36Ig",
+      "title": "그동안 바빴던 이유｜워터빈 하이라이트 31",
+      "player": "Trending"
+    },
+    {
+      "id": "bGtXh2PLGo8",
+      "title": "트레 ㅋㅋ",
+      "player": "Trending"
+    },
+    {
+      "id": "NxVrsQzJO14",
+      "title": "살아있어",
+      "player": "Trending"
+    },
+    {
+      "id": "-1aNf_oB6m4",
+      "title": "1인궁 EMP써도 1대1 지는 킬로.... #오버워치2 #오버워치",
+      "player": "Trending"
+    },
+    {
+      "id": "-HYOqqnvL1o",
+      "title": "비명 지를 틈도 없이 젠야타를 처형하는 시온의 미친 궁극기 [오버워치]",
+      "player": "Trending"
+    },
+    {
       "id": "ImsMLUXh0Xo",
       "title": "라인 팔이 이렇게 길었나요..? #라인하르트 #오버워치 #오버워치2 #오버워치매드무비 #오버워치하이라이트 #옵치 #옵치2 #방송 #치지직 #생방송 #스트리밍 #쇼츠",
-      "player": "Trending"
-    },
-    {
-      "id": "LJX5WXYkO-M",
-      "title": "삐삐-뿝-뿌우 녹아요 녹아~ #오버워치2 #오버워치 #오버워치매드무비 #오버워치하이라이트 #팟지 #실시간 #방송 #스트리밍 #라이브 #생방송 #쇼츠 #옵치 #옵치2",
-      "player": "Trending"
-    },
-    {
-      "id": "HJRuesyW3l0",
-      "title": "(오버워치)팀을 위한 탱커는 결국 마우가.",
-      "player": "Trending"
-    },
-    {
-      "id": "lAwdf5TNTn8",
-      "title": "So satisfying 😍 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "0GkrkIUvR4g",
-      "title": "OWCS KOREA 스테이지 2 5주차 팟지 하이라이트",
-      "player": "Trending"
-    },
-    {
-      "id": "KnWvEgXSYx0",
-      "title": "그녀가 업계 최고 현상금 사냥꾼인 이유",
       "player": "Trending"
     }
   ]
