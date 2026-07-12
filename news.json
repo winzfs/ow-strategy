@@ -1,9 +1,9 @@
 {
-  "lastUpdated": "2026-07-11 12:52",
+  "lastUpdated": "2026-07-12 01:42",
   "pro": [
     {
-      "id": "l_dYPIYBUWE",
-      "title": "내일 결승 가요",
+      "id": "1vhRFQ_XNmw",
+      "title": "돌아왔냐 안스?",
       "player": "안스 (Ans)"
     },
     {
@@ -24,8 +24,8 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "deEISY3ZB5I",
-      "title": "진짜 유튜버 저격 먹었습니다. 논란의 티어리스트 사태 해명합니다.",
+      "id": "JnNdunz1h2U",
+      "title": "날 건드리지마라, 경쟁전 그4 시작",
       "player": "아이치 (Ichi)"
     }
   ],
@@ -36,8 +36,18 @@
       "player": "Official"
     },
     {
+      "id": "oIYKvPjSptE",
+      "title": "오버워치 넥슨 연동에 대한 소신발언",
+      "player": "Official"
+    },
+    {
       "id": "3ffVnxCTLy4",
       "title": "계승자들 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "yWeXqMXmeyA",
+      "title": "Successors Story Time with Sahr Ngaujah | Overwatch",
       "player": "Official"
     },
     {
@@ -49,47 +59,37 @@
       "id": "Z0dcX6Mk8xo",
       "title": "오버워치 시전술사 스킨만 빠르게 보기 (26.07.08) #shorts #overwatch",
       "player": "Official"
-    },
-    {
-      "id": "23--RXVxAjA",
-      "title": "-NEW- Spellcaster Skins are... really something - Overwatch Shop Update",
-      "player": "Official"
-    },
-    {
-      "id": "WijUsqM83V8",
-      "title": "🌟오버워치 일냈다 : YOASOBI (요아소비) 「Orion」 オリオン [가사/해석/lyrics]",
-      "player": "Official"
     }
   ],
   "trending": [
     {
+      "id": "XHwY3u2aw0o",
+      "title": "For illari haters #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "7uU190M17tY",
+      "title": "DO THE DANCE 😡 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "XQHhqzaqRLU",
+      "title": "The emote is so good 😂 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "BqsofqX43Eo",
+      "title": "good example how NOT to play as dps 😭 #overwatch #overwatch2 #overwatchclips #overwatchgameplay",
+      "player": "Trending"
+    },
+    {
+      "id": "gImyLpKRzrU",
+      "title": "판단 하나로 한타를 끝냈습니다.",
+      "player": "Trending"
+    },
+    {
       "id": "7g9H0RQ2SYY",
       "title": "[ 4K UHD ] 오버워치2 하이라이트 모음집,둠피스트 계승의 전설",
-      "player": "Trending"
-    },
-    {
-      "id": "4tBpxVoe6zs",
-      "title": "흐름이 중요한 이유 #shorts",
-      "player": "Trending"
-    },
-    {
-      "id": "YxxVEWeVul0",
-      "title": "Mizuki mains #overwatch2 #overwatch #overwatchclips #gaming #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "Nf9fUsDHV9w",
-      "title": "오버워치 하이라이트 플레이 모음 394 (Overwatch Potg Play Collection 394) #shorts 버전2",
-      "player": "Trending"
-    },
-    {
-      "id": "CLozUGK-380",
-      "title": "윈스턴한테 드리블 당하다가 갑자기 시야에서 사라진 라이프위버 [오버워치]",
-      "player": "Trending"
-    },
-    {
-      "id": "u3zcqNCdS4g",
-      "title": "[Orisa] 오리사 &#39;냥카페&#39; 스킨 착용 하이라이트 모음 (냥리사) #shorts #overwatch",
       "player": "Trending"
     }
   ]
