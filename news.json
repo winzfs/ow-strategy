@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-14 01:21",
+  "lastUpdated": "2026-07-14 13:04",
   "pro": [
     {
       "id": "1vhRFQ_XNmw",
@@ -7,8 +7,8 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "V86xIGfo0H0",
-      "title": "광물 아나 유저들이 가지고 있는 최악의 단점 1위｜내가 류제홍이다 EP.52",
+      "id": "-GyEpspy7Es",
+      "title": "광물 아나들의 최악의 단점",
       "player": "류제홍 (Ryujehong)"
     },
     {
@@ -19,8 +19,8 @@
   ],
   "streamer": [
     {
-      "id": "FvDZxUPduOU",
-      "title": "공식적으로 한국 오버워치를 리스펙한 블리자드 ㄷㄷ",
+      "id": "PbnS8OwkJGw",
+      "title": "오버워치 애니메이션이 나와야 하는 이유",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,11 @@
     }
   ],
   "official": [
+    {
+      "id": "dsHvcNEq-OM",
+      "title": "Mauga Mythic Skin Reveal! - Overwatch Midseason Update",
+      "player": "Official"
+    },
     {
       "id": "V86xIGfo0H0",
       "title": "광물 아나 유저들이 가지고 있는 최악의 단점 1위｜내가 류제홍이다 EP.52",
@@ -51,11 +56,6 @@
       "player": "Official"
     },
     {
-      "id": "-xpHuJRn_N8",
-      "title": "오버워치 신맵에서 정신 안 차리면 의문사 당합니다ㅋㅋ (네온 교차로) #shorts #overwatch",
-      "player": "Official"
-    },
-    {
       "id": "oIYKvPjSptE",
       "title": "오버워치 넥슨 연동에 대한 소신발언",
       "player": "Official"
@@ -63,33 +63,33 @@
   ],
   "trending": [
     {
-      "id": "h0wQjcztqEs",
-      "title": "Greatest game ever made #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "id": "aXs2JAUdCfs",
+      "title": "플딱이 하이라이트 #overwatch #overwatch2 #overwatchclips #tracer #오버워치 #오버워치2 #트레이서",
       "player": "Trending"
     },
     {
-      "id": "0BG3a6i0HzY",
-      "title": "FIKA CAKE 🐈 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "id": "HuuiYTcBSnA",
+      "title": "프로퍼가 트레로 캐리하는 방법 ㄷㄷ #오버워치2 #오버워치",
       "player": "Trending"
     },
     {
-      "id": "6CCEKmDmtSQ",
-      "title": "Ramattra must be stopped #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "id": "4JUbzBwfWNo",
+      "title": "&quot;몰라&quot;",
       "player": "Trending"
     },
     {
-      "id": "zguWkMhrlKs",
-      "title": "아나 뽕 받자마자 한타 삭제ㅋㅋ",
+      "id": "MXHS7uphx-I",
+      "title": "캐릭터 고점 찍어버린 레전드 궁극기 ㄷㄷ #오버워치 #owcs",
       "player": "Trending"
     },
     {
-      "id": "mtUm5BVJDOk",
-      "title": "톨비 포탑은 맛있어~ #오버워치 #오버워치2 #오버워치하이라이트 #토르비온 #포탑 #치지직 #유튜브 #동시송출 #판판다 #구독 #좋아요 #알림설정",
+      "id": "XFFFgJqBzl8",
+      "title": "팟지 55",
       "player": "Trending"
     },
     {
-      "id": "qsKLJgdHgsE",
-      "title": "팟찌시 천원 미션 완료 입금 부탁드립니다 ㅎㅎ #천원미션 #팟찌 #햄찌 #레킹볼 #유튜브 #치지직 #실시간 #방송 #오버워치 #오버워치2 #오버워치하이라이트 #옵치 #옵치2",
+      "id": "4WYZ0G5TED0",
+      "title": "오버워치 하이라이트#1",
       "player": "Trending"
     }
   ]
