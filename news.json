@@ -1,35 +1,40 @@
 {
-  "lastUpdated": "2026-07-15 01:18",
+  "lastUpdated": "2026-07-15 13:08",
   "pro": [
     {
-      "id": "1vhRFQ_XNmw",
-      "title": "돌아왔냐 안스?",
+      "id": "BGCX6aboAkk",
+      "title": "조금만 ?",
       "player": "안스 (Ans)"
     },
     {
-      "id": "-GyEpspy7Es",
-      "title": "광물 아나들의 최악의 단점",
+      "id": "xn5m0YQ-tao",
+      "title": "광물 아나 유저들은 왜 오리사를 무서워하지 않는 건가요?｜내가 류제홍이다 EP.52",
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "9WybvONdbMQ",
-      "title": "[결승전] 바이올렛 이런 눈빛은 진짜 처음 봅니다...",
+      "id": "Pu0WCGfcom8",
+      "title": "뚫렸다.. 4연속",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "PbnS8OwkJGw",
-      "title": "오버워치 애니메이션이 나와야 하는 이유",
+      "id": "DcyTUzKtbXU",
+      "title": "탱커 안락사 당했다는 오버워치 최신 근황",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "LwrTA3xvlOk",
-      "title": "마우가와 동화된 유저들ㅋㅋㅋㅋ",
+      "id": "suGa27amRuo",
+      "title": "정발한 \"스위치2 옵치\".. 에임핵 할만한가요?",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "TkMD-66VraA",
+      "title": "우리가 선택하는 길 스토리 타임 | 오버워치",
+      "player": "Official"
+    },
     {
       "id": "wf2dMx31W2s",
       "title": "고민해결! 오버워치 계정연동 총 정리 | 옵치토크쇼",
@@ -54,42 +59,37 @@
       "id": "uq7SsY8V78I",
       "title": "탱커 0데스로 왕의길 이기는 법. 윈스턴",
       "player": "Official"
-    },
-    {
-      "id": "zBQF1XFrB_g",
-      "title": "둠피 스토리 리뷰 중 개인적인 포인트 #오버워치2 #overwatch2",
-      "player": "Official"
     }
   ],
   "trending": [
     {
-      "id": "o6wfF24AYhg",
-      "title": "바닷가 스킨 하이라이트 모음 (벤데타, 안란, 주노) #shorts #overwatch",
-      "player": "Trending"
-    },
-    {
-      "id": "0iHN18dvIoI",
-      "title": "&quot;Beware the shadows&quot; #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "zbB07ylZk7g",
-      "title": "기회는 절대 놓치지 않습니다",
-      "player": "Trending"
-    },
-    {
-      "id": "zrnpxH1BDB4",
-      "title": "솔저 하이라이트 #1 #솔저76 #오버워치 #오버워치2 #옵치 #옵치2 #오버워치하이라이트 #오버워치매드무비 #치지직 #유튜브 #치지직방송 #치지직스트리머 #유튜브쇼츠 #실시간",
-      "player": "Trending"
-    },
-    {
-      "id": "Y9sZR-qpD9s",
-      "title": "7월 1호 하이라이트.",
-      "player": "Trending"
-    },
-    {
-      "id": "aXs2JAUdCfs",
+      "id": "KdikpB8uB7E",
       "title": "플딱이 하이라이트 #overwatch #overwatch2 #overwatchclips #tracer #오버워치 #오버워치2 #트레이서",
+      "player": "Trending"
+    },
+    {
+      "id": "mFWdWxghA9Q",
+      "title": "오버워치 오리사 하이라이트 플레이 모음6 (Overwatch Orisa Potg Play Collection6) #shorts 버전2",
+      "player": "Trending"
+    },
+    {
+      "id": "MKJZlM0X_nY",
+      "title": "펄스는 진짜 말이 안 나온 프로퍼의 트레이서 ㅋㅋㅋ #오버워치2 #오버워치",
+      "player": "Trending"
+    },
+    {
+      "id": "WtCsYbWoQmg",
+      "title": "국가대표들 상대로 1대5 하는 미친 프로게이머 #오버워치 #owcs",
+      "player": "Trending"
+    },
+    {
+      "id": "VsWfOFOkdUI",
+      "title": "탱장연의 꿈은 끝나지 않아",
+      "player": "Trending"
+    },
+    {
+      "id": "jBNOiIndnBA",
+      "title": "[Juno] 귀여운 주노 &#39;바닷가&#39; 스킨 착용 하이라이트 모음 #shorts #overwatch",
       "player": "Trending"
     }
   ]
