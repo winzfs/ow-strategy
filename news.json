@@ -1,9 +1,9 @@
 {
-  "lastUpdated": "2026-07-27 14:08",
+  "lastUpdated": "2026-07-28 01:27",
   "pro": [
     {
-      "id": "ttSzQLSV_-Y",
-      "title": "7월이 끝나가네요",
+      "id": "1vhRFQ_XNmw",
+      "title": "돌아왔냐 안스?",
       "player": "안스 (Ans)"
     },
     {
@@ -19,8 +19,8 @@
   ],
   "streamer": [
     {
-      "id": "NwXJ9dhc-gs",
-      "title": "주노 루시우 모이라",
+      "id": "3TLxp8nUlRw",
+      "title": "스킨 차별 미쳤다는 오버워치 근황",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,11 @@
     }
   ],
   "official": [
+    {
+      "id": "QbES7APMWsM",
+      "title": "Overwatch Season 4 - New Heroes, Mythic Skins, BlizzCon, &amp; More!",
+      "player": "Official"
+    },
     {
       "id": "rvTmj5hri5w",
       "title": "피지컬 없어도 상관없습니다, 둠피스트 &#39;뇌지컬&#39; 승리 공식 (챔피언2 실전 강의)",
@@ -54,42 +59,37 @@
       "id": "US4LYIllcwM",
       "title": "오버워치 공식계정의 실수 #유머",
       "player": "Official"
-    },
-    {
-      "id": "qz744qNVoeE",
-      "title": "대참사 났다는 옵치 공식 트위터?",
-      "player": "Official"
     }
   ],
   "trending": [
     {
+      "id": "o2aQTvVZ2Iw",
+      "title": "플딱이 하이라이트 #overwatch #overwatch2 #overwatchclips #tracer #오버워치 #오버워치2 #트레이서",
+      "player": "Trending"
+    },
+    {
+      "id": "A2ZKbcr_XI0",
+      "title": "Average Mauga main 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "7erCh-bcsds",
+      "title": "여름이였다...",
+      "player": "Trending"
+    },
+    {
+      "id": "54VdOrYYAPM",
+      "title": "시작부터 한명 따는법",
+      "player": "Trending"
+    },
+    {
+      "id": "sKTLUHtfnIs",
+      "title": "앞도 보고 뒤도 봅니다.",
+      "player": "Trending"
+    },
+    {
       "id": "1gG1ecxDKRg",
       "title": "밥 다 됐어 #아기상어다 #오버워치2 #눌러주세용",
-      "player": "Trending"
-    },
-    {
-      "id": "flp7JbMbZoo",
-      "title": "챔피언들도 벽 느끼는 스토커의 에코 ㄷㄷ #오버워치2 #오버워치",
-      "player": "Trending"
-    },
-    {
-      "id": "USGnLoBOl_M",
-      "title": "팟지 60",
-      "player": "Trending"
-    },
-    {
-      "id": "2GW7lk0f0ds",
-      "title": "겐지 용검 125로 버프가 시급하다.",
-      "player": "Trending"
-    },
-    {
-      "id": "kL_XGdoUy9c",
-      "title": "상대 머리만 맞히면 저절로 캐리가 되는 한조 [오버워치]",
-      "player": "Trending"
-    },
-    {
-      "id": "x5YH4E2F_n8",
-      "title": "오버워치2 브리기테 하이라이트 #오버워치2#오버워치",
       "player": "Trending"
     }
   ]
