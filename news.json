@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-09 00:52",
+  "lastUpdated": "2026-08-09 12:26",
   "pro": [
     {
       "id": "1vhRFQ_XNmw",
@@ -12,15 +12,15 @@
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "Hyfx-xOipF0",
-      "title": "챔피언이 다이아에 가면 벌어지는 대참사 ㅋㅋㅋㅋ",
+      "id": "URE1kkaIWyE",
+      "title": "챔4는 오버워치를 다시 배워야한다.",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "xtaWPWhjcqA",
-      "title": "드디어 공개된 오버워치 신캐 '디몬' 모델링&스킬셋!!! 근데 얼굴 상태가 이상하다...?",
+      "id": "1lASwvD4lZk",
+      "title": "출시하자마자 민심 떡락? 디몬 평판 둘러보기",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,11 @@
     }
   ],
   "official": [
+    {
+      "id": "NsKyI7GOego",
+      "title": "엠레&amp;소전 내 궁극기가 야르하지 않은 이유",
+      "player": "Official"
+    },
     {
       "id": "usnWdTDv8pM",
       "title": "D.Mon | 신규 영웅 게임플레이 트레일러 | 오버워치",
@@ -54,14 +59,29 @@
       "id": "G3pYwbwJmbc",
       "title": "성장통 스토리 타임 | 오버워치",
       "player": "Official"
-    },
-    {
-      "id": "jF8CWXkFq2Y",
-      "title": "D.Mon New Hero Details! - Overwatch Season 4 Cinematic Breakdown",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "s2febc7Wfi4",
+      "title": "윈스턴도 에임이 중요하다",
+      "player": "Trending"
+    },
+    {
+      "id": "qRvW4JctUTA",
+      "title": "겐지 하이라이트2",
+      "player": "Trending"
+    },
+    {
+      "id": "cdDd0Jz3o5A",
+      "title": "아나를 밴 할 거면 로드호그도 밴 해야 하는 이유 [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "s-oO7UQT_WY",
+      "title": "What was that bug? #overwatch2 #overwatchclips",
+      "player": "Trending"
+    },
     {
       "id": "3Z-4QLwzZFA",
       "title": "I met her in a dream last night #overwatch2 #gaming #overwatchclips #overwatch #ow2",
@@ -70,26 +90,6 @@
     {
       "id": "JDsV1SsIX88",
       "title": "you belong there after that lifegrip #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "lqHvCPVGzjQ",
-      "title": "나도 내가 “핵”인줄",
-      "player": "Trending"
-    },
-    {
-      "id": "q0cxTM6sQJw",
-      "title": "오버워치 사기캐 시에라 #short",
-      "player": "Trending"
-    },
-    {
-      "id": "7KzVgoqtMrg",
-      "title": "Top 1 EU Bastion #overwatch2 #overwatchclips",
-      "player": "Trending"
-    },
-    {
-      "id": "bTfT8l6HHSU",
-      "title": "MEKA squad are all gamers btw #overwatch2 #gaming #overwatchclips #overwatch #ow2",
       "player": "Trending"
     }
   ]
