@@ -1,9 +1,9 @@
 {
-  "lastUpdated": "2026-08-25 00:36",
+  "lastUpdated": "2026-08-25 12:24",
   "pro": [
     {
-      "id": "1vhRFQ_XNmw",
-      "title": "돌아왔냐 안스?",
+      "id": "mm4nwF4043s",
+      "title": "피곤해",
       "player": "안스 (Ans)"
     },
     {
@@ -19,17 +19,22 @@
   ],
   "streamer": [
     {
-      "id": "3h8vaVS7psA",
-      "title": "영상 길이에 속지 마세요...본선을 확정짓는 돌아온 국대 경기력?? | 오버워치 월드컵 한국 vs 덴마크",
+      "id": "P0qUK2vA-Ss",
+      "title": "일하~ | 옵치데이 후기 풀다가 오랜만에 게임",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "H_UOLiq_vvg",
-      "title": "랭커구간 탱커 최고빌런",
+      "id": "eF7_E5wzvIc",
+      "title": "디몬 함정론과 한국 최애 영웅 ㅣ4시즌 초반 통계",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "wWIqjtLrHVM",
+      "title": "[오버워치×참교육] 골드 탱커, 참교육 시작합니다!",
+      "player": "Official"
+    },
     {
       "id": "RYc49YuMkTA",
       "title": "《오버워치2》새벽 오버워치 게릴라~ w.이로【260823】",
@@ -54,42 +59,37 @@
       "id": "W2JTJkrGzwc",
       "title": "쟁탈 풀라운드 0데스, 가능할까? | 장문철tv 773화",
       "player": "Official"
-    },
-    {
-      "id": "yb4BljM_0Jk",
-      "title": "대기업의 배틀패스 #오버워치2 #overwatch2",
-      "player": "Official"
     }
   ],
   "trending": [
     {
+      "id": "6eroP9iY0Ps",
+      "title": "풍차 돌리기로 한타 숨 고르기;; #shorts",
+      "player": "Trending"
+    },
+    {
+      "id": "EEe6DaQIeOc",
+      "title": "[ 오버워치 ] 라인의 기가막힌 벤데타 납치",
+      "player": "Trending"
+    },
+    {
+      "id": "JSyaHSjMfws",
+      "title": "팟지 72",
+      "player": "Trending"
+    },
+    {
+      "id": "yFe6eH3Y1yQ",
+      "title": "한명만 물어도 1인분하는 솜브라",
+      "player": "Trending"
+    },
+    {
+      "id": "-fA8o_ZnMow",
+      "title": "익숙한데 새로운 개편된 아이헨발데 [오버워치]",
+      "player": "Trending"
+    },
+    {
       "id": "WJF-RNpzBuI",
       "title": "나노 필요없는 겐지",
-      "player": "Trending"
-    },
-    {
-      "id": "8NNoMPmJ3WY",
-      "title": "It&#39;s GameLeaver #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "qdSIfALS64o",
-      "title": "The cat is everywhere 😭 @Ian-sl5er  #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "aMbtVfTYqwU",
-      "title": "저렇게 모이면 못 참죠.",
-      "player": "Trending"
-    },
-    {
-      "id": "kIbA4OXTWWc",
-      "title": "오버워치 월드컵에서 감기 걸린 선준이가 제일 좋은 모습 보여줌 ㅋㅋ #오버워치2 #오버워치",
-      "player": "Trending"
-    },
-    {
-      "id": "G_gsCpV4yv8",
-      "title": "나노받고타이어깨기",
       "player": "Trending"
     }
   ]
