@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-27 21:24",
+  "lastUpdated": "2026-08-28 07:46",
   "pro": [
     {
       "id": "rdwQj5-kHQo",
@@ -19,8 +19,8 @@
   ],
   "streamer": [
     {
-      "id": "URh6BBmikvs",
-      "title": "경쟁전에서 주노 '이 특전' 찍는 유저 있으면 팀밴하세요...효율 너무 안좋은데??",
+      "id": "OTEFYI9jYJA",
+      "title": "오버워치 최대 논란 중 하나인 해외 옵저버들의 실력?",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,11 @@
     }
   ],
   "official": [
+    {
+      "id": "IZbSp201-S4",
+      "title": "하시모토 분신술에 털린 디바 아저씨",
+      "player": "Official"
+    },
     {
       "id": "pQQUZEo6saE",
       "title": "【08/18】배틀필드6 / 오버워치 내전 (2부)",
@@ -41,8 +46,8 @@
       "player": "Official"
     },
     {
-      "id": "wWIqjtLrHVM",
-      "title": "[오버워치×참교육] 골드 탱커, 참교육 시작합니다!",
+      "id": "vwaqHBBSRsY",
+      "title": "[FULL] 제대로 붙었다🔥 크리에이터 스페셜 매치 풀영상 | 오버워치",
       "player": "Official"
     },
     {
@@ -54,14 +59,29 @@
       "id": "ZIICWDgltWw",
       "title": "따 따라따따~ 🎵 최예나가 전하는 축하 메시지 | 오버워치",
       "player": "Official"
-    },
-    {
-      "id": "E-3NDmyUDWw",
-      "title": "Overwatch World Cup 2026 | Group Stage Day 2",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "2m_J-O1l_rE",
+      "title": "벤데타의 스킨별 &#39;리듬&#39; 하이라이트 (있는 스킨만) #shorts #overwatch",
+      "player": "Trending"
+    },
+    {
+      "id": "ZZCGFVpdoN4",
+      "title": "일리아리 궁 터지는 거 정도는 가볍게 살리는 라이프위버 [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "7WPo3sFTLPE",
+      "title": "[Mercy] 메르시 스킨별 &#39;리듬&#39; 하이라이트 (예쁜 스킨만) #shorts #overwatch",
+      "player": "Trending"
+    },
+    {
+      "id": "9CzVK18mFAw",
+      "title": "Never ask an OW player why the clip ends there #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
     {
       "id": "tm2Cc07PsoA",
       "title": "긴장감 ON",
@@ -70,26 +90,6 @@
     {
       "id": "ZGqgeYXe5YE",
       "title": "Reaction time of a sloth #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "D5m14OxYkOQ",
-      "title": "한 명만 잡으려던 건 아닙니다.",
-      "player": "Trending"
-    },
-    {
-      "id": "CXI4wtDOzzo",
-      "title": "오리사티배깅",
-      "player": "Trending"
-    },
-    {
-      "id": "w-w4V0QvWhY",
-      "title": "[Mercy] 메르시 &#39;픽셀 스타&#39; 스킨 착용 하이라이트 #shorts #overwatch",
-      "player": "Trending"
-    },
-    {
-      "id": "i7dhUBv2Ssg",
-      "title": "메르시 픽셀 스타의 모든 것 (신규 하이라이트 + 전 스킨 연출 + 감정표현 + 착용 플레이) #overwatch",
       "player": "Trending"
     }
   ]
