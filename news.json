@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-18 15:23",
+  "lastUpdated": "2026-09-19 02:07",
   "pro": [
     {
       "id": "SLYIG5cj7SQ",
@@ -24,17 +24,12 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "1haJ2h79SzM",
-      "title": "일루전 PH 아이치",
+      "id": "0VYCz2nRrlw",
+      "title": "방송 저격, 패작, 고의트롤, 끝없는 의식   다 보입니다",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
-    {
-      "id": "rDr9nwBzQKw",
-      "title": "오버워치 둠피스트🛡️ [마음 잡았습니다] 멘탈 흔들리던 나쁜 습관 싹 버렸습니다유리패드까지 던져버리고 진짜 &#39;착한 둠피스트&#39;로 클린 빡겜 가봅니다 👊 !미션",
-      "player": "Official"
-    },
     {
       "id": "V4AFo6jjn4s",
       "title": "오버워치데이 부산 백스코 코스프레 콘테스트 2 풀버전 2026.08.22",
@@ -59,37 +54,42 @@
       "id": "Q_ewY0V303g",
       "title": "영화도 이렇게 만들면 욕 먹습니다. 기적을 만들어낸 대한민국 오버워치 국가대표팀｜2026 OWWC 4강, 결승 중계",
       "player": "Official"
+    },
+    {
+      "id": "GZ1X3qhLkzc",
+      "title": "2026 블리즈컨 오버워치 변경점 총 정리! | 옵치토크쇼",
+      "player": "Official"
     }
   ],
   "trending": [
     {
+      "id": "jaW-EmSaHGU",
+      "title": "라이프위버 유저가 다른 힐러를 하면... [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "NBe2q89I4HE",
+      "title": "[Juno] 귀여운 주노의 &#39;스플래시 테오 민&#39;, &#39;신입생 테오 민&#39; 비교 하이라이트! #overwatch",
+      "player": "Trending"
+    },
+    {
+      "id": "Omh_-dvkfIc",
+      "title": "팟지 76",
+      "player": "Trending"
+    },
+    {
+      "id": "nPMwUmhcoXA",
+      "title": "레전드 시참 야옹이 형님",
+      "player": "Trending"
+    },
+    {
+      "id": "yVZvGtkqHnQ",
+      "title": "오른쪽 가서 한명 딸까요?",
+      "player": "Trending"
+    },
+    {
       "id": "Pz8VJArt7TI",
       "title": "창까지 맞았는데 제가 이겼습니다.",
-      "player": "Trending"
-    },
-    {
-      "id": "aObmw5QWFy0",
-      "title": "오버워치 시온 27일차 (안전운전 오토바이)",
-      "player": "Trending"
-    },
-    {
-      "id": "ETwvoQxStpQ",
-      "title": "스토커 캐서디 앞에선 아무것도 못하는 겐지 ㅋㅋ #오버워치2 #오버워치",
-      "player": "Trending"
-    },
-    {
-      "id": "9GTrOEAwqYg",
-      "title": "2026 오버워치 월드컵 국가대표 심플(Simple) 하이라이트 | Simple POV",
-      "player": "Trending"
-    },
-    {
-      "id": "MQ8tMNHkEXI",
-      "title": "야성미 가득한 정커퀸의 &#39;풀장&#39; 스킨 착용 하이라이트 (넥슨 막시밀리앙 판매 중) #shorts #overwatch",
-      "player": "Trending"
-    },
-    {
-      "id": "D3pW8J0ZnQo",
-      "title": "2026 오버워치 월드컵 국가대표 초롱(CH0R0NG) 하이라이트 | CH0R0NG POV",
       "player": "Trending"
     }
   ]
