@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-23 02:18",
+  "lastUpdated": "2026-09-23 15:44",
   "pro": [
     {
       "id": "SLYIG5cj7SQ",
@@ -12,24 +12,34 @@
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "gLGVxS9jDEA",
-      "title": "킬로의 트라우마를 깨주겠습니다.",
+      "id": "TnTbq0k3e0A",
+      "title": "쪼추~",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "_agXG845u1Q",
-      "title": "2026 오버워치 월드컵 우승의 주역들에게 이 말들을 꼭 해주고 싶었습니다 | 옵드컵 썰풀이#2",
+      "id": "pKxsRPy-gTY",
+      "title": "예쁜 게 최고야 소리 절로 나오는 오버워치x르세라핌 프레야 스킨",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "a-qYxv2zQIA",
-      "title": "솜브라 9차 리워크, 로드호그 5차 리워크  사실 정확한 숫자는 모름, 또 할것이기 떄문",
+      "id": "HSZe8MHOAXY",
+      "title": "추석 당일 종일방송때 할거 정하는 방송",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "-BsKdTOQ58M",
+      "title": "오버워치 둠피스트 👊칼각 고감도로 들어갑니다👊적들 어디로 도망치든 각도 다 나옵니다(속전속결 연승 🚀) !미션",
+      "player": "Official"
+    },
+    {
+      "id": "RjUgkpgvRN4",
+      "title": "옵치 또간집 1위 왕의길 아나 출입 금지 구역",
+      "player": "Official"
+    },
     {
       "id": "2cc1qO1tEko",
       "title": "오버워치 세계관의 확장 | 블리즈컨 2026 | 오버워치",
@@ -49,47 +59,37 @@
       "id": "pS4uoOFP0VI",
       "title": "오버워치가 이 정도의 사기캐를 낸 적은 없었습니다.",
       "player": "Official"
-    },
-    {
-      "id": "xvDVkIpOiDc",
-      "title": "그마 2명이 다마큐에서 싸운 이유 | 장문철tv 789화",
-      "player": "Official"
-    },
-    {
-      "id": "0O9S-vCplyY",
-      "title": "디몬 핫픽스 관짝 너프!? 2027년 신규 영웅 계획? 추석 이벤트!ㅣ오버워치",
-      "player": "Official"
     }
   ],
   "trending": [
     {
-      "id": "88DwEPo0R8g",
-      "title": "뉴비는 탱커 유저가 되고파",
+      "id": "WkE9V5GEeL4",
+      "title": "Do him a favor and play LW 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
       "player": "Trending"
     },
     {
-      "id": "lmpcg1_J_vY",
-      "title": "힐 증폭 덕분에 생각보다 힐량이 나쁘지 않은 우양 [오버워치]",
+      "id": "ZYkuaIO_yZU",
+      "title": "Winton during his ult: #overwatch2 #gaming #overwatchclips #overwatch #ow2",
       "player": "Trending"
     },
     {
-      "id": "-XJmk7t3N6U",
-      "title": "give me that crosshair #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "id": "LYEPb8bLg08",
+      "title": "라인궁 들어오자마자 시온이 움직였습니다.",
       "player": "Trending"
     },
     {
-      "id": "O6KOY-ROOEU",
-      "title": "나노 하나로 충분했네요.",
+      "id": "U-JSZs-5RL0",
+      "title": "자추하는 메르시",
       "player": "Trending"
     },
     {
-      "id": "tEiOBneCc3A",
-      "title": "힐의 원인을 제거",
+      "id": "9lRqys8uF1w",
+      "title": "TEAM 딴딴2당 VS TEAM 온네 경기 하이라이트 | 2026 오버워치 멸망전 인비테이셔널",
       "player": "Trending"
     },
     {
-      "id": "XweZNXR6cJA",
-      "title": "TEAM 박사장 VS TEAM 딴딴2당 경기 하이라이트 | 2026 오버워치 멸망전 인비테이셔널",
+      "id": "mrIL7p9iIyE",
+      "title": "TEAM 중력 VS TEAM 딴딴2당 경기 하이라이트 | 2026 오버워치 멸망전 인비테이셔널",
       "player": "Trending"
     }
   ]
