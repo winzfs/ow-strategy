@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-23 15:44",
+  "lastUpdated": "2026-09-24 02:05",
   "pro": [
     {
       "id": "SLYIG5cj7SQ",
@@ -12,29 +12,24 @@
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "TnTbq0k3e0A",
-      "title": "쪼추~",
+      "id": "OY_g_0MOLQ4",
+      "title": "1등의 기술",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "pKxsRPy-gTY",
-      "title": "예쁜 게 최고야 소리 절로 나오는 오버워치x르세라핌 프레야 스킨",
+      "id": "T5OqoZYY3FQ",
+      "title": "[몰카] 오버워치 알려주러 왔는데 학생이 최애 스트리머인 상황ㅋㅋㅋ 반응 레전드 | feat. 서넹",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "HSZe8MHOAXY",
-      "title": "추석 당일 종일방송때 할거 정하는 방송",
+      "id": "NSih54GkvLM",
+      "title": "레전드 이름인 신병",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
-    {
-      "id": "-BsKdTOQ58M",
-      "title": "오버워치 둠피스트 👊칼각 고감도로 들어갑니다👊적들 어디로 도망치든 각도 다 나옵니다(속전속결 연승 🚀) !미션",
-      "player": "Official"
-    },
     {
       "id": "RjUgkpgvRN4",
       "title": "옵치 또간집 1위 왕의길 아나 출입 금지 구역",
@@ -59,9 +54,29 @@
       "id": "pS4uoOFP0VI",
       "title": "오버워치가 이 정도의 사기캐를 낸 적은 없었습니다.",
       "player": "Official"
+    },
+    {
+      "id": "xvDVkIpOiDc",
+      "title": "그마 2명이 다마큐에서 싸운 이유 | 장문철tv 789화",
+      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "xB6jBmBX-8I",
+      "title": "깔자마자 바티스트 궁 + 바스티온한테 갈려버린 나무 [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "FYWFA1GbixM",
+      "title": "#오버워치​ 뉴비 #하이라이트 _ 001",
+      "player": "Trending"
+    },
+    {
+      "id": "nJhyr1GSAgY",
+      "title": "팟지 77",
+      "player": "Trending"
+    },
     {
       "id": "WkE9V5GEeL4",
       "title": "Do him a favor and play LW 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
@@ -75,21 +90,6 @@
     {
       "id": "LYEPb8bLg08",
       "title": "라인궁 들어오자마자 시온이 움직였습니다.",
-      "player": "Trending"
-    },
-    {
-      "id": "U-JSZs-5RL0",
-      "title": "자추하는 메르시",
-      "player": "Trending"
-    },
-    {
-      "id": "9lRqys8uF1w",
-      "title": "TEAM 딴딴2당 VS TEAM 온네 경기 하이라이트 | 2026 오버워치 멸망전 인비테이셔널",
-      "player": "Trending"
-    },
-    {
-      "id": "mrIL7p9iIyE",
-      "title": "TEAM 중력 VS TEAM 딴딴2당 경기 하이라이트 | 2026 오버워치 멸망전 인비테이셔널",
       "player": "Trending"
     }
   ]
