@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-26 02:27",
+  "lastUpdated": "2026-09-26 15:19",
   "pro": [
     {
       "id": "SLYIG5cj7SQ",
@@ -19,8 +19,8 @@
   ],
   "streamer": [
     {
-      "id": "O5i2B6ae6ms",
-      "title": "오버워치 x 르세라핌 하이라이트 연출 모음",
+      "id": "Hxy0s1mqMa4",
+      "title": "블리자드 일단 일은 열심히 하는 것 같은데...뭔가 애매하다? | 오버워치 최신 소식 모음",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,11 @@
     }
   ],
   "official": [
+    {
+      "id": "nlpG-XnBqtI",
+      "title": "오버워치 둠피스트 💎ASMR 둠피💎 잔잔하게 3분 만에 한 판씩 튀겨드립니다. 들려드릴게요⏱️상대 딜힐진 오열하는 소리⏱️!미션",
+      "player": "Official"
+    },
     {
       "id": "lG2UaGnWMZU",
       "title": "🔥 오버워치 × 에번게리온 스킨 콜라보한다면?!",
@@ -41,27 +46,42 @@
       "player": "Official"
     },
     {
-      "id": "sEcKL9QItoA",
-      "title": "[인터뷰] 8년 만에 왕좌를 되찾은 오버워치 챔피언",
-      "player": "Official"
-    },
-    {
-      "id": "RjUgkpgvRN4",
-      "title": "옵치 또간집 1위 왕의길 아나 출입 금지 구역",
-      "player": "Official"
-    },
-    {
       "id": "oW4vbZD4820",
       "title": "-NEW- Mercy, Ana, Baptiste Skins! - Overwatch Shop Update",
       "player": "Official"
     },
     {
-      "id": "2cc1qO1tEko",
-      "title": "오버워치 세계관의 확장 | 블리즈컨 2026 | 오버워치",
+      "id": "jJIccwVTFoA",
+      "title": "독트린 심층 탐구 | 블리즈컨 2026 | 오버워치",
+      "player": "Official"
+    },
+    {
+      "id": "3F9D86WdV6s",
+      "title": "르세라핌이 게임 스트리머들과 오버워치를 한다면?",
       "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "8stVgyIzeUk",
+      "title": "끌려갔는데 오히려 궁각이 나왔습니다.",
+      "player": "Trending"
+    },
+    {
+      "id": "3LAPTZsCvro",
+      "title": "&#39;일베회원방준배&#39; 닉네임을 본 쪼낙 반응 ㅋㅋㅋㅋㅋ #쪼낙 #오버워치2 #오버워치 #오버워치하이라이트",
+      "player": "Trending"
+    },
+    {
+      "id": "5860IdJkorM",
+      "title": "제 1회 유니원스컵 선드 하이라이트  | 오버워치2",
+      "player": "Trending"
+    },
+    {
+      "id": "4Ot5mwXRx24",
+      "title": "오버워치 하이라이트 플레이 모음 416 (Overwatch Potg Play Collection 416) #shorts 버전2",
+      "player": "Trending"
+    },
     {
       "id": "K7_OHES06Lo",
       "title": "게임을 끝까지 해봐야 아는 이유 [오버워치]",
@@ -70,26 +90,6 @@
     {
       "id": "VzRe5tgdCvo",
       "title": "이상한 오더하는 전프로 만났습니다",
-      "player": "Trending"
-    },
-    {
-      "id": "p0BJx0pMP-A",
-      "title": "들어간 순간부터 일이 너무 잘 풀립니다.",
-      "player": "Trending"
-    },
-    {
-      "id": "FuVWY1hC2kk",
-      "title": "오버워치 시온 30일차 (모르고 쳤어요)",
-      "player": "Trending"
-    },
-    {
-      "id": "Wa192S6sXuM",
-      "title": "오버워치 하이라이트 짬통 처리반",
-      "player": "Trending"
-    },
-    {
-      "id": "VAYNO1a82uQ",
-      "title": "상대는 스킬을 낭비하고 팀원은 살리는 최적의 땡기기 타이밍[오버워치]",
       "player": "Trending"
     }
   ]
