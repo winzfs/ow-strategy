@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-26 15:19",
+  "lastUpdated": "2026-09-27 02:23",
   "pro": [
     {
       "id": "SLYIG5cj7SQ",
@@ -24,17 +24,12 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "dEw6KwJeB60",
-      "title": "제트팩켓이 휙보였다 사라졌다가 휙보였다 사라졌다가 휙보였다 사라졌다가 휙보였다 사라졌다가 휙보였다 사라졌다가 휙보였다 사라졌다가",
+      "id": "QWUgRN2dFMA",
+      "title": "다들 몇살",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
-    {
-      "id": "nlpG-XnBqtI",
-      "title": "오버워치 둠피스트 💎ASMR 둠피💎 잔잔하게 3분 만에 한 판씩 튀겨드립니다. 들려드릴게요⏱️상대 딜힐진 오열하는 소리⏱️!미션",
-      "player": "Official"
-    },
     {
       "id": "lG2UaGnWMZU",
       "title": "🔥 오버워치 × 에번게리온 스킨 콜라보한다면?!",
@@ -59,9 +54,19 @@
       "id": "3F9D86WdV6s",
       "title": "르세라핌이 게임 스트리머들과 오버워치를 한다면?",
       "player": "Official"
+    },
+    {
+      "id": "pS4uoOFP0VI",
+      "title": "오버워치가 이 정도의 사기캐를 낸 적은 없었습니다.",
+      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "NPJNgNU5Ne8",
+      "title": "벤처가 낙사를 할만큼 당황하게 만드는 라이프위버의 단상 컨트롤 [오버워치]",
+      "player": "Trending"
+    },
     {
       "id": "8stVgyIzeUk",
       "title": "끌려갔는데 오히려 궁각이 나왔습니다.",
@@ -85,11 +90,6 @@
     {
       "id": "K7_OHES06Lo",
       "title": "게임을 끝까지 해봐야 아는 이유 [오버워치]",
-      "player": "Trending"
-    },
-    {
-      "id": "VzRe5tgdCvo",
-      "title": "이상한 오더하는 전프로 만났습니다",
       "player": "Trending"
     }
   ]
