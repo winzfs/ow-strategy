@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-27 02:23",
+  "lastUpdated": "2026-09-27 15:57",
   "pro": [
     {
       "id": "SLYIG5cj7SQ",
@@ -12,8 +12,8 @@
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "K6TxysOaip4",
-      "title": "올바른 인사 사용법",
+      "id": "zTWM3zseLMg",
+      "title": "잔잔한 경쟁",
       "player": "쪼낙 (Jjonak)"
     }
   ],
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "QWUgRN2dFMA",
-      "title": "다들 몇살",
+      "id": "zTbV39yqnfw",
+      "title": "\"옴닉가능?\" 옵치 캐릭터 매력도 티어리스트.",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "HsPO8jQhBwI",
+      "title": "오버워치 둠피스트🎉광살탄 생일입니다🎉주인공 버프 적팀 벽에 예쁘게 포장해서 접어드립니다 🥳(사각사각 바비큐 펀치🥩)!미션",
+      "player": "Official"
+    },
     {
       "id": "lG2UaGnWMZU",
       "title": "🔥 오버워치 × 에번게리온 스킨 콜라보한다면?!",
@@ -54,42 +59,37 @@
       "id": "3F9D86WdV6s",
       "title": "르세라핌이 게임 스트리머들과 오버워치를 한다면?",
       "player": "Official"
-    },
-    {
-      "id": "pS4uoOFP0VI",
-      "title": "오버워치가 이 정도의 사기캐를 낸 적은 없었습니다.",
-      "player": "Official"
     }
   ],
   "trending": [
     {
+      "id": "J75ZfrTFep4",
+      "title": "투사체까지 깨달은 놈",
+      "player": "Trending"
+    },
+    {
+      "id": "47C5qEqz5i4",
+      "title": "아나한테 자꾸 킬각이 보입니다.",
+      "player": "Trending"
+    },
+    {
+      "id": "gn5Ip71kDc4",
+      "title": "중국 옵치한정 ㅈ@ㄴ이쁜 하이라이트들",
+      "player": "Trending"
+    },
+    {
+      "id": "xGE_FgpNYvg",
+      "title": "[D.Mon] 디몬 &#39;르세라핌 하이라이트&#39; 스킨 색깔별로 모아봤습니다 #shorts #overwatch",
+      "player": "Trending"
+    },
+    {
+      "id": "8-O-uY2lYc0",
+      "title": "와.. 도미나 또 레전드 갱신;; 한정 스킨들과 전용 하이라이트 리뷰!! [오버워치]",
+      "player": "Trending"
+    },
+    {
       "id": "NPJNgNU5Ne8",
       "title": "벤처가 낙사를 할만큼 당황하게 만드는 라이프위버의 단상 컨트롤 [오버워치]",
-      "player": "Trending"
-    },
-    {
-      "id": "8stVgyIzeUk",
-      "title": "끌려갔는데 오히려 궁각이 나왔습니다.",
-      "player": "Trending"
-    },
-    {
-      "id": "3LAPTZsCvro",
-      "title": "&#39;일베회원방준배&#39; 닉네임을 본 쪼낙 반응 ㅋㅋㅋㅋㅋ #쪼낙 #오버워치2 #오버워치 #오버워치하이라이트",
-      "player": "Trending"
-    },
-    {
-      "id": "5860IdJkorM",
-      "title": "제 1회 유니원스컵 선드 하이라이트  | 오버워치2",
-      "player": "Trending"
-    },
-    {
-      "id": "4Ot5mwXRx24",
-      "title": "오버워치 하이라이트 플레이 모음 416 (Overwatch Potg Play Collection 416) #shorts 버전2",
-      "player": "Trending"
-    },
-    {
-      "id": "K7_OHES06Lo",
-      "title": "게임을 끝까지 해봐야 아는 이유 [오버워치]",
       "player": "Trending"
     }
   ]
