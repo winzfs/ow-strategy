@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-29 03:10",
+  "lastUpdated": "2026-09-29 17:12",
   "pro": [
     {
       "id": "E3S__ipIoSw",
@@ -12,15 +12,15 @@
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "K6TxysOaip4",
-      "title": "올바른 인사 사용법",
+      "id": "03MhAbZJHiE",
+      "title": "달릴거야 아무도 나를 막으려들지마",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "BpV9GWrxwzU",
-      "title": "1300만 원짜리 오버워치 굿즈가 있다고??",
+      "id": "IuOK8utiq8Y",
+      "title": "현재 넥슨 오버워치가 해야 하는 사업?",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,11 @@
     }
   ],
   "official": [
+    {
+      "id": "YhxO7rv95Os",
+      "title": "오버워치 둠피스트🪐둠스데이 강림 오늘 전장에 종말을 선언합니다🪐덤비는 순간 찰나의 칼각에 구겨집니다 📐👑(어설픈 적진 통째로 파괴✨) !미션",
+      "player": "Official"
+    },
     {
       "id": "7P8_kcD41_4",
       "title": "고티어로 가기 위한 필수 관문! 오버워치 중급 가이드 1편 | 옵치토크쇼",
@@ -54,14 +59,24 @@
       "id": "hhNvOK_7Teg",
       "title": "독트린의 사전 체험이 곧 종료됩니다! 🦇#오버워치 #Overwatch",
       "player": "Official"
-    },
-    {
-      "id": "SKVcfoDh4R8",
-      "title": "신규 힐러 &quot;독트린&quot; 이대로 나오면 오버워치 망합니다..",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "mA-Lx-Xy8Rg",
+      "title": "뽕검 켜진 순간부터 킬로그가 멈추질 않습니다.",
+      "player": "Trending"
+    },
+    {
+      "id": "rTb5lbiHK7o",
+      "title": "DMON I CHOSE YOU #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "usFUYDmG4Ao",
+      "title": "플딱이 하이라이트 #overwatch #overwatch2 #overwatchclips #tracer #오버워치 #오버워치2 #트레이서",
+      "player": "Trending"
+    },
     {
       "id": "8ssO4C-iufE",
       "title": "거점 비비러 온 상대 오리사를 포커싱으로 순삭하는 우리 팀 [오버워치]",
@@ -75,21 +90,6 @@
     {
       "id": "BphWKC2yhLI",
       "title": "She knows you aren&#39;t a threat 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "CaKAm7rc2CU",
-      "title": "궁은 시작이었네요.",
-      "player": "Trending"
-    },
-    {
-      "id": "AJTjUntcLJ0",
-      "title": "오버워치 시온 31일차 (vs 한조)",
-      "player": "Trending"
-    },
-    {
-      "id": "EMNlSFAfyV8",
-      "title": "챔피언 유저들도 감당하기 힘든 바이올렛 일리아리 #오버워치2 #오버워치",
       "player": "Trending"
     }
   ]
