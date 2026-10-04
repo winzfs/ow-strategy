@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-03 15:22",
+  "lastUpdated": "2026-10-04 03:18",
   "pro": [
     {
       "id": "E3S__ipIoSw",
@@ -12,15 +12,15 @@
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "nXNJLP7x9Xw",
-      "title": "새로운 드라이브 슛~",
+      "id": "pfANyu_2uLY",
+      "title": "일어나...",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "c9iz0N4rnFg",
-      "title": "키보드/마우스/헤드셋 각자 다른 사람이 맡고 오버워치 캐서디하기ㅋㅋㅋ 개빡세네 진짜",
+      "id": "uwYu2H5ZxeY",
+      "title": "최근 블리자드의 이상한 패치 방향성??",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,11 +30,6 @@
     }
   ],
   "official": [
-    {
-      "id": "BCQ43nJ2NWA",
-      "title": "오버워치 둠피스트 🩹응급처치 불가 판정🩹 케어 없이 혼자 적진 상륙해서 피지컬로 지워버립니다 💥🥊 (핑계 없이 실력으로 증명 🎬👇) !미션",
-      "player": "Official"
-    },
     {
       "id": "ocikUfbXluo",
       "title": "코스프레 대회에서 1등 하려면? 오버워치 심사위원의 심사 기준",
@@ -56,12 +51,32 @@
       "player": "Official"
     },
     {
+      "id": "Wize9nWLIN0",
+      "title": "오버워치 영웅들의 황당한 대화 Part 158",
+      "player": "Official"
+    },
+    {
       "id": "k5AB7ZX3Ly0",
       "title": "독트린 | 신규 영웅 게임플레이 트레일러 | 오버워치",
       "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "-lqdgRoIkoc",
+      "title": "위버님! 둠피스트 블락 때리시면 안돼요! [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "r7RR89uF34M",
+      "title": "오버워치 탱커 하이라이트 01",
+      "player": "Trending"
+    },
+    {
+      "id": "Q0J55_keVl4",
+      "title": "What was his plan 😭 @kaminskyyy3374  #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
     {
       "id": "zxXT5NBSKvk",
       "title": "It had to be the cat, not Dmon 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
@@ -75,21 +90,6 @@
     {
       "id": "Os_C2fw7xxE",
       "title": "I wonder if people ever feel this way about me 😭#overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "DV4h9qoxBoA",
-      "title": "Clean Orisa Clutch in Ranked Solo Queue 💀 #OW2",
-      "player": "Trending"
-    },
-    {
-      "id": "QBB1RgQ464c",
-      "title": "팟지 78",
-      "player": "Trending"
-    },
-    {
-      "id": "AY6Ko7tZOjU",
-      "title": "오버워치 개웃긴 억까 모음 ㅋㅋㅋㅋ #오버워치2 #하이라이트 #즐겜방송",
       "player": "Trending"
     }
   ]
