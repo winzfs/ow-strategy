@@ -1,26 +1,26 @@
 {
-  "lastUpdated": "2026-10-04 03:18",
+  "lastUpdated": "2026-10-04 16:07",
   "pro": [
     {
-      "id": "E3S__ipIoSw",
-      "title": "안녕하세욥",
+      "id": "qOtNjmMLw0A",
+      "title": "컨디션 불량 조금만",
       "player": "안스 (Ans)"
     },
     {
-      "id": "n-pcBqUOluM",
-      "title": "딜러들 멸종시키려고 나온 신규 힐러 독트린",
+      "id": "ciLp2ev--dY",
+      "title": "가볼가요~?",
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "pfANyu_2uLY",
-      "title": "일어나...",
+      "id": "gR3nLJrZOiY",
+      "title": "주의 마무리",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "uwYu2H5ZxeY",
-      "title": "최근 블리자드의 이상한 패치 방향성??",
+      "id": "n9vRoJXqIl4",
+      "title": "솜브라가 힐러가 되면 나올 수 있는 끔찍한 조합",
       "player": "일루전 (Illusion)"
     },
     {
@@ -30,6 +30,11 @@
     }
   ],
   "official": [
+    {
+      "id": "sMlFIudS60s",
+      "title": "오버워치 둠피스트🐢느림의 미학🐢등껍질 두르고 느릿하게 들어가서 적진 통째로 지워버립니다🥊(자비 없는 거북이 폭격 👇) !미션",
+      "player": "Official"
+    },
     {
       "id": "ocikUfbXluo",
       "title": "코스프레 대회에서 1등 하려면? 오버워치 심사위원의 심사 기준",
@@ -54,42 +59,37 @@
       "id": "Wize9nWLIN0",
       "title": "오버워치 영웅들의 황당한 대화 Part 158",
       "player": "Official"
-    },
-    {
-      "id": "k5AB7ZX3Ly0",
-      "title": "독트린 | 신규 영웅 게임플레이 트레일러 | 오버워치",
-      "player": "Official"
     }
   ],
   "trending": [
     {
+      "id": "8Mp1JrCV0Rc",
+      "title": "똑똑한 탱커",
+      "player": "Trending"
+    },
+    {
+      "id": "rjKu-N-rxlU",
+      "title": "뽕까지 받은 겐지부터 끊었습니다.",
+      "player": "Trending"
+    },
+    {
+      "id": "QEQls4HY2s4",
+      "title": "I might just move to China #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "vszrkF1IhCI",
+      "title": "[Juno] 주노의 헬로키티 콜라보 스킨 착용 모든 하이라이트 모음 (26.10.04) #overwatch #오버워치",
+      "player": "Trending"
+    },
+    {
+      "id": "_aB25wIXYZ8",
+      "title": "엄마 말씀 잘 들어야지~ #오버워치2 #하이라이트 #즐겜방송 #게임",
+      "player": "Trending"
+    },
+    {
       "id": "-lqdgRoIkoc",
       "title": "위버님! 둠피스트 블락 때리시면 안돼요! [오버워치]",
-      "player": "Trending"
-    },
-    {
-      "id": "r7RR89uF34M",
-      "title": "오버워치 탱커 하이라이트 01",
-      "player": "Trending"
-    },
-    {
-      "id": "Q0J55_keVl4",
-      "title": "What was his plan 😭 @kaminskyyy3374  #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "zxXT5NBSKvk",
-      "title": "It had to be the cat, not Dmon 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "Do9tSNWVktA",
-      "title": "메카 터뜨렸더니 나노까지 들어왔습니다.",
-      "player": "Trending"
-    },
-    {
-      "id": "Os_C2fw7xxE",
-      "title": "I wonder if people ever feel this way about me 😭#overwatch2 #gaming #overwatchclips #overwatch #ow2",
       "player": "Trending"
     }
   ]
