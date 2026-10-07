@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-06 17:33",
+  "lastUpdated": "2026-10-07 03:12",
   "pro": [
     {
       "id": "SLYIG5cj7SQ",
@@ -7,34 +7,29 @@
       "player": "안스 (Ans)"
     },
     {
-      "id": "9g-b0W4GJek",
-      "title": "누구보다 메르시를 사랑하는 남자",
+      "id": "4J6mm9on9W4",
+      "title": "천상계 유저들의 남다른 호흡",
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "eVZ87oQsnic",
-      "title": "시즌 마지막날",
+      "id": "5pcMZVRlVXg",
+      "title": "위도우까지 잘해버리는 김뜻돌",
       "player": "쪼낙 (Jjonak)"
     }
   ],
   "streamer": [
     {
-      "id": "5fXzuM7A0h8",
-      "title": "오버워치 새 시즌 레스기릿(3시)",
+      "id": "M1DQP2IeIP0",
+      "title": "새 시즌 시작했습니다! 근데 심상치 않은 패치...히트박스 변경에 아나 버프까지 이거 맞아요? | 오버워치 5시즌 패치노트",
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "_QlC5WfuNv8",
-      "title": "최고의 종교는 어디인가?",
+      "id": "dfsOvaylWFI",
+      "title": "또 사기된 아나와 수많은 쌈뽕 스킨들ㅣ5시즌 리뷰",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
-    {
-      "id": "G_sdkUlRK8A",
-      "title": "오버워치 둠피스트 버프 및 특전 교체 완료 (🥊이모티콘 리뉴얼 완료!!🥊) !미션",
-      "player": "Official"
-    },
     {
       "id": "54syvsGJH1E",
       "title": "All New Skins, Solo Leveling Collab, Doctrine, &amp; MORE! - Overwatch Season 5 Trailer Breakdown",
@@ -59,9 +54,29 @@
       "id": "ywcmKn8CNzM",
       "title": "나는 힐러니까.. feat. 메르시ㅣ키리코 뒤에만 있는 당신!",
       "player": "Official"
+    },
+    {
+      "id": "YZQT5bOv7pk",
+      "title": "독트린과 둠피스트가 손잡은 이유? 드라이브 및 드롭스 이벤트 시작!ㅣ오버워치",
+      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "LVMjg_neMYQ",
+      "title": "[오버워치] 오리사 매드무비 1",
+      "player": "Trending"
+    },
+    {
+      "id": "1tOA5T7TPl0",
+      "title": "애쉬 꽤 착하게 생겼는데? 명품 영향력 하이라이트 (애쉬, 캐서디) #shorts #overwatch",
+      "player": "Trending"
+    },
+    {
+      "id": "8JtI2U6L5Nk",
+      "title": "오버워치 X 그림자 군주 하이라이트 #shorts #overwatch",
+      "player": "Trending"
+    },
     {
       "id": "0EsTy7zVjN8",
       "title": "Ana should marry that Rein @moonneeko  #overwatch2 #gaming #overwatchclips #overwatch #ow2",
@@ -75,21 +90,6 @@
     {
       "id": "yL-B5l3KYrE",
       "title": "“이제 이 원콤은 못 봅니다…” 로드호그 마지막 하이라이트",
-      "player": "Trending"
-    },
-    {
-      "id": "FsblWE3RMDg",
-      "title": "[오버워치] 윈스턴 매드무비 1",
-      "player": "Trending"
-    },
-    {
-      "id": "D7nOzyxWBN4",
-      "title": "뒤를 잡은 윈스턴이 너무 편해졌습니다.",
-      "player": "Trending"
-    },
-    {
-      "id": "l2PKcDK1syU",
-      "title": "호그가 개 띠꺼웠던 상대팀ㅋㅋㅋㅋㅋㅋㅋ #오버워치2 #즐겜방송 #게임",
       "player": "Trending"
     }
   ]
