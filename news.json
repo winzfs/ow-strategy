@@ -1,19 +1,19 @@
 {
-  "lastUpdated": "2026-10-10 16:32",
+  "lastUpdated": "2026-10-11 02:46",
   "pro": [
     {
-      "id": "78HDjKT81LY",
-      "title": "오랜만이에요",
+      "id": "KqsPYeLtop4",
+      "title": "스스듀오",
       "player": "안스 (Ans)"
     },
     {
-      "id": "yEF7NtGKEFM",
-      "title": "밥 대체 어디로 가나요!!",
+      "id": "8j04ODI_beQ",
+      "title": "멀쩡한 사람이 없는 오버워치 경쟁전",
       "player": "류제홍 (Ryujehong)"
     },
     {
-      "id": "m8zg2o77NYE",
-      "title": "오늘은 머할까",
+      "id": "N3NN2nEnkxA",
+      "title": "역대급 사기챔 등장",
       "player": "쪼낙 (Jjonak)"
     }
   ],
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "AYgqBqvGGh8",
-      "title": "로블록스는 오버워치다. 잼민이 참교육 드가자.",
+      "id": "1Z5bW7AaZ_0",
+      "title": "AI가 뽑은 역대 대통령 순위",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "Xc1BMSJ1B8g",
+      "title": "탱커 반갈죽 1초 전 | 오버워치 2",
+      "player": "Official"
+    },
     {
       "id": "8v9hjGITxDk",
       "title": "광기와 실력을 모두 갖춘 극성팬 라인 원챔을 만났습니다",
@@ -54,14 +59,19 @@
       "id": "2aLo51-8ABM",
       "title": "블리자드 공식 &quot;허리둘레 26&quot; 미친 뚱냥이 탄생 (키리코보다 큼;;)",
       "player": "Official"
-    },
-    {
-      "id": "kiQNz1wT28Q",
-      "title": "3개의 신규(?) 영웅 등장!  5시즌 패치노트 | 옵치토크쇼",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "lg9v-uScAW4",
+      "title": "탱커를 상대로 쫄지 않는 미친 라이프위버 [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "S6ywpWBhwdg",
+      "title": "[Cassidy] 캐서디 &#39;명품 영향력&#39; 스킨 착용 모든 하이라이트,  스킨별 &#39;돈 태우기&#39; 하이라이트(있는 스킨만) #오버워치 #overwatch",
+      "player": "Trending"
+    },
     {
       "id": "215CrwHcigA",
       "title": "탱커유저 아닙니다",
@@ -80,16 +90,6 @@
     {
       "id": "sjU-j9BLXyU",
       "title": "어제 부착하는 꿈꿨습니다 #오버워치 #오버워치2 #트레이서 #하이라이트",
-      "player": "Trending"
-    },
-    {
-      "id": "AgnDsX75cvg",
-      "title": "#오버워치​ 뉴비 #하이라이트 _ 015 #윈스턴",
-      "player": "Trending"
-    },
-    {
-      "id": "LTDyHGqllEQ",
-      "title": "오버워치 감다살 신규 하이라이트들",
       "player": "Trending"
     }
   ]
