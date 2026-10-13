@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-12 20:33",
+  "lastUpdated": "2026-10-13 04:24",
   "pro": [
     {
       "id": "KLg_X6XzVMs",
@@ -24,8 +24,8 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "ifHGH8-T_os",
-      "title": "추석 AI 대참사와 떠오르는 꿀빨챔",
+      "id": "OKsMYQwQNfM",
+      "title": "AI가 믿는 종교",
       "player": "아이치 (Ichi)"
     }
   ],
@@ -46,6 +46,11 @@
       "player": "Official"
     },
     {
+      "id": "8v9hjGITxDk",
+      "title": "광기와 실력을 모두 갖춘 극성팬 라인 원챔을 만났습니다",
+      "player": "Official"
+    },
+    {
       "id": "aljh-sk_EZk",
       "title": "시위 벗방 시위 | 오버워치 2",
       "player": "Official"
@@ -54,14 +59,29 @@
       "id": "IP9s9DqFXPs",
       "title": "벤데타 장인을 꿈꾼다 | 오버워치 2 (with. 파카)",
       "player": "Official"
-    },
-    {
-      "id": "xK-1TKFdTrM",
-      "title": "시즌 5 패치노트? 내가 구원해 주지🦇 | 독트린 성우가 읽어주는 패치노트 | 오버워치",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "AGfEWdcZmOw",
+      "title": "[오버워치] 수수께끼의 광기 라인 모음 2",
+      "player": "Trending"
+    },
+    {
+      "id": "maUF5XHNhSs",
+      "title": "승리를 앞두고 갑자기 큰 결심을 하는 우리 팀 오리사...?! [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "SW80xWJl2ow",
+      "title": "팟지 80",
+      "player": "Trending"
+    },
+    {
+      "id": "CapZF--p0_U",
+      "title": "[Echo] 에코 스킨별 &#39;예절&#39; 하이라이트 #shorts #overwatch",
+      "player": "Trending"
+    },
     {
       "id": "rWF9wGykIxA",
       "title": "Need to remove the tea cup part #overwatch2 #gaming #overwatchclips #overwatch #ow2",
@@ -70,26 +90,6 @@
     {
       "id": "8SFWrhCQm_A",
       "title": "시작부터 양쪽에서 터졌습니다.",
-      "player": "Trending"
-    },
-    {
-      "id": "lLJSfppbQsk",
-      "title": "[콘솔] 4년 전 오버워치2 베타 시절 하루 하이라이트 짧",
-      "player": "Trending"
-    },
-    {
-      "id": "lM-zbKUGI0A",
-      "title": "#오버워치​ #하이라이트 _ 017 #해저드",
-      "player": "Trending"
-    },
-    {
-      "id": "HGo9bzeDMFM",
-      "title": "동학 ㅅ1ㅂ ㅋㅋㅋㅋㅋㅋ 넌 진짜 예능의 신이다 #오버워치2 #오버워치",
-      "player": "Trending"
-    },
-    {
-      "id": "yj-5AD7Fu2E",
-      "title": "[D.Va] 송하나의 &#39;영웅 착지&#39; 스킨별 하이라이트 #shorts #overwatch",
       "player": "Trending"
     }
   ]
