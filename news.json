@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-15 15:55",
+  "lastUpdated": "2026-10-16 02:07",
   "pro": [
     {
       "id": "LCNISl25lqk",
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "A89Wivt58-U",
-      "title": "인생에서 가장 중요한 것",
+      "id": "vB8RdfQP7Uc",
+      "title": "이성도 티어리스트 매운장면 모음",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "kO3I1IR2QdQ",
+      "title": "키리코 체력 버프? 독트린 솜브라 너프! 핫픽스 살펴보기 | 옵치토크쇼",
+      "player": "Official"
+    },
     {
       "id": "7qVdnxltUFk",
       "title": "내가 여기서 죽어야한다고? 챔피언 딜러도 놓치면 죽는 그것!",
@@ -54,14 +59,29 @@
       "id": "WAomWhKcmHg",
       "title": "오버워치 공식 솔저&amp;리퍼 커플 스킨 ㄷㄷ",
       "player": "Official"
-    },
-    {
-      "id": "VZyDJt9YhIc",
-      "title": "오버워치, 곧 출시할 스킨 대충 미리보기 (26.10.11 기준) #shorts #overwatch",
-      "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "64A9JTPpxYI",
+      "title": "잊어버릴 때쯤 한번씩 찾아오는 실시간 정지 [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "YbFeXrPhpG8",
+      "title": "오버워치하는 사람들 이 말에 공감하나요? #오버워치 #오버워치2 #경쟁전 #게임하이라이트 #치지직",
+      "player": "Trending"
+    },
+    {
+      "id": "TsUTXbWwkx8",
+      "title": "정커퀸 등장☆",
+      "player": "Trending"
+    },
+    {
+      "id": "IXv_nV3T5D4",
+      "title": "망치 단 한번",
+      "player": "Trending"
+    },
     {
       "id": "dQVtFsJYL8Q",
       "title": "탱커 비비기 금지",
@@ -70,26 +90,6 @@
     {
       "id": "Q7aJxm9jX6k",
       "title": "비비기 금지",
-      "player": "Trending"
-    },
-    {
-      "id": "0gRDVyq_geY",
-      "title": "내가 티어를 못 올라가는 이유!!! #오버워치 #오버워치2 #경쟁전 #게임하이라이트 #치지직",
-      "player": "Trending"
-    },
-    {
-      "id": "oGkBnWZ15vE",
-      "title": "모이라 궁이 이렇게 무서웠나요?",
-      "player": "Trending"
-    },
-    {
-      "id": "GG3z5cgngcU",
-      "title": "오른손은 거들 뿐",
-      "player": "Trending"
-    },
-    {
-      "id": "YFo469m0YME",
-      "title": "[Junker Queen] 박쥐 코스프레한 정커퀸 &#39;박쥐 여제&#39; 스킨 착용 하이라이트 #shorts #overwatch",
       "player": "Trending"
     }
   ]
