@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-19 17:54",
+  "lastUpdated": "2026-10-20 02:31",
   "pro": [
     {
       "id": "mzgikNQ-gms",
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "KSp7xqMxhlU",
-      "title": "아이치의 컴퓨터 스샷론",
+      "id": "Px4Jcid4-rk",
+      "title": "벤처가 활 튕기는 소리",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "hPL1eGurcPQ",
+      "title": "Voltou para a luta depois dos 34 HP",
+      "player": "Official"
+    },
     {
       "id": "c-tDQqc3ftM",
       "title": "A captura veio. A ult ficou com o Lúcio.",
@@ -46,11 +51,6 @@
       "player": "Official"
     },
     {
-      "id": "bhmNB_StmUk",
-      "title": "나이 먹고 철도 없는 저를 지켜주는 단 한 사람..",
-      "player": "Official"
-    },
-    {
       "id": "kO3I1IR2QdQ",
       "title": "키리코 체력 버프? 독트린 솜브라 너프! 핫픽스 살펴보기 | 옵치토크쇼",
       "player": "Official"
@@ -63,6 +63,26 @@
   ],
   "trending": [
     {
+      "id": "ug0hJMhlzmM",
+      "title": "항상 3검 아니면 0검인 겐지의 용검 ㅋㅋ [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "d4abKIeQ2yU",
+      "title": "Junker queen got a new e #overwatch2 #gaming #overwatchclips #overwatch #ow2",
+      "player": "Trending"
+    },
+    {
+      "id": "9BrK14h3Jj8",
+      "title": "오버워치 정커퀸 원챔의 밴픽 [절망편] w2 #shorts #신캐 #오버워치 #정커퀸 #탱장연 #원챔 #천상계 #장인 #개그 #프로게이머 #하이라이트 #레전드 #캐리 #장인 #게임",
+      "player": "Trending"
+    },
+    {
+      "id": "Gn624AOgEek",
+      "title": "섭딜의 정석 #오버워치 #오버워치2 #overwatch  #overwatch2 #overwatchclips #트레이서 #하이라이트",
+      "player": "Trending"
+    },
+    {
       "id": "zoxx8bUhwbQ",
       "title": "정커퀸 원챔 ow2 #shorts #신캐 #오버워치 #정커퀸 #탱장연 #원챔 #천상계 #장인 #개그 #프로게이머 #하이라이트 #레전드 #캐리 #장인",
       "player": "Trending"
@@ -70,26 +90,6 @@
     {
       "id": "svanx_K292E",
       "title": "Always in Drives 😭 #overwatch2 #gaming #overwatchclips #overwatch #ow2",
-      "player": "Trending"
-    },
-    {
-      "id": "sumCh0T5UVQ",
-      "title": "진 한타 운영법",
-      "player": "Trending"
-    },
-    {
-      "id": "cH5ZUF2PHFU",
-      "title": "오리사 궁에 EMP를 겹치면 벌어지는 일",
-      "player": "Trending"
-    },
-    {
-      "id": "u7BPpFrij6o",
-      "title": "다 부수고 나온 오리사 #shorts#탱커캐리#피지컬#매드무비#게임하이라이트",
-      "player": "Trending"
-    },
-    {
-      "id": "KyjYhfX1xpQ",
-      "title": "Genji player LYNX #overwatch2 #오버워치2 #OW2 #オーバーウォッチ2",
       "player": "Trending"
     }
   ]
