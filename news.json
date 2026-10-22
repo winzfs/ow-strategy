@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-21 16:15",
+  "lastUpdated": "2026-10-22 02:21",
   "pro": [
     {
       "id": "f-NWiJSiF8w",
@@ -24,12 +24,17 @@
       "player": "일루전 (Illusion)"
     },
     {
-      "id": "27mrS4K2EuY",
-      "title": "대회 가장 재밌는순간은, 상성이 바뀔 때이다",
+      "id": "JpeNkfTTuiE",
+      "title": "그시절 옵치 모먼트 모음",
       "player": "아이치 (Ichi)"
     }
   ],
   "official": [
+    {
+      "id": "XDQjsC6PE60",
+      "title": "OVERWATCH&#39;S RECENT SKIN QUALITY #overwatch  #overwatch2 #ow2 #gaming",
+      "player": "Official"
+    },
     {
       "id": "Fxbh_-isR5Q",
       "title": "RAMATTRA&#39;S ULTRA SKIN DETAILS &amp; SHOWCASE #overwatch  #overwatch2 #ow2 #gaming",
@@ -51,17 +56,27 @@
       "player": "Official"
     },
     {
-      "id": "uFgotGPGvFE",
-      "title": "아는만큼 보이는 법 | 장문철tv 805화",
-      "player": "Official"
-    },
-    {
       "id": "hPL1eGurcPQ",
       "title": "Voltou para a luta depois dos 34 HP",
       "player": "Official"
     }
   ],
   "trending": [
+    {
+      "id": "7kZUn5M_41U",
+      "title": "상대가 겐트를 꺼냈을 때 아주 쉽게 상대를 괴롭힐 수 있는 힐러 모이라 [오버워치]",
+      "player": "Trending"
+    },
+    {
+      "id": "toIUc437tLg",
+      "title": "[Mercy] 심쿵 메르시 &#39;자비의 하트&#39; 스킨 착용 하이라이트 #shorts #overwatch",
+      "player": "Trending"
+    },
+    {
+      "id": "x6snHySCaEk",
+      "title": "[Mercy] 심쿵워치 메르시 &#39;자비의 하트&#39; 스킨 착용 하이라이트 &amp; 감정 표현 # 스킨별 &#39;자비로운 하트&#39; 하이라이트 #overwatch",
+      "player": "Trending"
+    },
     {
       "id": "9d4b5IzgIiU",
       "title": "안란 궁 한 번에 한타가 터졌습니다ㅋㅋ",
@@ -75,21 +90,6 @@
     {
       "id": "6wKoRrRIUL0",
       "title": "오버워치 겐지 하이라이트 플레이 모음11 (Overwatch Genji Potg Play Collection11) #shorts 버전2",
-      "player": "Trending"
-    },
-    {
-      "id": "4CIGu2MpdGw",
-      "title": "잘맞네",
-      "player": "Trending"
-    },
-    {
-      "id": "bD4kpP_Wing",
-      "title": "빙글빙글",
-      "player": "Trending"
-    },
-    {
-      "id": "wrpPWumaNVg",
-      "title": "청소시작",
       "player": "Trending"
     }
   ]
